@@ -1,0 +1,59 @@
+import type { RoutingCandidate, RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
+
+import { HttpError } from "../http/errors";
+import { explicitModelId } from "../protocol/input/router_model";
+import type { RoutedDecision } from "../strategies/route_decision";
+import type { PreparedRoutedCompletion } from "./prepare_routed_completion";
+
+/* A request for `dari/model/<id>` is served by exactly that enabled model,
+   with no selector, lease, or fallback: the user chose it, like picking a
+   model in their agent's /model menu. The client's thinking level is kept
+   when the model supports it; otherwise the model's default level is used. */
+export function explicitModelDecision(
+  prepared: PreparedRoutedCompletion,
+): RoutedDecision | null {
+  const modelId = explicitModelId(prepared.interaction.model);
+  if (modelId === null) return null;
+  if (!prepared.credentials.enabled_models.includes(modelId)) {
+    throw new HttpError(
+      400,
+      `Model '${modelId}' is not enabled on this router.`,
+      "model_not_enabled",
+      "model",
+    );
+  }
+  const candidates = prepared.routing.candidateResolution.candidates.filter(
+    (candidate) => candidate.model === modelId,
+  );
+  if (candidates.length === 0) {
+    throw new HttpError(
+      400,
+      `Model '${modelId}' cannot serve this request.`,
+      "model_unavailable",
+      "model",
+    );
+  }
+  const candidate = pickCandidate(prepared, modelId, candidates);
+  const decision: RoutingDecision = {
+    selectedModel: candidate.model,
+    reasoningEffort: candidate.reasoningEffort,
+    reason: `Requested model ${modelId} served without selection.`,
+  };
+  return { decision };
+}
+
+function pickCandidate(
+  prepared: PreparedRoutedCompletion,
+  modelId: string,
+  candidates: RoutingCandidate[],
+): RoutingCandidate {
+  const preferred = [
+    prepared.interaction.reasoning?.effort,
+    prepared.credentials.model_configs?.[modelId]?.default_thinking_level,
+  ];
+  for (const effort of preferred) {
+    const match = candidates.find((candidate) => candidate.reasoningEffort === effort);
+    if (match) return match;
+  }
+  return candidates[0]!;
+}

@@ -1,0 +1,6 @@
+*
+!dari-router
+!dari-gateway
+dari-router/node_modules
+dari-router/dist
+dari-gateway/node_modules

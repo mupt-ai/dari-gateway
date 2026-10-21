@@ -1,0 +1,105 @@
+# Dari Gateway
+
+A self-hostable LLM gateway for coding agents and API clients. One endpoint speaks Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses, and serves each request on the model your router picks, with your own provider keys or your connected Claude Code and ChatGPT subscriptions.
+
+- **One endpoint, three protocols.** `/v1/messages`, `/v1/chat/completions`, and `/v1/responses` (plus `/v1/models`) translate to API-key providers in the [Pi AI](https://www.npmjs.com/package/@mupt-ai/pi-ai) catalog, such as Anthropic, OpenAI, and OpenRouter, or to any OpenAI-compatible server.
+- **Subscription pooling.** Connect several Claude Code (Max/Pro) or ChatGPT plans. The gateway stays on one until it reports a usage limit, holds it until its reset, and moves to the next. When every plan is held, the provider's API key serves if you set one.
+- **Failover.** A provider failure retries the router's next model.
+- **Prompt-cache aware.** Conversations keep their identity and serving model across turns, so provider caches stay warm. Responses carry `x-dari-selected-model`, `x-dari-thinking-level`, and `x-dari-conversation-id` headers for status lines.
+- **Coding agents.** `dari claude`, `dari codex`, `dari opencode`, and `dari pi` from the [Dari CLI](https://github.com/mupt-ai/dari-cli) launch straight against your gateway.
+
+The gateway is the same runtime that serves Dari's hosted routing service. Choosing among a router's models with Dari's trained routing policy (Dari Auto Routing) is optional and uses a Dari API key; without it, `dari/routing` serves the router's first available model.
+
+## Run
+
+Requires [Bun](https://bun.sh) 1.3 or later.
+
+```bash
+cp dari-gateway.example.yaml dari-gateway.yaml   # edit routers and models
+export DARI_GATEWAY_KEYS="$(openssl rand -hex 24)" # keys your clients send
+export ANTHROPIC_API_KEY=... OPENAI_API_KEY=...    # optional with subscriptions
+bun install
+bun run start
+```
+
+Or with Docker, from the repository root:
+
+```bash
+docker build -f dari-gateway/Dockerfile -t dari-gateway .
+docker run -p 8080:8080 \
+  -e DARI_GATEWAY_KEYS -e ANTHROPIC_API_KEY \
+  -v "$PWD/dari-gateway.yaml:/config/dari-gateway.yaml" \
+  -v dari-gateway-data:/data \
+  dari-gateway
+```
+
+| Variable | Meaning |
+| --- | --- |
+| `DARI_GATEWAY_KEYS` | Required. Comma-separated bearer keys clients authenticate with. |
+| `DARI_GATEWAY_CONFIG` | Router config file. Default `dari-gateway.yaml`. |
+| `DARI_GATEWAY_DB` | SQLite database for subscriptions and conversation state. Default `dari-gateway.db`. It stores subscription tokens in plaintext; protect it like a secret. |
+| `DARI_AUTO_ROUTING_API_KEY` | Optional. Select among a router's models with Dari Auto Routing. |
+| `PORT` | Listen port. Default `8080`. |
+| Provider keys | Each provider's standard variable, such as `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `OPENROUTER_API_KEY`. |
+
+## Configure
+
+```yaml
+routers:
+  default:                 # serves /v1/...
+    models:
+      - anthropic/claude-sonnet-5-5
+      - id: openai/gpt-5.5
+        thinking: [medium, high]
+    fallback: true         # retry the next model when a provider fails
+    subscriptions: true    # prefer connected subscriptions over API keys
+  local:                   # serves /local/v1/...
+    models: [local/qwen3-coder]
+
+providers:                 # endpoints outside the built-in catalog
+  local:
+    baseUrl: http://localhost:8000/v1
+    apiKeyEnv: LOCAL_API_KEY
+```
+
+Model ids are `provider/model`. Clients send `model: "dari/routing"` to let the router choose, or `model: "dari/model/<id>"` to pin one of its models. A Claude Code subscription serves Anthropic models only for Claude Code itself; a ChatGPT subscription serves OpenAI models for every client.
+
+## Coding agents
+
+```bash
+export DARI_GATEWAY_URL=http://localhost:8080
+export DARI_GATEWAY_KEY=<one of DARI_GATEWAY_KEYS>
+
+dari credentials subscription connect claude-code   # or codex; repeat to pool plans
+dari claude
+```
+
+In gateway mode the CLI makes no calls to Dari's hosted API. `dari credentials subscription list`, `rename`, `mark-available`, and `disconnect` manage the gateway's subscriptions.
+
+## Embed
+
+Deployments with their own storage and accounting compose the runtime with a `GatewayPlatform` (router resolution, conversation state, subscription holds, request records, error reporting) and a selector backend:
+
+```ts
+import { createPrioritySelectorBackend, createRequestHandler } from "@mupt-ai/dari-gateway";
+
+const handler = createRequestHandler({ platform, selectorBackend: createPrioritySelectorBackend() });
+Bun.serve({ port: 8080, fetch: handler, idleTimeout: 0 });
+```
+
+`src/self_host/` is the reference platform.
+
+## Development
+
+```bash
+(cd ../dari-router && bun install --frozen-lockfile && bun run build)
+bun install --frozen-lockfile
+bun run typecheck
+bun test
+```
+
+Tests make no provider or network calls.
+
+## License
+
+Apache-2.0
