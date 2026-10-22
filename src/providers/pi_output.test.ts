@@ -2,9 +2,11 @@ import { expect, test } from "bun:test";
 
 import { piMessageToInteractionOutput } from "./pi_output";
 import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
+import { buildContext } from "./pi_context";
 
 const OPENAI: ProviderIdentity = { provider: "openai", api: "openai-responses", model: "gpt-5.5" };
 const AZURE: ProviderIdentity = { provider: "azure", api: "azure-openai-responses", model: "gpt-5.5" };
+const CODEX: ProviderIdentity = { provider: "openai-codex", api: "openai-codex-responses", model: "gpt-5.6-luna" };
 const CLAUDE: ProviderIdentity = { provider: "anthropic", api: "anthropic-messages", model: "claude-sonnet-4-6" };
 
 test("lifts empty provider output as a canonical assistant message", () => {
@@ -484,3 +486,46 @@ function request(overrides: Partial<InteractionRequest>): InteractionRequest {
     ...overrides,
   };
 }
+
+test("keeps encrypted reasoning from the ChatGPT-subscription Codex transport and replays it", () => {
+  const signature = JSON.stringify({
+    type: "reasoning",
+    id: "rs_codex",
+    summary: [{ type: "summary_text", text: "Plan the edit." }],
+    encrypted_content: "opaque-codex-state",
+  });
+  const output = piMessageToInteractionOutput(
+    {
+      stopReason: "toolUse",
+      content: [
+        { type: "thinking", thinking: "Plan the edit.", thinkingSignature: signature },
+        { type: "toolCall", id: "call_1|fc_1", name: "read_file", arguments: { path: "a.ts" } },
+      ],
+    },
+    CODEX,
+    request({})
+  );
+
+  expect(output.items[0]).toEqual({
+    type: "reasoning",
+    id: "rs_codex",
+    summary: ["Plan the edit."],
+    content: [],
+    source: CODEX,
+    continuation: {
+      kind: "openai_reasoning",
+      source: CODEX,
+      encryptedContent: "opaque-codex-state",
+      providerItemId: "rs_codex",
+    },
+  });
+
+  const context = buildContext(request({ items: output.items }), CODEX) as {
+    messages: Array<{ content: Array<Record<string, unknown>> }>;
+  };
+  const thinking = context.messages[0]?.content.find((block) => block.type === "thinking");
+  expect(JSON.parse(String(thinking?.thinkingSignature))).toMatchObject({
+    id: "rs_codex",
+    encrypted_content: "opaque-codex-state",
+  });
+});

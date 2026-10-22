@@ -4,6 +4,8 @@ import { afterAll, beforeEach, expect, mock, test } from "bun:test";
 import { validateChatCompletionsRequest } from "../protocol/input/chat_completions_validation";
 import type { InteractionRequest } from "../interaction/types";
 
+const { registeredModelPrice: realRegisteredModelPrice } = await import("../providers/pi");
+
 let selectorMessage: Record<string, unknown>;
 let selectorMessageQueue: Array<Record<string, unknown>>;
 let selectorRequests: InteractionRequest[];
@@ -32,6 +34,8 @@ mock.module("../providers/pi", () => ({
     throw new Error("streamInteractionModel should not be called in routing tests");
   },
   modelContextWindow: async (modelId: string) => selectorContextWindows[modelId] ?? null,
+  // mock.module is process-wide, so keep this export for later importers such as self_host/resolve.
+  registeredModelPrice: realRegisteredModelPrice,
   modelMetadataLookup: async () => (modelId: string) => ({
     model: { id: modelId, reasoning: false },
     supportedThinkingLevels: ["off", "minimal", "low", "medium", "high", "xhigh"],

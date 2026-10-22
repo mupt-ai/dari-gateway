@@ -312,7 +312,7 @@ function reasoningItem(
 ): Extract<InteractionItem, { type: "reasoning" }> {
   const thinking = typeof block.thinking === "string" ? block.thinking : "";
   const signature = optionalString(block.thinkingSignature);
-  if (source.api === "openai-responses" || source.api === "azure-openai-responses") {
+  if (isOpenAIResponsesApi(source.api)) {
     const native = signature ? openAIReasoningItem(signature) : null;
     return {
       type: "reasoning",
