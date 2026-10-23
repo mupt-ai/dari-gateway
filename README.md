@@ -1,11 +1,35 @@
-# Dari Gateway
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/dari-logo-dark.svg">
+    <img src="assets/dari-logo-light.svg" alt="Dari" width="72">
+  </picture>
+</p>
 
-A self-hostable LLM gateway for coding agents and API clients. One endpoint speaks Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses, and serves each request on the model your router picks, with your own provider keys or your connected Claude Code and ChatGPT subscriptions.
+<h1 align="center">Dari Gateway</h1>
 
-- **One endpoint, three protocols.** `/v1/messages`, `/v1/chat/completions`, and `/v1/responses` (plus `/v1/models`) translate to API-key providers in the [Pi AI](https://www.npmjs.com/package/@mupt-ai/pi-ai) catalog, such as Anthropic, OpenAI, and OpenRouter, or to any OpenAI-compatible server.
+<p align="center">
+  <b>One endpoint for your coding agents, on your own keys and subscriptions.</b><br>
+  Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses, served on the model your router picks.
+</p>
+
+<p align="center">
+  <a href="https://docs.dari.dev/gateway/self-hosting"><img src="https://img.shields.io/badge/Self--Host_Guide-docs.dari.dev-111111?style=for-the-badge" alt="Self-host guide at docs.dari.dev"></a>
+  <a href="#run"><img src="https://img.shields.io/badge/Quick_Start-Run_It_Locally-16A34A?style=for-the-badge" alt="Quick start: run it locally"></a>
+</p>
+
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-111111" alt="Apache-2.0 license"></a>
+  <img src="https://img.shields.io/badge/runtime-Bun_1.3%2B-111111" alt="Requires Bun 1.3 or later">
+</p>
+
+The gateway is the runtime behind Dari's hosted routing service, packaged to run on your own machine. Point a client at it, and each request is served on the model your router picks, using your provider API keys or your connected Claude Code and ChatGPT subscriptions. It needs no Dari account.
+
+## Features
+
+- **One endpoint, three protocols.** `/v1/messages`, `/v1/chat/completions`, and `/v1/responses` (plus `/v1/models`) reach API-key providers in the [Pi AI](https://www.npmjs.com/package/@mupt-ai/pi-ai) catalog, such as Anthropic, OpenAI, and OpenRouter, or any OpenAI-compatible server.
 - **Subscription pooling.** Connect several Claude Code (Max/Pro) or ChatGPT plans. The gateway stays on one until it reports a usage limit, holds it until its reset, and moves to the next. When every plan is held, the provider's API key serves if you set one.
 - **Failover.** A provider failure retries the router's next model.
-- **Prompt-cache aware.** Conversations keep their identity and serving model across turns, so provider caches stay warm. Responses carry `x-dari-selected-model`, `x-dari-thinking-level`, and `x-dari-conversation-id` headers for status lines.
+- **Prompt-cache aware.** Conversations keep their identity and serving model across turns, so provider caches stay warm. Responses carry `X-Dari-Selected-Model`, `X-Dari-Thinking-Level`, and `X-Dari-Conversation-Id` headers for status lines.
 - **Coding agents.** `dari claude`, `dari codex`, `dari opencode`, and `dari pi` from the [Dari CLI](https://github.com/mupt-ai/dari-cli) launch straight against your gateway.
 
 The gateway is the same runtime that serves Dari's hosted routing service. Choosing among a router's models with Dari's trained routing policy (Dari Auto Routing) is optional and uses a Dari API key; without it, `dari/routing` serves the router's first available model.
@@ -102,4 +126,4 @@ Tests make no provider or network calls.
 
 ## License
 
-Apache-2.0
+[Apache-2.0](LICENSE) © 2026 Mupt AI.

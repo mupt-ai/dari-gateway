@@ -15,6 +15,16 @@
   "bin": {
     "dari-gateway": "./src/self_host/main.ts"
   },
+  "files": [
+    "src",
+    "!src/**/*.test.ts",
+    "!src/**/*.fixtures.ts",
+    "!src/test_support",
+    "!src/**/test_support.ts",
+    "dari-gateway.example.yaml",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "start": "bun run src/self_host/main.ts",
     "typecheck": "tsc --noEmit",
