@@ -56,9 +56,21 @@ jobs:
         if: steps.version.outputs.publish == 'true'
         run: npm install --global npm@11
 
+      # The monorepo links the router with file:, which npm cannot install. Publish
+      # the registry version instead; keep ROUTER_VERSION equal to the router version
+      # the gateway was tested against.
+      - name: Pin the published router version
+        if: steps.version.outputs.publish == 'true'
+        env:
+          ROUTER_VERSION: "0.2.4"
+        run: |
+          set -euo pipefail
+          npm view "@mupt-ai/dari-router@${ROUTER_VERSION}" version
+          npm pkg set "dependencies.@mupt-ai/dari-router=${ROUTER_VERSION}"
+
       - name: Install dependencies
         if: steps.version.outputs.publish == 'true'
-        run: bun install --frozen-lockfile
+        run: bun install
 
       - name: Validate package
         if: steps.version.outputs.publish == 'true'
