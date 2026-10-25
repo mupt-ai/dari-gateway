@@ -48,7 +48,7 @@ const cases: PayloadCase[] = [
       expected: {
         reasoning: {
           effort: level === "off" ? "none" : level,
-          ...(level === "off" ? {} : { summary: "auto" }),
+          ...(level === "off" ? {} : { summary: "detailed" }),
         },
       },
     })),
@@ -67,7 +67,7 @@ const cases: PayloadCase[] = [
     expected: {
       reasoning: {
         effort: level === "off" ? "none" : level,
-        ...(level === "off" ? {} : { summary: "auto" }),
+        ...(level === "off" ? {} : { summary: "detailed" }),
       },
     },
   })),
@@ -235,16 +235,16 @@ const defaultExpectations: Record<
   Pick<PayloadCase, "expected" | "absent">
 > = {
   "openai/gpt-5.6-sol": {
-    expected: { reasoning: { effort: "medium", summary: "auto" } },
+    expected: { reasoning: { effort: "medium", summary: "detailed" } },
   },
   "openai/gpt-5.6-terra": {
-    expected: { reasoning: { effort: "medium", summary: "auto" } },
+    expected: { reasoning: { effort: "medium", summary: "detailed" } },
   },
   "openai/gpt-5.6-luna": {
-    expected: { reasoning: { effort: "medium", summary: "auto" } },
+    expected: { reasoning: { effort: "medium", summary: "detailed" } },
   },
   "openai/gpt-5.5": {
-    expected: { reasoning: { effort: "medium", summary: "auto" } },
+    expected: { reasoning: { effort: "medium", summary: "detailed" } },
   },
   "openai/gpt-4.1-mini": { expected: {}, absent: ["reasoning"] },
   "anthropic/claude-fable-5-1": {
@@ -443,6 +443,48 @@ test("every built-in model uses its cataloged provider default", async () => {
     }
   }
 }, 20_000);
+
+test("the ChatGPT-subscription Codex transport asks for detailed reasoning summaries", async () => {
+  const request = chatCompletionsToInteraction({
+    model: "dari/routing",
+    messages: [{ role: "user", content: "payload contract" }],
+    reasoning_effort: "high",
+  });
+  const model = buildModel(pi, "openai/gpt-6-luna", null, {
+    ...modelConfig("openai-codex", "gpt-6-luna", "openai-codex-responses", 1_050_000, [...openAILevels], "medium"),
+    base_url: "https://chatgpt.com/backend-api",
+  });
+  let captured: Record<string, unknown> | undefined;
+  const options = buildOptions(
+    request,
+    codexToken(),
+    "openai/gpt-6-luna",
+    model,
+    pi,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    (async (_input: unknown, init?: RequestInit) => {
+      // The Codex transport zstd-compresses its request body.
+      if (init?.body instanceof Uint8Array) {
+        captured = JSON.parse(new TextDecoder().decode(Bun.zstdDecompressSync(init.body))) as Record<string, unknown>;
+      }
+      return new Response(JSON.stringify({ error: { message: "payload captured" } }), { status: 400 });
+    }) as typeof fetch,
+  );
+  try {
+    await pi.completeSimple(
+      model,
+      buildContext(request, providerIdentityFromModel(model)),
+      { ...options, transport: "sse" },
+    );
+  } catch {
+    // The mock intentionally returns 400 after capturing the serialized body.
+  }
+
+  expect(captured?.reasoning).toEqual({ effort: "high", summary: "detailed" });
+});
 
 test("an explicit Anthropic thinking budget reaches the provider payload unchanged", async () => {
   const config = modelConfig(
@@ -884,4 +926,10 @@ async function captureInteractionPayload(
     throw new Error(`No provider payload captured for ${modelName}.`);
   }
   return captured;
+}
+
+function codexToken(): string {
+  const segment = (value: Record<string, unknown>) => Buffer.from(JSON.stringify(value)).toString("base64url");
+  const claims = { "https://api.openai.com/auth": { chatgpt_account_id: "acct_payload_contract" } };
+  return `${segment({ alg: "none" })}.${segment(claims)}.signature`;
 }

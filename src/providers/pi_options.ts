@@ -149,6 +149,7 @@ export function buildOptions(
   } else if (reasoning === "off" && isCompletions(api) && offRequiresWireNone(selectedModel)) {
     patches.push((payload) => payloadWithReasoningNone(payload, model));
   }
+  if (isOpenAIResponsesApi(api)) patches.push(payloadWithDetailedReasoningSummary);
 
   // Some clients send the default tool_choice even after omitting tools for
   // a turn. OpenAI rejects every tool_choice value when the lowered payload
@@ -276,6 +277,14 @@ function payloadWithReasoningNone(payload: Payload, model: Model): Payload {
   if (!gatewayFor(model.provider)) return { ...payload, reasoning_effort: "none" };
   const { reasoning_effort: _, ...rest } = payload;
   return { ...rest, reasoning: { ...asRecord(payload.reasoning), effort: "none" } };
+}
+
+// Pi's default "auto" summary leaves many reasoning items empty (93% on the
+// ChatGPT Codex backend). Readable summaries are the only reasoning a later
+// turn on another provider can replay, so ask for detailed ones.
+function payloadWithDetailedReasoningSummary(payload: Payload): Payload | undefined {
+  if (!isRecord(payload.reasoning) || payload.reasoning.summary === undefined) return undefined;
+  return { ...payload, reasoning: { ...payload.reasoning, summary: "detailed" } };
 }
 
 function piResponseFormat(format: InteractionResponseFormat): Payload {
