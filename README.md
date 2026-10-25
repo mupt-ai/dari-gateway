@@ -111,7 +111,14 @@ const handler = createRequestHandler({ platform, selectorBackend: createPriority
 Bun.serve({ port: 8080, fetch: handler, idleTimeout: 0 });
 ```
 
-`src/self_host/` is the reference platform.
+The root entry needs no Bun APIs, so any runtime with web-standard `fetch`, `Request`, and `Response` can serve the handler. `startServer` and `startSelfHostedGateway` (Bun.serve and bun:sqlite) are in `@mupt-ai/dari-gateway/bun`. `src/self_host/` is the reference platform.
+
+Platforms can also:
+
+- implement `resolveProviderCredential({ provider, model, routerId, organizationId, apiKey })` to supply a per-request `{ apiKey, baseUrl?, headers? }`, such as a tenant's own key, in place of the router's resolved key;
+- resolve routers with `strict: true` to serve only the requested `dari/model/<id>` at the requested thinking level, with no selector, lease, fallback, or personal subscription;
+- read exact usage from `recordRequest`: the summary carries input, output, cache-read, and cache-write tokens and `total_cost_usd`, preferring the provider's billed cost (`cost_source: "provider"`, from OpenRouter and Vercel AI Gateway). Failed and aborted requests are recorded too;
+- attribute cost with `X-Dari-Tags: run=r1,trial=3`, which is parsed into `RequestRecord.tags` and the `recordUsage` payload's `tags`.
 
 ## Development
 

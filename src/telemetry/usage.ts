@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { HttpError } from "../http/errors";
 import { executionProviderForModel, keySourceForModel } from "../models/execution_provider";
 import { captureOperationalError } from "../observability/errors";
-import { gatewayPlatform } from "../platform/platform";
+import { gatewayPlatform, type RequestTags } from "../platform/platform";
 import type { ProviderKeySource, ResolvedRouter } from "../types";
 
 export type RoutingUsageContext = {
@@ -12,6 +12,7 @@ export type RoutingUsageContext = {
   routerId: string;
   provider: Provider;
   model: string;
+  tags: RequestTags;
   startedAt: Date;
 };
 
@@ -75,6 +76,7 @@ export function usageContextFor(args: {
   routerId: string;
   selectedModel: string;
   keySource: ProviderKeySource;
+  tags: RequestTags;
 }): RoutingUsageContext | undefined {
   if (!args.billable || args.keySource !== "managed") return undefined;
   if (args.credentials.credit_exhausted) throw creditExhaustedError();
@@ -83,6 +85,7 @@ export function usageContextFor(args: {
     routerId: args.routerId,
     provider: executionProviderForModel(args.credentials, args.selectedModel),
     model: args.selectedModel,
+    tags: args.tags,
     startedAt: new Date(),
   };
 }
@@ -143,6 +146,7 @@ function usagePayload(context: RoutingUsageContext, message: Record<string, unkn
     total_cost_usd: usd(cost.total) ?? "0",
     started_at: context.startedAt.toISOString(),
     ended_at: new Date().toISOString(),
+    tags: context.tags,
   };
 }
 

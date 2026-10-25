@@ -10,6 +10,7 @@ import {
 
 import { executionProviderForModel, keySourceForModel } from "../models/execution_provider";
 import { HttpError } from "../http/errors";
+import type { RequestTags } from "../platform/platform";
 import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
 import {
   CustomerDisconnectedError,
@@ -43,6 +44,7 @@ import {
 import {
   completeInteractionModel,
   streamInteractionModel,
+  type ProviderEndpoint,
   type ProviderEventStream,
 } from "./pi";
 import { promptTokenEstimateFor, type PromptTokenEstimate } from "./cancel_estimate";
@@ -57,6 +59,8 @@ type ProviderCallConfig = {
   sessionId: string;
   reasoningEffort: ReasoningEffort;
   promptEstimate: PromptTokenEstimate | undefined;
+  // A platform-supplied endpoint replacing the model's configured one.
+  endpoint?: ProviderEndpoint;
 };
 
 export type ProviderExecution = ProviderCallConfig & {
@@ -101,6 +105,7 @@ export function prepareProviderExecution(args: {
   conversationId: string;
   promptCacheKey?: string;
   costEstimates?: readonly CandidateCostEstimate[];
+  tags?: RequestTags;
 }): ProviderExecution {
   const model = args.decision.selectedModel;
   const promptEstimate = promptTokenEstimateFor(args.costEstimates, model, args.decision.reasoningEffort);
@@ -109,11 +114,19 @@ export function prepareProviderExecution(args: {
     throw new HttpError(400, "The prompt exceeds this model's standard-price context range. Shorten or compact the conversation.", "context_length_exceeded");
   }
   const provider = executionProviderForModel(args.credentials, model);
-  const providerKeySource = keySourceForModel(args.credentials, model);
-  const auth = providerAuthForSelectedModel({
-    selectedModel: model,
-    credentials: args.credentials,
-  });
+  const supplied = args.credentials.provider_credentials?.[model];
+  const providerKeySource = supplied ? "user" : keySourceForModel(args.credentials, model);
+  if (args.credentials.strict === true && providerKeySource === "subscription") {
+    throw new HttpError(
+      400,
+      `Strict routers do not serve '${model}' from a personal subscription.`,
+      "strict_subscription_refused",
+      "model",
+    );
+  }
+  const auth: ProviderAuth = supplied
+    ? { type: "bearer", apiKey: supplied.apiKey.trim() }
+    : providerAuthForSelectedModel({ selectedModel: model, credentials: args.credentials });
   return {
     model,
     apiKey: auth.type === "bearer" ? auth.apiKey : "",
@@ -130,6 +143,9 @@ export function prepareProviderExecution(args: {
       : args.conversationId,
     reasoningEffort: args.decision.reasoningEffort,
     promptEstimate,
+    ...(supplied?.baseUrl || supplied?.headers
+      ? { endpoint: { baseUrl: supplied.baseUrl, headers: supplied.headers } }
+      : {}),
     provider,
     providerKeySource,
     ...(providerKeySource === "subscription" && args.credentials.attributed_user_id
@@ -144,6 +160,7 @@ export function prepareProviderExecution(args: {
       routerId: args.routerId,
       selectedModel: model,
       keySource: providerKeySource,
+      tags: args.tags ?? {},
     }),
     headers: {
       "X-Dari-Selected-Model": model,
@@ -212,6 +229,7 @@ export async function startProviderStream(args: {
       config: args.execution.config,
       sessionId: args.execution.sessionId,
       selectedReasoningEffort: args.execution.reasoningEffort,
+      endpoint: args.execution.endpoint,
       signal: customerAbort.signal,
       fetch: responseCapture?.fetch,
     });
@@ -306,6 +324,7 @@ async function completeProvider(args: {
     config: args.execution.config,
     sessionId: args.execution.sessionId,
     selectedReasoningEffort: args.execution.reasoningEffort,
+    endpoint: args.execution.endpoint,
     signal: args.signal,
     fetch: args.fetch,
   });

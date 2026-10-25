@@ -42,6 +42,14 @@ export type AwsAssumeRoleProviderAuth = {
 // Authentication a provider call can use directly.
 export type ResolvedProviderAuth = BearerProviderAuth | AwsSigV4ProviderAuth;
 
+// A bearer credential an embedding platform supplies for one request through
+// GatewayPlatform.resolveProviderCredential, optionally with its own endpoint.
+export type ProviderCredential = {
+  apiKey: string;
+  baseUrl?: string;
+  headers?: Record<string, string>;
+};
+
 export type ProviderAuth = ResolvedProviderAuth | AwsAssumeRoleProviderAuth;
 
 export type AwsProviderAuth = AwsSigV4ProviderAuth | AwsAssumeRoleProviderAuth;
@@ -93,12 +101,19 @@ export type ResolvedRouter = {
   provider_keys: Partial<Record<Provider, string>>;
   provider_auth?: Partial<Record<Provider, AwsProviderAuth>>;
   provider_key_sources?: Partial<Record<Provider, ProviderKeySource>>;
+  // Model -> the platform-supplied credential that replaces the provider key
+  // above for this request. Filled from resolveProviderCredential.
+  provider_credentials?: Record<string, ProviderCredential>;
   // Execution provider -> the user's subscription credential serving it.
   subscription_credential_ids?: Partial<Record<Provider, string>>;
   zdr?: boolean;
   allow_long_context?: boolean;
   speculative_routing?: boolean;
   primary_retries?: number;
+  // Serve only the requested `dari/model/<id>` at the requested thinking
+  // level: no selector, lease, fallback, or personal subscription, and an
+  // error for anything else, whatever the client sends.
+  strict?: boolean;
   model_fallback_enabled?: boolean;
   fallback_requires_different_provider?: boolean;
   evals?: RouterEval[];

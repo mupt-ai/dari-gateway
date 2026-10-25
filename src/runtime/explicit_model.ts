@@ -57,3 +57,30 @@ function pickCandidate(
   }
   return candidates[0]!;
 }
+
+/* A strict router serves only the pinned `dari/model/<id>` at exactly the
+   requested thinking level (the model's default when none is sent), and
+   refuses everything else instead of substituting. */
+export function strictModelDecision(prepared: PreparedRoutedCompletion): RoutedDecision {
+  const modelId = explicitModelId(prepared.interaction.model);
+  if (modelId === null) {
+    throw new HttpError(
+      400,
+      "This router is strict: request a pinned model as 'dari/model/<id>'.",
+      "strict_model_required",
+      "model",
+    );
+  }
+  const { decision } = explicitModelDecision(prepared)!;
+  const requested = prepared.interaction.reasoning?.effort
+    ?? prepared.credentials.model_configs?.[modelId]?.default_thinking_level;
+  if (requested !== undefined && requested !== null && decision.reasoningEffort !== requested) {
+    throw new HttpError(
+      400,
+      `Model '${modelId}' cannot serve thinking level '${requested}' on this router.`,
+      "thinking_level_unavailable",
+      "reasoning_effort",
+    );
+  }
+  return { decision };
+}

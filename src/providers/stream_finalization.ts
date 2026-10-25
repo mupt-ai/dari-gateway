@@ -138,7 +138,7 @@ async function reportTerminalOnce(
       ? args.reportBarrier
       : Promise.race([
           args.reportBarrier,
-          Bun.sleep(args.cancelBarrierCapMs ?? CANCEL_REPORT_BARRIER_CAP_MS),
+          new Promise((resolve) => setTimeout(resolve, args.cancelBarrierCapMs ?? CANCEL_REPORT_BARRIER_CAP_MS)),
         ]));
   } catch (error) {
     capture(error, "routing_report_barrier_failed");

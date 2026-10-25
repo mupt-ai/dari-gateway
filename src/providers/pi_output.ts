@@ -465,6 +465,7 @@ function interactionUsage(value: unknown, source: ProviderIdentity): Interaction
         ? calculatedTotalCost
         : finiteNumber(cost.total) ?? calculatedTotalCost,
     },
+    ...(usage.costSource === "provider" ? { costSource: "provider" as const } : {}),
   };
 }
 

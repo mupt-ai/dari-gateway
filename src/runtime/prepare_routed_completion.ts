@@ -8,10 +8,13 @@ import {
   type RoutingContext,
 } from "../context/routing_context";
 import { isBackgroundRequest, type InteractionRequest } from "../interaction/types";
+import { executionProviderForModel } from "../models/execution_provider";
+import { gatewayPlatform, type RequestTags } from "../platform/platform";
 import { resolveRouter } from "../strategies/routing";
 import { RequestReporter, type ReportedCandidatePruning } from "../telemetry/report";
 import { RoutingBillingFinalization } from "../telemetry/billing_finalization";
-import type { ClientHarness, ResolvedRouter } from "../types";
+import type { ClientHarness, ProviderCredential, ResolvedRouter } from "../types";
+import { requestTags } from "./request_tags";
 import type { RoutedRuntimeReporter } from "./runtime_reporter";
 import type { RoutedProtocol } from "./routed_protocol";
 import {
@@ -28,6 +31,7 @@ export type PreparedRoutedCompletion = {
   protocol: RoutedProtocol;
   credentials: ResolvedRouter;
   billable: boolean;
+  tags: RequestTags;
   harnessConversationIdentity?: HarnessConversationIdentity;
   routing: RoutingContext;
   reporter: RoutedRuntimeReporter;
@@ -42,9 +46,11 @@ export async function prepareRoutedCompletion(args: {
   startedMs: number;
   requestId: string;
   clientRequestId: string | null;
+  tagsHeader: string | null;
   clientHarness?: ClientHarness;
   harnessConversationIdentity?: HarnessConversationIdentity;
 }): Promise<PreparedRoutedCompletion> {
+  const tags = requestTags(args.tagsHeader);
   // Eval relevance draws from the public catalog, which resolve only returns
   // on request.
   const resolveRequest = {
@@ -119,6 +125,7 @@ export async function prepareRoutedCompletion(args: {
     }
     credentials = conversationCredentials;
   }
+  credentials = await withProviderCredentials(credentials, args.apiKey);
   const billable = true;
   const routing = await buildRoutingContext({
     routerId: prefixFingerprintRouterId,
@@ -131,6 +138,7 @@ export async function prepareRoutedCompletion(args: {
   const reporter = new RequestReporter({
     requestId: args.requestId,
     clientRequestId: args.clientRequestId,
+    tags,
     credentials,
     routerId: canonicalRouterId,
     interaction: args.interaction,
@@ -168,10 +176,38 @@ export async function prepareRoutedCompletion(args: {
     protocol: args.protocol,
     credentials,
     billable,
+    tags,
     harnessConversationIdentity: args.harnessConversationIdentity,
     routing,
     reporter,
   };
+}
+
+// Ask the platform for each enabled model's credential up front, so provider
+// execution and fallback stay synchronous.
+async function withProviderCredentials(
+  credentials: ResolvedRouter,
+  apiKey: string,
+): Promise<ResolvedRouter> {
+  const platform = gatewayPlatform();
+  if (platform.resolveProviderCredential === undefined) return credentials;
+  const resolved = await Promise.all(
+    credentials.enabled_models.map(async (model) => [
+      model,
+      await platform.resolveProviderCredential!({
+        provider: executionProviderForModel(credentials, model),
+        model,
+        routerId: credentials.router_id,
+        organizationId: credentials.organization_id,
+        apiKey,
+      }),
+    ] as const),
+  );
+  const provider_credentials: Record<string, ProviderCredential> = {};
+  for (const [model, credential] of resolved) {
+    if (credential?.apiKey.trim()) provider_credentials[model] = credential;
+  }
+  return { ...credentials, provider_credentials };
 }
 
 // Core's cache-aware pruning audit, extended with the context layer's image

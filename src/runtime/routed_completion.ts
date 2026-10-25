@@ -37,6 +37,7 @@ export async function handleRoutedCompletion(args: {
     startedMs,
     requestId,
     clientRequestId,
+    tagsHeader: args.request.headers.get("x-dari-tags"),
     clientHarness: args.clientHarness,
     harnessConversationIdentity: args.harnessConversationIdentity,
   }).catch((error: unknown) => ({ error }));
@@ -56,6 +57,7 @@ export async function handleRoutedCompletion(args: {
     // Only auto-selection needs the plan: an explicitly requested model and
     // background work are served without the selector.
     const selects =
+      prepared.credentials.strict !== true &&
       explicitModelId(prepared.interaction.model) === null &&
       !isBackgroundRequest(prepared.interaction) &&
       routerSelectsModels(prepared.credentials);

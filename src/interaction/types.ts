@@ -264,6 +264,9 @@ export type InteractionUsage = {
     cacheWrite: number;
     total: number;
   };
+  // "provider" when cost.total is the provider's billed amount rather than a
+  // price from the model's rates.
+  costSource?: "provider";
 };
 
 export type InteractionOutput = {

@@ -25,7 +25,7 @@ import {
   type ProviderIdentity,
 } from "../interaction/types";
 import { captureOperationalError } from "../observability/errors";
-import { gatewayPlatform } from "../platform/platform";
+import { gatewayPlatform, type RequestTags } from "../platform/platform";
 import type {
   ProviderAttemptRecord,
   ProviderAttemptReport,
@@ -161,6 +161,7 @@ export class RequestReporter {
     private readonly args: {
       requestId: string;
       clientRequestId: string | null;
+      tags: RequestTags;
       credentials: ResolvedRouter;
       routerId: string;
       interaction: InteractionRequest;
@@ -428,6 +429,9 @@ export class RequestReporter {
           : null
       );
       const pricingKnown = selectedModel ? this.pricingKnown(selectedModel) : null;
+      const costSource = usage?.costSource === "provider"
+        ? "provider"
+        : pricingKnown === true ? "pricing" : null;
       const observability = extractInteractionObservability(a.interaction);
       const inputTokens = tokenCount(usage?.input) ?? 0;
       const retainedClientRequest = encodeRetainedInteractionRequest(
@@ -676,10 +680,10 @@ export class RequestReporter {
           cache_write_tokens: tokenCount(usage?.cacheWrite),
           output_tokens: tokenCount(usage?.output),
           total_tokens: tokenCount(usage?.totalTokens),
-          total_cost_usd:
-            pricingKnown === true && isRecord(usage?.cost)
-              ? finiteNumber(usage.cost.total)
-              : null,
+          total_cost_usd: costSource === null || !isRecord(usage?.cost)
+            ? null
+            : finiteNumber(usage.cost.total),
+          cost_source: costSource,
           pricing_known: pricingKnown,
         },
         distinctId:
@@ -690,6 +694,7 @@ export class RequestReporter {
         isNewConversation: a.isNewConversation,
         zdr: a.zdr,
         harnessConversationIdentity: a.harnessConversationIdentity,
+        tags: a.tags,
       });
     } catch (error) {
       console.error("routing report assembly failed", error);

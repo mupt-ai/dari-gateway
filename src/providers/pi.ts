@@ -42,6 +42,12 @@ import {
   safeguardResultsTap,
 } from "./anthropic_safeguards";
 import {
+  eventsWithProviderReportedCost,
+  messageWithProviderReportedCost,
+  providerReportedCostTap,
+  reportsProviderCost,
+} from "./provider_reported_cost";
+import {
   eventsWithSubscriptionCacheWrites,
   messageWithSubscriptionCacheWrites,
   modelPricingFromPiModel,
@@ -60,6 +66,12 @@ type PiAi = {
 export type ModelRuntimeMetadata = {
   model: Record<string, unknown>;
   supportedThinkingLevels: string[];
+};
+
+// A platform-supplied endpoint for one call (see ProviderCredential).
+export type ProviderEndpoint = {
+  baseUrl?: string;
+  headers?: Record<string, string>;
 };
 
 export type ProviderCompletion = {
@@ -115,17 +127,19 @@ export async function completeInteractionModel(args: {
   auth?: ResolvedProviderAuth;
   pricing?: ModelPricing | null;
   config?: ResolvedRouterModelConfig;
+  endpoint?: ProviderEndpoint;
   sessionId?: string;
   selectedReasoningEffort?: ReasoningEffort;
   timeoutMs?: number;
   signal?: AbortSignal;
   fetch?: ProviderFetch;
 }): Promise<ProviderCompletion> {
-  const model = buildModel(pi, args.model, args.pricing, args.config);
+  const model = modelAtEndpoint(buildModel(pi, args.model, args.pricing, args.config), args.endpoint);
   const source = providerIdentityFromModel(model);
   const context = buildContext(args.request, source);
+  const costTap = reportsProviderCost(model) ? providerReportedCostTap(args.fetch) : undefined;
   const safeguards = forwardsAnthropicSafeguards(args.request, model)
-    ? safeguardResultsTap(args.fetch)
+    ? safeguardResultsTap(costTap?.fetch ?? args.fetch)
     : undefined;
   const options = buildOptions(
     args.request,
@@ -137,16 +151,19 @@ export async function completeInteractionModel(args: {
     args.selectedReasoningEffort,
     args.timeoutMs,
     args.signal,
-    safeguards?.fetch ?? args.fetch,
+    safeguards?.fetch ?? costTap?.fetch ?? args.fetch,
   );
   const usageContext = subscriptionUsageContext(args.model, model, source);
   const message = options.emitProviderEvents === true
     ? await completeProviderEventStream(pi.streamSimple(model, context, options))
     : await pi.completeSimple(model, context, options);
   return {
-    message: messageWithSubscriptionCacheWrites(
-      messageWithSafeguardResults(message, safeguards?.results()),
-      usageContext
+    message: messageWithProviderReportedCost(
+      messageWithSubscriptionCacheWrites(
+        messageWithSafeguardResults(message, safeguards?.results()),
+        usageContext
+      ),
+      costTap?.cost(),
     ),
     source,
   };
@@ -211,15 +228,17 @@ export async function streamInteractionModel(args: {
   auth?: ResolvedProviderAuth;
   pricing?: ModelPricing | null;
   config?: ResolvedRouterModelConfig;
+  endpoint?: ProviderEndpoint;
   sessionId?: string;
   selectedReasoningEffort?: ReasoningEffort;
   signal?: AbortSignal;
   fetch?: ProviderFetch;
 }): Promise<ProviderEventStream> {
-  const model = buildModel(pi, args.model, args.pricing, args.config);
+  const model = modelAtEndpoint(buildModel(pi, args.model, args.pricing, args.config), args.endpoint);
   const source = providerIdentityFromModel(model);
+  const costTap = reportsProviderCost(model) ? providerReportedCostTap(args.fetch) : undefined;
   const safeguards = forwardsAnthropicSafeguards(args.request, model)
-    ? safeguardResultsTap(args.fetch)
+    ? safeguardResultsTap(costTap?.fetch ?? args.fetch)
     : undefined;
   const events = pi.streamSimple(
     model,
@@ -234,15 +253,30 @@ export async function streamInteractionModel(args: {
       args.selectedReasoningEffort,
       undefined,
       args.signal,
-      safeguards?.fetch ?? args.fetch,
+      safeguards?.fetch ?? costTap?.fetch ?? args.fetch,
     )
   );
+  const withCacheWrites = eventsWithSubscriptionCacheWrites(
+    safeguards ? eventsWithSafeguardResults(events, safeguards) : events,
+    subscriptionUsageContext(args.model, model, source)
+  );
   return {
-    events: eventsWithSubscriptionCacheWrites(
-      safeguards ? eventsWithSafeguardResults(events, safeguards) : events,
-      subscriptionUsageContext(args.model, model, source)
-    ),
+    events: costTap ? eventsWithProviderReportedCost(withCacheWrites, costTap) : withCacheWrites,
     source,
+  };
+}
+
+function modelAtEndpoint(
+  model: Record<string, unknown>,
+  endpoint: ProviderEndpoint | undefined,
+): Record<string, unknown> {
+  if (endpoint === undefined) return model;
+  return {
+    ...model,
+    ...(endpoint.baseUrl ? { baseUrl: endpoint.baseUrl } : {}),
+    ...(endpoint.headers
+      ? { headers: { ...(isRecord(model.headers) ? model.headers : {}), ...endpoint.headers } }
+      : {}),
   };
 }
 

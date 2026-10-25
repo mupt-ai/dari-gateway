@@ -10,6 +10,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./bun": "./src/bun.ts",
     "./*": "./src/*.ts"
   },
   "bin": {
@@ -19,6 +20,7 @@
     "src",
     "!src/**/*.test.ts",
     "!src/**/*.fixtures.ts",
+    "!src/**/*.cases.ts",
     "!src/test_support",
     "!src/**/test_support.ts",
     "dari-gateway.example.yaml",

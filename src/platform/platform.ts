@@ -6,7 +6,12 @@ import type {
 import type { HarnessConversationIdentity } from "../runtime/harness_identity";
 import type { InteractionRequest, SourceProtocol } from "../interaction/types";
 import type { SubscriptionUsageLimit } from "../providers/subscription_limits";
-import type { ClientHarness, ProviderKeySource, ResolvedRouter } from "../types";
+import type {
+  ClientHarness,
+  ProviderCredential,
+  ProviderKeySource,
+  ResolvedRouter,
+} from "../types";
 
 /**
  * Everything the gateway runtime needs from the deployment around it: router
@@ -24,6 +29,15 @@ export type GatewayPlatform = {
    * `prefixHashes`. Throws HttpError(401) for an unknown key.
    */
   resolveRouter(request: ResolveRouterRequest): Promise<ResolvedRouter>;
+  /**
+   * Optional. Supply the credential for one enabled model of this request,
+   * consulted after `resolveRouter` and before its provider keys (for the
+   * self-hosted gateway, its environment keys), so an embedder can serve
+   * per-tenant keys from its own store. Undefined keeps the resolved key.
+   */
+  resolveProviderCredential?(
+    request: ProviderCredentialRequest,
+  ): Promise<ProviderCredential | undefined>;
   /** Persist one completed turn's prefix entry and/or refresh a read entry. */
   writePrefixState(write: PrefixStateWrite): Promise<void>;
   /** Set or clear a conversation's prefetched routing lease. */
@@ -51,6 +65,15 @@ export type ResolveRouterRequest = {
   conversationId?: string;
   includePublicEvalCatalog?: boolean;
   clientHarness?: ClientHarness;
+};
+
+export type ProviderCredentialRequest = {
+  provider: Provider;
+  model: string;
+  routerId: string;
+  organizationId: string;
+  // The gateway key the request authenticated with.
+  apiKey: string;
 };
 
 export type PrefixStateWrite = {
@@ -94,7 +117,13 @@ export type RequestRecord = {
   isNewConversation: boolean;
   zdr: boolean;
   harnessConversationIdentity?: HarnessConversationIdentity;
+  // Parsed from the request's X-Dari-Tags header; empty when absent.
+  tags: RequestTags;
 };
+
+// Caller-supplied attribution labels (run, trial, setting), opaque to the
+// gateway.
+export type RequestTags = Record<string, string>;
 
 export type RequestSummary = {
   request_id: string;
@@ -130,7 +159,10 @@ export type RequestSummary = {
   cache_write_tokens: number | null;
   output_tokens: number | null;
   total_tokens: number | null;
+  // Provider-reported cost when the provider returns one (OpenRouter, Vercel
+  // AI Gateway), otherwise priced from the model's rates when known.
   total_cost_usd: number | null;
+  cost_source: "provider" | "pricing" | null;
   pricing_known: boolean | null;
 };
 

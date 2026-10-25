@@ -672,6 +672,7 @@ function providerChoice(
             routerId: "rtr_1",
             provider: protocolCase.provider,
             model: protocolCase.model,
+            tags: {},
             startedAt: new Date("2026-08-31T00:00:00Z"),
           }
         : undefined,

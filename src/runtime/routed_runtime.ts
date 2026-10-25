@@ -36,7 +36,7 @@ import { scrubSecrets } from "../telemetry/scrub";
 import type { ResolvedRouter } from "../types";
 import type { PreparedRoutedCompletion } from "./prepare_routed_completion";
 import { auxiliaryDecision } from "./claude_code/auxiliary_routing.js";
-import { explicitModelDecision } from "./explicit_model.js";
+import { explicitModelDecision, strictModelDecision } from "./explicit_model.js";
 import {
   clearPendingLease,
   committedLeaseDecision,
@@ -238,6 +238,7 @@ async function prepareExplicitRoutedCompletion(
     protocol: inProcessProtocol,
     credentials: args.credentials,
     billable: args.billable ?? false,
+    tags: {},
     harnessConversationIdentity: undefined,
     routing,
     reporter: args.reporter ?? createExperimentRoutedRuntimeReporter(),
@@ -251,6 +252,21 @@ async function prepareRuntimeExecution(args: {
   clientSignal?: AbortSignal;
 }): Promise<RuntimeExecutionPlan> {
   const { prepared } = args;
+
+  // A strict router never selects, leases, or falls back: the pinned pair or
+  // an error.
+  if (prepared.credentials.strict === true) {
+    const pinned = strictModelDecision(prepared);
+    prepared.reporter.attachServingDecision(pinned.decision);
+    prepared.reporter.attachDecisionDetails({
+      decision_source: "strict_model",
+      explicit_model: {
+        model: pinned.decision.selectedModel,
+        reasoning_effort: pinned.decision.reasoningEffort,
+      },
+    });
+    return selectedExecutionPlan(prepared, pinned);
+  }
 
   // A requested `dari/model/<id>` is served as chosen, before any lease.
   const explicit = args.requireSelectorDecision ? null : explicitModelDecision(prepared);
@@ -621,6 +637,7 @@ function providerExecution(
     conversationId: prepared.routing.conversationId,
     costEstimates: prepared.routing.reportingCostEstimates,
     promptCacheKey: prepared.interaction.promptCacheKey,
+    tags: prepared.tags,
   });
 }
 
