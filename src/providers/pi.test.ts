@@ -3,7 +3,6 @@ import {
   clampThinkingLevel,
   getSupportedThinkingLevels as getPiSupportedThinkingLevels,
 } from "@mupt-ai/pi-ai";
-import { getModel } from "@mupt-ai/pi-ai/compat";
 
 import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
 import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
@@ -16,6 +15,7 @@ import {
   buildTestContext,
   completeProviderEventStream,
   modelFixtures,
+  pi,
   piFixture,
   providerEvents,
   requestWithReasoning,
@@ -628,14 +628,8 @@ test("unregistered Bedrock model ids resolve the Converse Stream transport defau
   });
 });
 
-// The real Pi registry, typed for the adapter's loose lookup signature.
-const registryFixture = {
-  ...piFixture,
-  getModel: (provider: string, id: string) =>
-    (getModel as (provider: string, id: string) => unknown)(provider, id) as
-      | Record<string, unknown>
-      | undefined,
-};
+// The real Pi registry.
+const registryFixture = { ...piFixture, getModel: pi.getModel };
 
 const AZURE_OPENAI_CONFIG: ResolvedRouterModelConfig = {
   provider: "azure",

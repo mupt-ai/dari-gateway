@@ -1,10 +1,4 @@
 import { afterAll, expect, test } from "bun:test";
-import {
-  completeSimple as completePiSimple,
-  getModel,
-  getSupportedThinkingLevels,
-  streamSimple,
-} from "@mupt-ai/pi-ai/compat";
 import type { ReasoningEffort } from "@mupt-ai/dari-router/policy-engine";
 
 import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
@@ -19,19 +13,12 @@ import { buildOptions } from "./pi_options";
 import { piMessageToInteractionOutput } from "./pi_output";
 
 const piModulePath = "./pi.ts?payload-contract";
-const { buildModel } = (await import(piModulePath)) as typeof import("./pi");
+const { buildModel, pi } = (await import(piModulePath)) as typeof import("./pi");
 const originalFetch = globalThis.fetch;
 
 afterAll(() => {
   globalThis.fetch = originalFetch;
 });
-
-const pi = {
-  completeSimple: completePiSimple,
-  streamSimple,
-  getModel,
-  getSupportedThinkingLevels,
-} as unknown as Parameters<typeof buildModel>[0] & Parameters<typeof buildOptions>[4];
 
 type PayloadCase = {
   model: string;
@@ -685,10 +672,10 @@ test("published Pi payload preserves hosted search replay, annotations, and mixe
   let caught: unknown;
   let result: unknown;
   try {
-    result = await completePiSimple(
-      model as unknown as Parameters<typeof completePiSimple>[0],
-      buildContext(request, providerIdentityFromModel(model)) as unknown as Parameters<typeof completePiSimple>[1],
-      options as Parameters<typeof completePiSimple>[2],
+    result = await pi.completeSimple(
+      model,
+      buildContext(request, providerIdentityFromModel(model)),
+      options,
     );
   } catch (error) {
     caught = error;
@@ -885,10 +872,10 @@ async function captureInteractionPayload(
     pi,
   );
   try {
-    await completePiSimple(
-      model as unknown as Parameters<typeof completePiSimple>[0],
-      buildContext(request, providerIdentityFromModel(model)) as unknown as Parameters<typeof completePiSimple>[1],
-      options as Parameters<typeof completePiSimple>[2],
+    await pi.completeSimple(
+      model,
+      buildContext(request, providerIdentityFromModel(model)),
+      options,
     );
   } catch {
     // The mock intentionally returns 400 after capturing the serialized body.

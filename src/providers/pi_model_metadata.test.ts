@@ -3,10 +3,7 @@ import {
   clampThinkingLevel,
   getSupportedThinkingLevels as getPiSupportedThinkingLevels,
 } from "@mupt-ai/pi-ai";
-import {
-  getModel,
-  getSupportedThinkingLevels as getCompatSupportedThinkingLevels,
-} from "@mupt-ai/pi-ai/compat";
+import { getBuiltinModel } from "@mupt-ai/pi-ai/providers/all";
 
 import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
 import { modelSupportsImageInput } from "./model_capabilities";
@@ -21,7 +18,7 @@ import {
 } from "./pi.fixtures";
 
 test("Claude Fable 5 is available in the Pi model registry", () => {
-  const anthropic = getModel("anthropic", "claude-fable-5");
+  const anthropic = getBuiltinModel("anthropic", "claude-fable-5");
 
   expect(anthropic?.contextWindow).toBe(1_000_000);
   expect(anthropic?.cost).toEqual({
@@ -32,7 +29,7 @@ test("Claude Fable 5 is available in the Pi model registry", () => {
   });
 });
 test("Claude Sonnet 5 is available in the Pi model registry", () => {
-  const anthropic = getModel("anthropic", "claude-sonnet-5");
+  const anthropic = getBuiltinModel("anthropic", "claude-sonnet-5");
 
   expect(anthropic?.contextWindow).toBe(1_000_000);
   expect(anthropic?.maxTokens).toBe(128_000);
@@ -42,7 +39,7 @@ test("Claude Sonnet 5 is available in the Pi model registry", () => {
     cacheRead: 0.2,
     cacheWrite: 2.5,
   });
-  expect(getCompatSupportedThinkingLevels(anthropic)).toEqual([
+  expect(getPiSupportedThinkingLevels(anthropic!)).toEqual([
     "off",
     "minimal",
     "low",
@@ -54,11 +51,11 @@ test("Claude Sonnet 5 is available in the Pi model registry", () => {
 });
 
 test("Claude Opus 5.5 is available in the Pi model registry with image input", async () => {
-  expect(getModel("anthropic", "claude-opus-5-5")?.input).toEqual(["text", "image"]);
+  expect(getBuiltinModel("anthropic", "claude-opus-5-5")?.input).toEqual(["text", "image"]);
 
   // Image-bearing conversations prune text-only candidates, so this is what
   // keeps Opus 5.5 routable once a conversation contains an image.
-  const metadata = await modelMetadataLookup();
+  const metadata = modelMetadataLookup();
   expect(modelSupportsImageInput(metadata("anthropic/claude-opus-5-5"))).toBe(true);
 });
 
@@ -78,7 +75,7 @@ test("Claude Opus 5.5 catalog pricing and limits override the Pi registry", asyn
     cost: { input: 5, output: 25, cached_input: 0.5, cache_write: 6.25 },
   };
 
-  const metadata = await modelMetadataLookup({ "anthropic/claude-opus-5-5": config });
+  const metadata = modelMetadataLookup({ "anthropic/claude-opus-5-5": config });
 
   expect(metadata("anthropic/claude-opus-5-5").model).toMatchObject({
     id: "claude-opus-5-5",
@@ -89,7 +86,7 @@ test("Claude Opus 5.5 catalog pricing and limits override the Pi registry", asyn
 });
 
 test("unknown Fireworks registry metadata is not invented", async () => {
-  expect(await modelContextWindow("fireworks/acme/custom-model")).toBeNull();
+  expect(modelContextWindow("fireworks/acme/custom-model")).toBeNull();
 });
 
 test("resolved model config overrides Pi registry execution metadata", () => {
@@ -488,7 +485,7 @@ test("builds OpenRouter GLM 5.3 Flash with local multimodal metadata", () => {
 });
 
 test("model metadata lookup uses Pi registry levels and local overrides", async () => {
-  const metadata = await modelMetadataLookup({
+  const metadata = modelMetadataLookup({
     "openai/gpt-5.6-terra": {
       provider: "openai",
       native_model_id: "gpt-5.6-terra",
@@ -635,7 +632,7 @@ test("Fireworks GLM pricing and config metadata are available to routing", async
     cost: { input: 1.4, output: 4.4, cacheRead: 0.14, cacheWrite: 0 },
   });
 
-  const metadata = await modelMetadataLookup({ "zai-org/GLM-5.2": config });
+  const metadata = modelMetadataLookup({ "zai-org/GLM-5.2": config });
   expect(metadata("zai-org/GLM-5.2").model).toMatchObject({
     id: "accounts/fireworks/models/glm-5p2",
     provider: "fireworks",

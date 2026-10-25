@@ -33,10 +33,10 @@ mock.module("../providers/pi", () => ({
   streamInteractionModel: async () => {
     throw new Error("streamInteractionModel should not be called in routing tests");
   },
-  modelContextWindow: async (modelId: string) => selectorContextWindows[modelId] ?? null,
+  modelContextWindow: (modelId: string) => selectorContextWindows[modelId] ?? null,
   // mock.module is process-wide, so keep this export for later importers such as self_host/resolve.
   registeredModelPrice: realRegisteredModelPrice,
-  modelMetadataLookup: async () => (modelId: string) => ({
+  modelMetadataLookup: () => (modelId: string) => ({
     model: { id: modelId, reasoning: false },
     supportedThinkingLevels: ["off", "minimal", "low", "medium", "high", "xhigh"],
   }),

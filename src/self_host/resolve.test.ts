@@ -28,7 +28,7 @@ function deps(overrides: {
     gatewayKeys: ["gw-1", "gw-2"],
     subscriptions: new SubscriptionStore(new Database(":memory:")),
     prefixHits: () => [],
-    providerApiKey: (provider) => overrides.apiKeys?.[provider],
+    providerApiKey: async (provider) => overrides.apiKeys?.[provider],
     env: {},
     fetch: async () => {
       throw new Error("unexpected OAuth request");

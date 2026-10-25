@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { chmodSync, existsSync } from "node:fs";
 import { Database } from "bun:sqlite";
-import { getEnvApiKey } from "@mupt-ai/pi-ai/compat";
+import { builtinModels } from "@mupt-ai/pi-ai/providers/all";
 
 import { bearerToken } from "../http/auth";
 import { errorResponse, HttpError } from "../http/errors";
@@ -45,13 +45,18 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
   db.exec("PRAGMA journal_mode = WAL");
   const subscriptions = new SubscriptionStore(db);
   const prefixes = new PrefixStore(db);
+  // Pi's provider auth reads each provider's standard key variable, such as
+  // OPENAI_API_KEY, from this environment only.
+  const piModels = builtinModels({
+    authContext: { env: async (name) => env[name], fileExists: async () => false },
+  });
 
   const platform = createSelfHostedPlatform({
     config,
     gatewayKeys,
     subscriptions,
     prefixes,
-    providerApiKey: (provider) => getEnvApiKey(provider, env),
+    providerApiKey: async (provider) => (await piModels.getAuth(provider))?.auth.apiKey,
     env,
     fetch,
   });

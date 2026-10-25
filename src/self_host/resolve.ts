@@ -41,7 +41,7 @@ export type SelfHostedResolverDeps = {
     conversationId?: string;
   }) => RouterPrefixHit[];
   // The provider's API key from its standard environment variable.
-  providerApiKey: (provider: string) => string | undefined;
+  providerApiKey: (provider: string) => Promise<string | undefined>;
   env: Record<string, string | undefined>;
   fetch: OAuthFetch;
 };
@@ -92,7 +92,7 @@ export async function resolveSelfHostedRouter(
     if (subscription !== null && deps.subscriptions.list(subscription).length > 0) {
       exhausted.add(subscription);
     }
-    const apiKey = providerApiKey(deps, provider);
+    const apiKey = await providerApiKey(deps, provider);
     credentials.set(provider, apiKey ? { key: apiKey, source: "user" } : null);
   }
 
@@ -137,7 +137,7 @@ export async function resolveSelfHostedRouter(
     }
   }
   for (const model of models) {
-    const price = await registeredModelPrice(model.id);
+    const price = registeredModelPrice(model.id);
     if (price !== null) resolved.model_prices![model.id] = price;
     const provider = providerForModel(model.id);
     const endpoint = deps.config.providers[provider];
@@ -158,9 +158,9 @@ export async function resolveSelfHostedRouter(
 
 // Configured endpoints read their own key variable, or send a placeholder
 // when they take none; known providers use their standard variable.
-function providerApiKey(deps: SelfHostedResolverDeps, provider: string): string | undefined {
+async function providerApiKey(deps: SelfHostedResolverDeps, provider: string): Promise<string | undefined> {
   const endpoint = deps.config.providers[provider];
-  if (endpoint === undefined) return deps.providerApiKey(provider)?.trim() || undefined;
+  if (endpoint === undefined) return (await deps.providerApiKey(provider))?.trim() || undefined;
   if (endpoint.apiKeyEnv === undefined) return "no-key";
   return deps.env[endpoint.apiKeyEnv]?.trim() || undefined;
 }

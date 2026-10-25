@@ -33,7 +33,7 @@ export async function handleModels(request: Request, routerId: string): Promise<
         },
       });
     }
-    const metadataLookup = await modelMetadataLookup(router.model_configs);
+    const metadataLookup = modelMetadataLookup(router.model_configs);
     const imageInputFor = (model: string) => modelSupportsImageInput(metadataLookup(model));
     return Response.json(codexModelsResponse(router, imageInputFor), {
       headers: {

@@ -16,6 +16,7 @@ export const {
   completeProviderEventStream,
   modelContextWindow,
   modelMetadataLookup,
+  pi,
   streamInteractionModel,
 } =
   (await import(piModulePath)) as typeof import("./pi");

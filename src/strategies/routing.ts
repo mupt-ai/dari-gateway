@@ -188,7 +188,7 @@ export async function selectModel(
 }
 
 async function selectorContextWindowChars(selectorModel: string): Promise<number> {
-  const contextWindow = await modelContextWindow(selectorModel);
+  const contextWindow = modelContextWindow(selectorModel);
   if (contextWindow === null) {
     throw new HttpError(
       500,

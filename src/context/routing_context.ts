@@ -122,7 +122,7 @@ export async function buildRoutingContext(args: {
       imageInput: args.credentials.selector_image_input_enabled === true,
     });
   const leaseDepth = interactionLeaseFenceDepth(args.interaction);
-  const metadataLookup = await modelMetadataLookup(args.credentials.model_configs);
+  const metadataLookup = modelMetadataLookup(args.credentials.model_configs);
   const targetsByModel = new Map<string, ProviderIdentity>();
   for (const model of configuredCandidateModels) {
     targetsByModel.set(

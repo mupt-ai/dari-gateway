@@ -1,4 +1,23 @@
 import {
+  getSupportedThinkingLevels,
+  normalizeContext,
+  type Api,
+  type AssistantMessageEventStream,
+  type Context,
+  type Model,
+  type ProviderStreams,
+} from "@mupt-ai/pi-ai";
+import { anthropicMessagesApi } from "@mupt-ai/pi-ai/api/anthropic-messages.lazy";
+import { azureOpenAIResponsesApi } from "@mupt-ai/pi-ai/api/azure-openai-responses.lazy";
+import { bedrockConverseStreamApi } from "@mupt-ai/pi-ai/api/bedrock-converse-stream.lazy";
+import { googleGenerativeAIApi } from "@mupt-ai/pi-ai/api/google-generative-ai.lazy";
+import { googleVertexApi } from "@mupt-ai/pi-ai/api/google-vertex.lazy";
+import { mistralConversationsApi } from "@mupt-ai/pi-ai/api/mistral-conversations.lazy";
+import { openAICodexResponsesApi } from "@mupt-ai/pi-ai/api/openai-codex-responses.lazy";
+import { openAICompletionsApi } from "@mupt-ai/pi-ai/api/openai-completions.lazy";
+import { openAIResponsesApi } from "@mupt-ai/pi-ai/api/openai-responses.lazy";
+import { getBuiltinModel } from "@mupt-ai/pi-ai/providers/all";
+import {
   REASONING_EFFORTS,
   isRecord,
   nativeModelId,
@@ -55,13 +74,39 @@ export type ProviderEventStream = {
 
 export type ModelMetadataLookup = (modelId: string, pricing?: ModelPricing | null) => ModelRuntimeMetadata;
 
-let piAiPromise: Promise<PiAi> | null = null;
+// Pi's built-in providers stream through these API implementations unchanged.
+// Dari always passes resolved credentials, so it dispatches on the API rather
+// than through a Models collection with its own auth resolution.
+const PI_APIS: Record<string, ProviderStreams> = {
+  "anthropic-messages": anthropicMessagesApi(),
+  "azure-openai-responses": azureOpenAIResponsesApi(),
+  "bedrock-converse-stream": bedrockConverseStreamApi(),
+  "google-generative-ai": googleGenerativeAIApi(),
+  "google-vertex": googleVertexApi(),
+  "mistral-conversations": mistralConversationsApi(),
+  "openai-codex-responses": openAICodexResponsesApi(),
+  "openai-completions": openAICompletionsApi(),
+  "openai-responses": openAIResponsesApi(),
+};
 
-async function piAi(): Promise<PiAi> {
-  // Pi 0.80 keeps the legacy global dispatch and catalog surface under /compat.
-  piAiPromise ??= import("@mupt-ai/pi-ai/compat") as unknown as Promise<PiAi>;
-  return piAiPromise;
+function piStreamSimple(
+  model: Record<string, unknown>,
+  context: Record<string, unknown>,
+  options: Record<string, unknown>,
+): AssistantMessageEventStream {
+  const api = PI_APIS[String(model.api)];
+  if (!api) throw new Error(`No Pi API implementation for ${String(model.api)}.`);
+  return api.streamSimple(model as unknown as Model<Api>, normalizeContext(context as unknown as Context), options);
 }
+
+export const pi: PiAi = {
+  completeSimple: async (model, context, options) =>
+    await piStreamSimple(model, context, options).result() as unknown as Record<string, unknown>,
+  streamSimple: (model, context, options) =>
+    piStreamSimple(model, context, options) as unknown as AsyncIterable<Record<string, unknown>>,
+  getModel: (provider, id) => getBuiltinModel(provider as never, id as never) as unknown as Record<string, unknown> | undefined,
+  getSupportedThinkingLevels: (model) => getSupportedThinkingLevels(model as unknown as Model<Api>),
+};
 
 export async function completeInteractionModel(args: {
   model: string;
@@ -76,7 +121,6 @@ export async function completeInteractionModel(args: {
   signal?: AbortSignal;
   fetch?: ProviderFetch;
 }): Promise<ProviderCompletion> {
-  const pi = await piAi();
   const model = buildModel(pi, args.model, args.pricing, args.config);
   const source = providerIdentityFromModel(model);
   const context = buildContext(args.request, source);
@@ -172,7 +216,6 @@ export async function streamInteractionModel(args: {
   signal?: AbortSignal;
   fetch?: ProviderFetch;
 }): Promise<ProviderEventStream> {
-  const pi = await piAi();
   const model = buildModel(pi, args.model, args.pricing, args.config);
   const source = providerIdentityFromModel(model);
   const safeguards = forwardsAnthropicSafeguards(args.request, model)
@@ -203,8 +246,7 @@ export async function streamInteractionModel(args: {
   };
 }
 
-export async function modelContextWindow(modelId: string): Promise<number | null> {
-  const pi = await piAi();
+export function modelContextWindow(modelId: string): number | null {
   const provider = providerForModel(modelId);
   const nativeId = nativeModelId(modelId);
   const registered = resolveModelMetadata(pi, provider, modelId, nativeId);
@@ -215,11 +257,10 @@ export async function modelContextWindow(modelId: string): Promise<number | null
  * Pi's catalog price for a canonical model served by `provider`, in USD per
  * million tokens. Null when Pi does not list the model.
  */
-export async function registeredModelPrice(
+export function registeredModelPrice(
   modelId: string,
   provider: string = providerForModel(modelId),
-): Promise<RouterModelPrice | null> {
-  const pi = await piAi();
+): RouterModelPrice | null {
   const registered = resolveModelMetadata(pi, provider, modelId, nativeModelId(modelId));
   const cost = registered?.cost;
   if (!isRecord(cost) || typeof cost.input !== "number" || typeof cost.output !== "number") {
@@ -233,10 +274,9 @@ export async function registeredModelPrice(
   };
 }
 
-export async function modelMetadataLookup(
+export function modelMetadataLookup(
   configs?: Record<string, ResolvedRouterModelConfig>
-): Promise<ModelMetadataLookup> {
-  const pi = await piAi();
+): ModelMetadataLookup {
   return (modelId: string, pricing?: ModelPricing | null) => {
     const model = buildModel(pi, modelId, pricing, configs?.[modelId]);
     return {
