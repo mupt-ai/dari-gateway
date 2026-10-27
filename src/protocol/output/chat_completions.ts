@@ -34,7 +34,7 @@ export function chatCompletionResponse(args: {
       },
     ],
     usage: usagePayload(args.output, args.modelCost),
-    dari_routing: routingPayload(args.routing, args.conversationId),
+    dari_routing: routingPayload(args.routing, args.id, args.conversationId),
   };
 }
 
@@ -75,7 +75,7 @@ export function chatCompletionsSseStream(args: {
           usage: usagePayload(message, args.modelCost?.(message, true)) });
       };
 
-      send(chunk({ completion, created, model: args.model, delta: {}, finishReason: null, routing: args.routing, conversationId: args.conversationId }));
+      send(chunk({ completion, created, model: args.model, delta: {}, finishReason: null, routing: routingPayload(args.routing, args.id, args.conversationId) }));
       send(chunk({ completion, created, model: args.model, delta: { role: "assistant" }, finishReason: null }));
 
       const argumentDeltaSeen = new Set<string>();
@@ -208,12 +208,13 @@ export function chatCompletionsSseStream(args: {
   });
 }
 
-function routingPayload(decision: RoutingDecision, conversationId?: string): Record<string, unknown> {
+function routingPayload(decision: RoutingDecision, requestId: string, conversationId?: string): Record<string, unknown> {
   return {
     requested_model: "dari/routing",
     selected_model: decision.selectedModel,
     reasoning_effort: decision.reasoningEffort,
     reason: decision.reason,
+    request_id: requestId,
     ...(conversationId ? { conversation_id: conversationId } : {}),
   };
 }
@@ -224,9 +225,8 @@ function chunk(args: {
   model: string;
   delta: Record<string, unknown>;
   finishReason: string | null;
-  routing?: RoutingDecision;
+  routing?: Record<string, unknown>;
   usage?: Record<string, unknown>;
-  conversationId?: string;
 }): Record<string, unknown> {
   return {
     id: args.completion,
@@ -234,7 +234,7 @@ function chunk(args: {
     created: args.created,
     model: args.model,
     choices: [{ index: 0, delta: args.delta, finish_reason: args.finishReason }],
-    ...(args.routing ? { dari_routing: routingPayload(args.routing, args.conversationId) } : {}),
+    ...(args.routing ? { dari_routing: args.routing } : {}),
     ...(args.usage ? { usage: args.usage } : {}),
   };
 }

@@ -58,7 +58,7 @@ export function anthropicMessagesSseStream(args: {
           stop_reason: null,
           stop_sequence: null,
           usage: { input_tokens: 0, output_tokens: 0 },
-          dari_routing: anthropicRouting(args.routing, args.conversationId),
+          dari_routing: anthropicRouting(args.routing, args.id, args.conversationId),
         },
       });
 

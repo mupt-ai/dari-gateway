@@ -100,6 +100,7 @@ export function anthropicUsage(output: Pick<InteractionOutput, "usage">): Record
 
 export function anthropicRouting(
   decision: RoutingDecision,
+  requestId: string,
   conversationId?: string
 ): Record<string, unknown> {
   return {
@@ -107,6 +108,7 @@ export function anthropicRouting(
     selected_model: decision.selectedModel,
     reasoning_effort: decision.reasoningEffort,
     reason: decision.reason,
+    request_id: requestId,
     ...(conversationId ? { conversation_id: conversationId } : {}),
     ...(decision.leaseTurnsRemaining === undefined
       ? {}

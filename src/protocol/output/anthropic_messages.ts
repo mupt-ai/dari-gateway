@@ -27,6 +27,6 @@ export function anthropicMessagesResponse(args: {
     stop_sequence: null,
     usage: anthropicUsage(args.output),
     ...(args.output.safeguardResults ? { safeguard_results: args.output.safeguardResults } : {}),
-    dari_routing: anthropicRouting(args.routing, args.conversationId),
+    dari_routing: anthropicRouting(args.routing, args.id, args.conversationId),
   };
 }

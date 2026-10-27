@@ -24,7 +24,7 @@ export function openAIResponsesResponse(args: {
     output: openAIResponsesOutputItems(args.output),
     usage: openAIResponsesUsage(args.output),
     parallel_tool_calls: args.request.parallelToolCalls ?? true,
-    dari_routing: openAIResponsesRouting(args.routing, args.conversationId),
+    dari_routing: openAIResponsesRouting(args.routing, args.id, args.conversationId),
   };
 }
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";

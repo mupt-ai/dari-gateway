@@ -600,7 +600,7 @@ function responseEnvelope(
     output,
     parallel_tool_calls: args.request.parallelToolCalls ?? true,
     ...(interaction ? { usage: openAIResponsesUsage(interaction) } : {}),
-    dari_routing: openAIResponsesRouting(args.routing, args.conversationId),
+    dari_routing: openAIResponsesRouting(args.routing, args.id, args.conversationId),
   };
 }
 

@@ -74,7 +74,11 @@ test("serializes canonical output as Anthropic Messages with client-carried thin
       { type: "text", text: "I will read it." },
       { type: "tool_use", id: "toolu_read", name: "read_file", input: { path: "README.md" } },
     ],
-    dari_routing: { selected_model: "anthropic/claude-sonnet-4-6", conversation_id: "conversation_123" },
+    dari_routing: {
+      selected_model: "anthropic/claude-sonnet-4-6",
+      request_id: "request_123",
+      conversation_id: "conversation_123",
+    },
   });
   const content = response.content as Array<Record<string, unknown>>;
   expect(decodeUntrustedProviderContinuationState(String(content[0].signature))).toEqual({
@@ -90,7 +94,7 @@ test("omits lease turns remaining from dari_routing when the decision has no lea
     selectedModel: "anthropic/claude-sonnet-4-6",
     reasoningEffort: "high",
     reason: "selected",
-  })).not.toHaveProperty("lease_turns_remaining");
+  }, "req_1")).not.toHaveProperty("lease_turns_remaining");
 });
 
 test("includes lease turns remaining in dari_routing when the decision holds a lease", () => {
@@ -99,7 +103,7 @@ test("includes lease turns remaining in dari_routing when the decision holds a l
     reasoningEffort: "high",
     reason: "Lease hold: 1 committed turns remaining.",
     leaseTurnsRemaining: 1,
-  })).toMatchObject({ lease_turns_remaining: 1 });
+  }, "req_1")).toMatchObject({ lease_turns_remaining: 1, request_id: "req_1" });
 });
 
 function output(overrides: Partial<InteractionOutput>): InteractionOutput {

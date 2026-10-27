@@ -709,6 +709,7 @@ const inProcessProtocol: RoutedProtocol = {
       selected_model: args.routing.selectedModel,
       reasoning_effort: args.routing.reasoningEffort,
       reason: args.routing.reason,
+      request_id: args.id,
       ...(args.conversationId ? { conversation_id: args.conversationId } : {}),
     },
   }),

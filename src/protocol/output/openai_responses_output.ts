@@ -44,6 +44,7 @@ export function openAIResponsesUsage(output: Pick<InteractionOutput, "usage">): 
 
 export function openAIResponsesRouting(
   decision: RoutingDecision,
+  requestId: string,
   conversationId?: string
 ): Record<string, unknown> {
   return {
@@ -51,6 +52,7 @@ export function openAIResponsesRouting(
     selected_model: decision.selectedModel,
     reasoning_effort: decision.reasoningEffort,
     reason: decision.reason,
+    request_id: requestId,
     ...(conversationId ? { conversation_id: conversationId } : {}),
   };
 }
