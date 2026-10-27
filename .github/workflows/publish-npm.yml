@@ -62,7 +62,7 @@ jobs:
       - name: Pin the published router version
         if: steps.version.outputs.publish == 'true'
         env:
-          ROUTER_VERSION: "0.2.4"
+          ROUTER_VERSION: "0.2.5"
         run: |
           set -euo pipefail
           npm view "@mupt-ai/dari-router@${ROUTER_VERSION}" version
