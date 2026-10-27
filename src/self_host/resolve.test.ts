@@ -93,6 +93,40 @@ describe("resolveSelfHostedRouter", () => {
     expect(otherClient.enabled_models).toEqual(["openai/gpt-5.5"]);
   });
 
+  test("a Muse Code plan serves Meta models only for Muse Code, as Meta's own key", async () => {
+    const resolver = deps({
+      apiKeys: { meta: "meta-api-key" },
+      config: { routers: { default: { models: ["meta/muse-spark-1.3"] } } },
+    });
+    const plan = resolver.subscriptions.connect(
+      tokens({ provider: "meta_muse", accessToken: "meta-minted-key", refreshToken: "meta-sign-in", expiresAt: FUTURE }),
+      null,
+    )!;
+
+    const museCode = await resolveSelfHostedRouter(resolver, request({ clientHarness: "muse_code" }));
+    expect(museCode.provider_keys).toEqual({ meta: "meta-minted-key" });
+    expect(museCode.provider_key_sources).toEqual({ meta: "subscription" });
+    expect(museCode.subscription_credential_ids).toEqual({ meta: plan.id });
+    expect(museCode.model_configs?.["meta/muse-spark-1.3"]).toBeUndefined();
+
+    const otherClient = await resolveSelfHostedRouter(resolver, request());
+    expect(otherClient.provider_keys).toEqual({ meta: "meta-api-key" });
+    expect(otherClient.provider_key_sources).toEqual({ meta: "user" });
+
+    resolver.subscriptions.markUnavailable(plan.id, FUTURE, "usage_limit");
+    const held = await resolveSelfHostedRouter(resolver, request({ clientHarness: "muse_code" }));
+    expect(held.provider_keys).toEqual({ meta: "meta-api-key" });
+  });
+
+  test("an exhausted Muse Code plan with no API key names the plan", async () => {
+    const resolver = deps({ config: { routers: { default: { models: ["meta/muse-spark-1.3"] } } } });
+    const plan = resolver.subscriptions.connect(tokens({ provider: "meta_muse", expiresAt: FUTURE }), null)!;
+    resolver.subscriptions.markUnavailable(plan.id, FUTURE, "usage_limit");
+    const exhausted = await rejection(resolveSelfHostedRouter(resolver, request({ clientHarness: "muse_code" })));
+    expect(exhausted).toMatchObject({ status: 424, code: "personal_subscription_unavailable" });
+    expect(exhausted.message).toContain("Every connected Muse Code subscription is at its usage limit");
+  });
+
   test("a ChatGPT plan serves OpenAI models through the Codex backend", async () => {
     const resolver = deps({ apiKeys: { anthropic: "sk-ant", openai: "sk-openai" } });
     const accessToken = codexAccessToken("acct_1");

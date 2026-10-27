@@ -4,7 +4,7 @@ import { providerFailureMessage } from "../runtime/provider_stream_outcome.js";
 import type { ProviderKeySource } from "../types.js";
 import type { CapturedProviderResponse } from "./response_capture.js";
 
-export type SubscriptionOAuthProvider = "anthropic_claude_code" | "openai_codex";
+export type SubscriptionOAuthProvider = "anthropic_claude_code" | "openai_codex" | "meta_muse";
 
 export type SubscriptionUsageLimit = {
   oauthProvider: SubscriptionOAuthProvider;
@@ -25,6 +25,7 @@ const FAILURE_MARKER = "subscription_usage_limit";
 const SUBSCRIPTION_LABEL: Record<SubscriptionOAuthProvider, string> = {
   anthropic_claude_code: "Claude Code",
   openai_codex: "ChatGPT",
+  meta_muse: "Muse Code",
 };
 
 export function subscriptionOAuthProviderFor(
@@ -34,13 +35,16 @@ export function subscriptionOAuthProviderFor(
   if (keySource !== "subscription") return null;
   if (provider === "anthropic") return "anthropic_claude_code";
   if (provider === "openai" || provider === "openai-codex") return "openai_codex";
+  if (provider === "meta") return "meta_muse";
   return null;
 }
 
 /**
  * Recognize a personal subscription that has run out of quota. Claude Code
  * answers 429 with the unified rate-limit headers; the ChatGPT backend answers
- * 429 with a structured `error.code` and `resets_at`. The Codex WebSocket
+ * 429 with a structured `error.code` and `resets_at`. Meta documents no
+ * usage-limit signature for Muse Code plans, so any 429 on one holds it until
+ * the reset Meta gives, if any. The Codex WebSocket
  * transport bypasses fetch, so its usage-limit error only survives as message
  * text and is matched there without a reset time.
  */
@@ -57,6 +61,7 @@ export function detectSubscriptionUsageLimit(args: {
   if (oauthProvider === "anthropic_claude_code") {
     return anthropicUsageLimit(args.captured, now);
   }
+  if (oauthProvider === "meta_muse") return museUsageLimit(args.captured, now);
   return codexUsageLimit(args.captured, providerFailureMessage(args.failure), now);
 }
 
@@ -106,6 +111,18 @@ function codexUsageLimit(
     oauthProvider: "openai_codex",
     resetsAt: new Date(now.getTime() + DEFAULT_USAGE_LIMIT_WINDOW_MS),
     reason: "ChatGPT usage limit reached.",
+  };
+}
+
+function museUsageLimit(
+  captured: CapturedProviderResponse | undefined,
+  now: Date,
+): SubscriptionUsageLimit | null {
+  if (captured === undefined || captured.status !== 429) return null;
+  return {
+    oauthProvider: "meta_muse",
+    resetsAt: laterReset(codexErrorBody(captured.bodyText)?.resets_at, captured.headers, now),
+    reason: "Muse Code usage limit reached.",
   };
 }
 
@@ -178,13 +195,13 @@ export function subscriptionUsageLimitFromFailure(
   const oauthProvider = marker.oauth_provider;
   const resetsAt = typeof marker.resets_at === "string" ? new Date(marker.resets_at) : null;
   if (
-    (oauthProvider !== "anthropic_claude_code" && oauthProvider !== "openai_codex")
+    typeof oauthProvider !== "string" || !(oauthProvider in SUBSCRIPTION_LABEL)
     || resetsAt === null || Number.isNaN(resetsAt.getTime())
   ) {
     return null;
   }
   return {
-    oauthProvider,
+    oauthProvider: oauthProvider as SubscriptionOAuthProvider,
     resetsAt,
     reason: typeof marker.reason === "string" ? marker.reason : "Subscription usage limit reached.",
     ...(marker.switched === true ? { switched: true } : {}),

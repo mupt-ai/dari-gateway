@@ -214,7 +214,8 @@ function validateReasoning(request: ChatCompletionRequest): void {
       "reasoning"
     );
   }
-  if (request.reasoning_effort !== undefined && !isReasoningEffort(request.reasoning_effort)) {
+  const effort: unknown = request.reasoning_effort;
+  if (effort !== undefined && effort !== "none" && !isReasoningEffort(effort)) {
     throw new HttpError(
       400,
       "reasoning_effort is not supported.",

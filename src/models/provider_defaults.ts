@@ -33,6 +33,9 @@ const PROVIDER_BASE_URLS: Record<string, string> = {
   anthropic: "https://api.anthropic.com",
   fireworks: "https://api.fireworks.ai/inference/v1",
   xai: "https://api.x.ai/v1",
+  // Meta's Model API serves OpenAI Responses and Chat Completions here, and
+  // Anthropic Messages at https://api.meta.ai.
+  meta: "https://api.meta.ai/v1",
   // Pi-ai derives the effective AWS region from the endpoint unless the
   // model config overrides base_url or the native id is an inference profile
   // ARN, so this default only pins us-east-1 when nothing else is configured.

@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 
 import {
   CODEX_APPROVAL_PENDING,
+  META_APPROVAL_PENDING,
   SubscriptionOAuthInputError,
   SubscriptionOAuthProviderError,
   completeOAuth,
@@ -217,11 +218,123 @@ describe("ChatGPT device code", () => {
   });
 });
 
+describe("Muse Code device code", () => {
+  const mint = (overrides: Record<string, unknown> = {}) => jsonResponse({
+    api_key: "meta-minted-key",
+    user_email: "muse@example.com",
+    is_subs_active: true,
+    ...overrides,
+  });
+
+  test("start requests Meta's device code with a form post", async () => {
+    const fetch = fakeFetch([jsonResponse({
+      device_code: "device-1",
+      user_code: "BLXG-CHNZ",
+      verification_uri: "https://auth.meta.com/oauth/device/",
+      verification_uri_complete: "https://auth.meta.com/oauth/device/?code=BLXG-CHNZ",
+      expires_in: 600,
+    })]);
+    const started = await startOAuth("meta_muse", { fetch, now });
+    expect(fetch.calls[0]!.url).toBe("https://auth.meta.com/oidc/device/authorization/");
+    expect(fetch.calls[0]!.body).toBe("client_id=1031625952748946");
+    expect(started).toEqual({
+      authorizationUrl: "https://auth.meta.com/oauth/device/?code=BLXG-CHNZ",
+      expiresAt: new Date("2026-10-20T12:15:00Z"),
+      userCode: "BLXG-CHNZ",
+      flow: { device_code: "device-1" },
+    });
+  });
+
+  test("an approved device mints the plan's key from the sign-in token", async () => {
+    const fetch = fakeFetch([jsonResponse({ access_token: "meta-sign-in", token_type: "bearer" }), mint()]);
+    const result = await completeOAuth("meta_muse", { device_code: "device-1" }, "", { fetch, now });
+    expect(Object.fromEntries(new URLSearchParams(fetch.calls[0]!.body))).toEqual({
+      grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+      device_code: "device-1",
+      client_id: "1031625952748946",
+    });
+    expect(fetch.calls[1]!.url).toBe("https://api.meta.ai/muse-code/key");
+    const mintHeaders = new Headers(fetch.calls[1]!.init.headers);
+    expect(mintHeaders.get("authorization")).toBe("Bearer meta-sign-in");
+    expect(mintHeaders.get("x-api-version")).toBe("1.0.0");
+    expect(result).toEqual({
+      provider: "meta_muse",
+      accessToken: "meta-minted-key",
+      refreshToken: "meta-sign-in",
+      expiresAt: new Date("2026-10-21T00:00:00Z"),
+      accountId: null,
+      accountEmail: "muse@example.com",
+    });
+  });
+
+  test("Meta's device errors become messages the user can act on", async () => {
+    for (const [error, message] of [
+      ["authorization_pending", META_APPROVAL_PENDING],
+      ["slow_down", META_APPROVAL_PENDING],
+      ["access_denied", "The sign-in was declined on Meta. Start again to retry."],
+      ["expired_token", "The Meta sign-in code expired. Start again."],
+    ]) {
+      const fetch = fakeFetch([jsonResponse({ error }, 400)]);
+      await expect(completeOAuth("meta_muse", { device_code: "d" }, "", { fetch, now }))
+        .rejects.toThrow(new SubscriptionOAuthInputError(message!));
+    }
+    const failing = fakeFetch([jsonResponse({ error: "invalid_client" }, 400)]);
+    await expect(completeOAuth("meta_muse", { device_code: "d" }, "", { fetch: failing, now }))
+      .rejects.toBeInstanceOf(SubscriptionOAuthProviderError);
+  });
+
+  test("an account without an active plan is refused, since its key would bill pay-as-you-go", async () => {
+    const fetch = fakeFetch([jsonResponse({ access_token: "meta-sign-in" }), mint({ is_subs_active: false })]);
+    await expect(completeOAuth("meta_muse", { device_code: "d" }, "", { fetch, now }))
+      .rejects.toThrow("no active Muse Code subscription");
+  });
+
+  test("refresh mints a new key from the stored sign-in token", async () => {
+    const fetch = fakeFetch([mint({ api_key: "meta-reminted-key" })]);
+    const refreshed = await refreshOAuth(
+      { provider: "meta_muse", refreshToken: "meta-sign-in", accountId: null },
+      { fetch, now },
+    );
+    expect(new Headers(fetch.calls[0]!.init.headers).get("authorization")).toBe("Bearer meta-sign-in");
+    expect(refreshed).toMatchObject({ accessToken: "meta-reminted-key", refreshToken: "meta-sign-in" });
+  });
+
+  test("a sign-in refresh token is kept and exchanged before each remint", async () => {
+    const fetch = fakeFetch([
+      jsonResponse({ access_token: "meta-sign-in", refresh_token: "meta-refresh", expires_in: 3600 }),
+      mint(),
+      jsonResponse({ access_token: "meta-sign-in-2", expires_in: 3600 }),
+      mint({ api_key: "meta-reminted-key" }),
+    ]);
+    const completed = await completeOAuth("meta_muse", { device_code: "d" }, "", { fetch, now });
+    expect(completed.refreshToken).toBe("refresh:meta-refresh");
+    const refreshed = await refreshOAuth({ provider: "meta_muse", refreshToken: completed.refreshToken, accountId: null }, { fetch, now });
+    expect(fetch.calls[2]!.url).toBe("https://auth.meta.com/oidc/device/token/");
+    expect(Object.fromEntries(new URLSearchParams(fetch.calls[2]!.body))).toEqual({
+      grant_type: "refresh_token",
+      refresh_token: "meta-refresh",
+      client_id: "1031625952748946",
+    });
+    expect(new Headers(fetch.calls[3]!.init.headers).get("authorization")).toBe("Bearer meta-sign-in-2");
+    expect(refreshed).toMatchObject({ accessToken: "meta-reminted-key", refreshToken: "refresh:meta-refresh" });
+  });
+
+  test("refreshing a lapsed plan is a provider failure", async () => {
+    const fetch = fakeFetch([mint({ is_subs_active: false })]);
+    await expect(refreshOAuth({ provider: "meta_muse", refreshToken: "meta-sign-in", accountId: null }, { fetch, now }))
+      .rejects.toBeInstanceOf(SubscriptionOAuthProviderError);
+  });
+});
+
 test("provider failures carry the status; network failures do not", async () => {
   const failing = fakeFetch([jsonResponse({ error: "boom" }, 500)]);
   const error = await startOAuth("openai_codex", { fetch: failing, now }).catch((caught: unknown) => caught);
   expect(error).toBeInstanceOf(SubscriptionOAuthProviderError);
-  expect(error).toMatchObject({ status: 500, message: "OpenAI device code request failed with provider status 500." });
+  expect(error).toMatchObject({
+    status: 500,
+    errorCode: "boom",
+    message: "OpenAI device code request failed with provider status 500.",
+  });
 
   const offline = fakeFetch([() => { throw new TypeError("network down"); }]);
   await expect(startOAuth("openai_codex", { fetch: offline, now }))

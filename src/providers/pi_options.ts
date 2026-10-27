@@ -51,8 +51,10 @@ export function buildOptions(
   const providerAuth: ResolvedProviderAuth = typeof auth === "string" ? { type: "bearer", apiKey: auth } : auth;
   const { generation, toolChoice, parallelToolCalls, responseFormat } = request;
   const headers: Record<string, string> = {};
+  const bearerHeader = sendsBearerToMessages(providerAuth, model);
+  if (bearerHeader) headers.authorization = `Bearer ${providerAuth.apiKey}`;
   const options: Record<string, unknown> = {
-    ...authenticationOptions(providerAuth, api),
+    ...(bearerHeader ? {} : authenticationOptions(providerAuth, api)),
     maxRetries: 0,
     timeoutMs,
     signal,
@@ -66,6 +68,9 @@ export function buildOptions(
 
   if (isClaudeCodeOAuth(providerAuth, api)) {
     headers["user-agent"] = request.claudeCodeUserAgent ?? CLAUDE_CODE_USER_AGENT;
+  }
+  if (model.provider === "meta" && request.museCodeClientId !== undefined) {
+    headers["x-client-id"] = request.museCodeClientId;
   }
   // Pi's Anthropic transport honors compat.supportsTemperature; the OpenAI
   // transports forward temperature regardless, so drop it here for models
@@ -205,6 +210,17 @@ function authenticationOptions(auth: ResolvedProviderAuth, api: unknown): Bedroc
       AWS_PROFILE: "",
     },
   };
+}
+
+// Anthropic Messages endpoints outside Anthropic that take the key as a bearer
+// token (Claude Code's ANTHROPIC_AUTH_TOKEN) and reject x-api-key.
+const BEARER_MESSAGES_PROVIDERS: ReadonlySet<unknown> = new Set(["meta"]);
+
+function sendsBearerToMessages(
+  auth: ResolvedProviderAuth,
+  model: Model,
+): auth is Extract<ResolvedProviderAuth, { type: "bearer" }> {
+  return auth.type === "bearer" && isAnthropic(model.api) && BEARER_MESSAGES_PROVIDERS.has(model.provider);
 }
 
 function isClaudeCodeOAuth(auth: ResolvedProviderAuth, api: unknown): boolean {

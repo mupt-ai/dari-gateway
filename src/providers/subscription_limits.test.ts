@@ -145,6 +145,51 @@ describe("detectSubscriptionUsageLimit", () => {
     })).toBeNull();
   });
 
+  test("holds a Muse Code plan on a 429 until Meta's reset, or for the default window", () => {
+    const withReset = detectSubscriptionUsageLimit({
+      provider: "meta",
+      keySource: "subscription",
+      captured: captured(429, {}, JSON.stringify({ error: { code: "rate_limit_exceeded", resets_at: RESET_SECONDS } })),
+      failure: FAILURE,
+      now: NOW,
+    });
+    expect(withReset).toEqual({
+      oauthProvider: "meta_muse",
+      resetsAt: new Date(RESET_SECONDS * 1000),
+      reason: "Muse Code usage limit reached.",
+    });
+    const retryAfter = detectSubscriptionUsageLimit({
+      provider: "meta",
+      keySource: "subscription",
+      captured: captured(429, { "retry-after": "120" }, "{}"),
+      failure: FAILURE,
+      now: NOW,
+    });
+    expect(retryAfter?.resetsAt).toEqual(new Date(NOW.getTime() + 120_000));
+    const bare = detectSubscriptionUsageLimit({
+      provider: "meta",
+      keySource: "subscription",
+      captured: captured(429, {}, "not json"),
+      failure: FAILURE,
+      now: NOW,
+    });
+    expect(bare?.resetsAt).toEqual(new Date(NOW.getTime() + DEFAULT_USAGE_LIMIT_WINDOW_MS));
+    expect(subscriptionUsageLimitMessage(bare!)).toStartWith("Your Muse Code subscription usage limit is reached.");
+    expect(subscriptionUsageLimitFromFailure(failureWithSubscriptionUsageLimit({}, bare!))).toEqual(bare);
+  });
+
+  test("a Meta API key or a non-429 failure is not a plan limit", () => {
+    for (const [keySource, status] of [["user", 429], ["subscription", 500]] as const) {
+      expect(detectSubscriptionUsageLimit({
+        provider: "meta",
+        keySource,
+        captured: captured(status, {}, "{}"),
+        failure: FAILURE,
+        now: NOW,
+      })).toBeNull();
+    }
+  });
+
   test("recognizes the Codex WebSocket usage-limit error from its message alone", () => {
     const limit = detectSubscriptionUsageLimit({
       provider: "openai-codex",

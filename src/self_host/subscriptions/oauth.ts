@@ -2,16 +2,18 @@ import { createHash, randomBytes } from "node:crypto";
 
 /**
  * OAuth protocols for personal subscriptions: Claude Code (PKCE, the user
- * pastes back the `code#state` Anthropic shows) and ChatGPT/Codex (device
- * code, the gateway polls for approval). Every network call goes through the
- * injected `fetch`.
+ * pastes back the `code#state` Anthropic shows), ChatGPT/Codex (device code,
+ * the gateway polls for approval), and Muse Code (Meta's device code, then the
+ * subscription's Model API key minted from the sign-in token). Every network
+ * call goes through the injected `fetch`.
  */
 
-export type SubscriptionProvider = "anthropic_claude_code" | "openai_codex";
+export type SubscriptionProvider = "anthropic_claude_code" | "openai_codex" | "meta_muse";
 
 export const SUBSCRIPTION_PROVIDERS: readonly SubscriptionProvider[] = [
   "anthropic_claude_code",
   "openai_codex",
+  "meta_muse",
 ];
 
 export type OAuthFetch = (url: string, init: RequestInit) => Promise<Response>;
@@ -20,7 +22,8 @@ export type OAuthOptions = { fetch: OAuthFetch; now?: Date };
 
 /** The provider refused or could not be reached (HTTP 502 at the edge). */
 export class SubscriptionOAuthProviderError extends Error {
-  constructor(message: string, readonly status?: number) {
+  // `errorCode` is the provider's OAuth `error` code, such as `authorization_pending`.
+  constructor(message: string, readonly status?: number, readonly errorCode?: string) {
     super(message);
     this.name = "SubscriptionOAuthProviderError";
   }
@@ -43,6 +46,8 @@ export type OAuthAuthorization = {
   flow: Record<string, string>;
 };
 
+// A Muse Code plan's access token is the Model API key minted for it, and its
+// refresh token the Meta sign-in token the key is minted from.
 export type OAuthTokens = {
   provider: SubscriptionProvider;
   accessToken: string;
@@ -76,6 +81,23 @@ const CODEX_ACCOUNT_CLAIM = "https://api.openai.com/auth";
 export const CODEX_APPROVAL_PENDING =
   "OpenAI approval is still pending. Enter the code at OpenAI, finish approval, then try again.";
 
+// Muse Code's own device sign-in (`muse login`), as its public launcher runs it.
+export const MUSE_CODE_CLIENT_ID = "1031625952748946";
+const META_AUTH_BASE_URL = "https://auth.meta.com";
+const META_DEVICE_AUTHORIZATION_URL = `${META_AUTH_BASE_URL}/oidc/device/authorization/`;
+const META_TOKEN_URL = `${META_AUTH_BASE_URL}/oidc/device/token/`;
+// Muse Code mints its subscription's Model API key from the sign-in token here.
+const MUSE_MINT_URL = "https://api.meta.ai/muse-code/key";
+// Meta states no lifetime for a minted key, and Muse Code mints a fresh one at
+// every start, so the key is minted again on this cadence.
+const MUSE_KEY_LIFETIME_MS = 12 * 60 * 60_000;
+// Marks a stored sign-in refresh token, which is exchanged for a fresh sign-in
+// token before each mint. Without it the stored value is the sign-in token.
+const MUSE_SIGN_IN_REFRESH_PREFIX = "refresh:";
+
+export const META_APPROVAL_PENDING =
+  "Meta approval is still pending. Enter the code at Meta, finish approval, then try again.";
+
 export async function startOAuth(
   provider: SubscriptionProvider,
   options: OAuthOptions,
@@ -103,6 +125,23 @@ export async function startOAuth(
       flow: { code_verifier: verifier, state },
     };
   }
+  if (provider === "meta_muse") {
+    const payload = await postForm(
+      options.fetch,
+      META_DEVICE_AUTHORIZATION_URL,
+      { client_id: MUSE_CODE_CLIENT_ID },
+      "Meta device code request",
+    );
+    const complete = payload.verification_uri_complete;
+    return {
+      authorizationUrl: typeof complete === "string" && complete.startsWith("https://")
+        ? complete
+        : requiredString(payload, "verification_uri"),
+      expiresAt,
+      userCode: requiredString(payload, "user_code"),
+      flow: { device_code: requiredString(payload, "device_code") },
+    };
+  }
   const payload = await postJson(
     options.fetch,
     `${CODEX_DEVICE_AUTH_URL}/usercode`,
@@ -120,7 +159,7 @@ export async function startOAuth(
 
 /**
  * Finish a flow. Claude Code needs the pasted authorization response; the
- * device-code flow ignores it and asks OpenAI whether the user approved.
+ * device-code flows ignore it and ask the provider whether the user approved.
  */
 export async function completeOAuth(
   provider: SubscriptionProvider,
@@ -153,6 +192,35 @@ export async function completeOAuth(
       "Anthropic subscription token exchange",
     );
     return claudeTokens(token, now, null);
+  }
+  if (provider === "meta_muse") {
+    let token: Record<string, unknown>;
+    try {
+      token = await postForm(
+        options.fetch,
+        META_TOKEN_URL,
+        {
+          grant_type: "urn:ietf:params:oauth:grant-type:device_code",
+          device_code: requiredString(flow, "device_code"),
+          client_id: MUSE_CODE_CLIENT_ID,
+        },
+        "Meta device approval check",
+      );
+    } catch (error) {
+      if (error instanceof SubscriptionOAuthProviderError) {
+        if (error.errorCode === "authorization_pending" || error.errorCode === "slow_down") {
+          throw new SubscriptionOAuthInputError(META_APPROVAL_PENDING);
+        }
+        if (error.errorCode === "access_denied") {
+          throw new SubscriptionOAuthInputError("The sign-in was declined on Meta. Start again to retry.");
+        }
+        if (error.errorCode === "expired_token") {
+          throw new SubscriptionOAuthInputError("The Meta sign-in code expired. Start again.");
+        }
+      }
+      throw error;
+    }
+    return await museTokens(requiredString(token, "access_token"), museRefreshToken(token), options.fetch, now);
   }
 
   // The provider, not user-supplied input, supplies the authorization code.
@@ -207,6 +275,28 @@ export async function refreshOAuth(
     );
     return claudeTokens(token, now, credential.refreshToken);
   }
+  if (credential.provider === "meta_muse") {
+    let stored = credential.refreshToken;
+    let signInToken = stored;
+    if (stored.startsWith(MUSE_SIGN_IN_REFRESH_PREFIX)) {
+      const token = await postForm(
+        options.fetch,
+        META_TOKEN_URL,
+        {
+          grant_type: "refresh_token",
+          refresh_token: stored.slice(MUSE_SIGN_IN_REFRESH_PREFIX.length),
+          client_id: MUSE_CODE_CLIENT_ID,
+        },
+        "Meta sign-in refresh",
+      );
+      signInToken = requiredString(token, "access_token");
+      stored = museRefreshToken(token) ?? stored;
+    }
+    // A lapsed plan fails routing like any other refresh failure.
+    return await museTokens(signInToken, stored, options.fetch, now).catch((error: unknown) => {
+      throw error instanceof SubscriptionOAuthInputError ? new SubscriptionOAuthProviderError(error.message) : error;
+    });
+  }
   const token = await postJson(
     options.fetch,
     CODEX_TOKEN_URL,
@@ -253,6 +343,43 @@ function claudeTokens(
     accessToken: requiredString(payload, "access_token"),
     refreshToken: refreshTokenFrom(payload, fallbackRefreshToken),
     expiresAt: new Date(now.getTime() + positiveInt(payload.expires_in) * 1000),
+    accountId: null,
+    accountEmail: typeof email === "string" && email ? email : null,
+  };
+}
+
+function museRefreshToken(token: Record<string, unknown>): string | null {
+  const value = token.refresh_token;
+  return typeof value === "string" && value ? MUSE_SIGN_IN_REFRESH_PREFIX + value : null;
+}
+
+// Mints the plan's Model API key from the Meta sign-in token.
+async function museTokens(
+  signInToken: string,
+  refreshToken: string | null,
+  fetch: OAuthFetch,
+  now: Date,
+): Promise<OAuthTokens> {
+  const minted = await requestJson(
+    fetch,
+    MUSE_MINT_URL,
+    "{}",
+    "application/json",
+    "Muse Code subscription key mint",
+    { Authorization: `Bearer ${signInToken}`, "x-api-version": "1.0.0" },
+  );
+  // A key minted without an active plan bills Model API pay-as-you-go.
+  if (minted.is_subs_active !== true) {
+    throw new SubscriptionOAuthInputError(
+      "This Meta account has no active Muse Code subscription. Subscribe at https://accountscenter.meta.com/muse_code/, then connect again.",
+    );
+  }
+  const email = minted.user_email;
+  return {
+    provider: "meta_muse",
+    accessToken: requiredString(minted, "api_key"),
+    refreshToken: refreshToken ?? signInToken,
+    expiresAt: new Date(now.getTime() + MUSE_KEY_LIFETIME_MS),
     accountId: null,
     accountEmail: typeof email === "string" && email ? email : null,
   };
@@ -353,12 +480,13 @@ async function requestJson(
   body: string,
   contentType: string,
   operation: string,
+  headers: Record<string, string> = {},
 ): Promise<Record<string, unknown>> {
   let response: Response;
   try {
     response = await fetch(url, {
       method: "POST",
-      headers: { Accept: "application/json", "Content-Type": contentType, "User-Agent": "Dari/1.0" },
+      headers: { Accept: "application/json", "Content-Type": contentType, "User-Agent": "Dari/1.0", ...headers },
       body,
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
@@ -366,10 +494,13 @@ async function requestJson(
     throw new SubscriptionOAuthProviderError(`${operation} could not reach the provider.`);
   }
   if (!response.ok) {
-    await response.body?.cancel();
+    // Only the RFC 6749 `error` code is kept; the rest may carry provider detail.
+    const failure: unknown = await response.json().catch(() => undefined);
+    const errorCode = isRecord(failure) && typeof failure.error === "string" ? failure.error : undefined;
     throw new SubscriptionOAuthProviderError(
       `${operation} failed with provider status ${response.status}.`,
       response.status,
+      errorCode,
     );
   }
   let decoded: unknown;

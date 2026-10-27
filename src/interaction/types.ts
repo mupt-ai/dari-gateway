@@ -235,6 +235,8 @@ export type InteractionRequest = {
   agentContext?: AgentRequestContext;
   // Claude Code's own user agent; Anthropic gates subscription models on it.
   claudeCodeUserAgent?: string;
+  // Muse Code's own x-client-id, which Meta attributes its requests by.
+  museCodeClientId?: string;
   anthropicSafeguards?: AnthropicSafeguards;
   model?: string;
   instructions?: string;

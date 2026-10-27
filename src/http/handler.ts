@@ -3,6 +3,7 @@ import {
   handleResponsesWebSocketFallback,
 } from "../ingress/codex.js";
 import { handleModels } from "../ingress/models.js";
+import { handleMuseCodeModels } from "../ingress/muse_models.js";
 import { handleChatCompletions } from "../ingress/chat_completions.js";
 import { handleAnthropicMessages } from "../ingress/anthropic_messages.js";
 import { bindGatewayPlatform, type GatewayPlatform } from "../platform/platform.js";
@@ -30,6 +31,12 @@ export function createRequestHandler(options: GatewayHandlerOptions) {
       (url.pathname === "/healthz" || url.pathname === "/health")
     ) {
       return Response.json({ status: "ok" });
+    }
+    // Muse Code reads its model list from its base URL's origin; `dari muse`
+    // forwards it to the router's own path.
+    const museModels = url.pathname.match(/^(?:\/([^/]+))?\/muse-code\/models$/);
+    if (request.method === "GET" && museModels !== null) {
+      return await handleMuseCodeModels(request, museModels[1] ?? DEFAULT_ROUTER_ALIAS);
     }
     // Claude Code probes this first-party endpoint before its Messages call
     // when ANTHROPIC_BASE_URL points at a compatible gateway.

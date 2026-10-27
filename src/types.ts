@@ -42,12 +42,25 @@ export type AwsAssumeRoleProviderAuth = {
 // Authentication a provider call can use directly.
 export type ResolvedProviderAuth = BearerProviderAuth | AwsSigV4ProviderAuth;
 
+// A personal plan whose access token serves its provider's models in place of
+// an API key:
+// - "openai_codex": a ChatGPT plan; the token is Codex's auth.json
+//   `tokens.access_token`, served through the Codex backend.
+// - "anthropic_claude_code": a Claude Code plan; the token is the OAuth token
+//   `claude setup-token` prints. It serves Claude Code clients only.
+// - "meta_muse": a Meta (Muse) sign-in; the token is the Model API key the
+//   sign-in mints (Pi's Meta OAuth `access`).
+export type SubscriptionKind = "openai_codex" | "anthropic_claude_code" | "meta_muse";
+
 // A bearer credential an embedding platform supplies for one request through
 // GatewayPlatform.resolveProviderCredential, optionally with its own endpoint.
+// With `subscription`, `apiKey` is that plan's access token; the platform keeps
+// it fresh.
 export type ProviderCredential = {
   apiKey: string;
   baseUrl?: string;
   headers?: Record<string, string>;
+  subscription?: SubscriptionKind;
 };
 
 export type ProviderAuth = ResolvedProviderAuth | AwsAssumeRoleProviderAuth;
@@ -70,7 +83,7 @@ export type PublicEvalCatalogCard = Omit<RouterEval, "scores"> & {
   scores: PublicEvalCatalogScore[];
 };
 
-export type ClientHarness = "claude_code";
+export type ClientHarness = "claude_code" | "muse_code";
 
 export type ResolvedRouterModelConfig = {
   provider: string;
@@ -111,8 +124,9 @@ export type ResolvedRouter = {
   speculative_routing?: boolean;
   primary_retries?: number;
   // Serve only the requested `dari/model/<id>` at the requested thinking
-  // level: no selector, lease, fallback, or personal subscription, and an
-  // error for anything else, whatever the client sends.
+  // level: no selector, lease, fallback, or personal subscription the
+  // platform did not supply through resolveProviderCredential, and an error
+  // for anything else, whatever the client sends.
   strict?: boolean;
   // On strict routers only, allow requested catalog models of these providers.
   // Requires dari/model/<provider>/<id>; never enables fallback.

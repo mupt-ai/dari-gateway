@@ -29,7 +29,13 @@ import {
 import { HttpError } from "../http/errors.js";
 import { effectiveContextWindow } from "../models/context_limits.js";
 import { defaultBaseUrl } from "../models/provider_defaults.js";
-import { contextWindowOverride, inputModalitiesOverride, runtimeCompat } from "../models/runtime_overrides.js";
+import {
+  contextWindowOverride,
+  inputModalitiesOverride,
+  providerThinkingLevelOverrides,
+  runtimeCompat,
+  withThinkingLevelOverrides,
+} from "../models/runtime_overrides.js";
 import { BEDROCK_API } from "./model_capabilities.js";
 import { buildContext } from "./pi_context.js";
 import { providerIdentityFromModel } from "../interaction/provider_continuation_state.js";
@@ -335,16 +341,21 @@ export function buildModel(
   // A null catalog value delegates to Pi's registry when it knows the model.
   // Custom OpenAI-compatible models are not necessarily registered, so keep
   // the public effort set permissive and let the provider validate the wire
-  // value instead of silently treating an unknown model as off-only.
+  // value instead of silently treating an unknown model as off-only. A
+  // built-in provider with its own thinking levels (Meta) serves ids newer
+  // than the registry the same way, with only its key configured.
+  const providerThinking = providerThinkingLevelOverrides(provider);
   const fallbackThinkingLevels =
-    config !== undefined && configuredThinkingLevels == null && registered === undefined
+    (config !== undefined || providerThinking !== undefined) &&
+    configuredThinkingLevels == null &&
+    registered === undefined
       ? REASONING_EFFORTS
       : undefined;
   const effectiveThinkingLevels = Array.isArray(configuredThinkingLevels)
     ? configuredThinkingLevels
     : fallbackThinkingLevels;
   const configuredThinking = effectiveThinkingLevels
-    ? thinkingMetadata(effectiveThinkingLevels, registered)
+    ? thinkingMetadata(effectiveThinkingLevels, registered ?? { thinkingLevelMap: providerThinking })
     : null;
   const defaultThinkingLevel = config?.default_thinking_level ?? undefined;
   const api = config?.api ?? registered?.api ?? defaultApi(provider);
@@ -415,7 +426,10 @@ function resolveModelMetadata(
   nativeId: string
 ): Record<string, unknown> | undefined {
   const registry = registryProvider(provider, modelId);
-  return pi.getModel?.(registry, nativeId) ?? pi.getModel?.(registry, modelId);
+  return withThinkingLevelOverrides(
+    provider,
+    pi.getModel?.(registry, nativeId) ?? pi.getModel?.(registry, modelId),
+  );
 }
 
 // Dari's "azure" provider has no Pi registry of its own. One Foundry resource
@@ -491,7 +505,8 @@ function executionPricing(
 }
 
 function defaultApi(provider: string): string {
-  if (provider === "openai" || provider === "xai") return "openai-responses";
+  // Meta recommends Responses: its Chat Completions drops reasoning between turns.
+  if (provider === "openai" || provider === "xai" || provider === "meta") return "openai-responses";
   if (provider === "anthropic") return "anthropic-messages";
   if (provider === "amazon-bedrock") return BEDROCK_API;
   if (provider === "azure") return "azure-openai-responses";

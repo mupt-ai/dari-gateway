@@ -80,7 +80,9 @@ export function internalChatCompletionsToInteraction(request: ChatCompletionRequ
   const tools = chatTools(request.tools);
   toolsByWireName(tools);
   const responseFormat = toInteractionResponseFormat(request.response_format);
-  const reasoningEffort = request.reasoning_effort;
+  // OpenAI spells the non-reasoning effort "none"; Dari spells it "off".
+  const requestedEffort: string | undefined = request.reasoning_effort;
+  const reasoningEffort = requestedEffort === "none" ? "off" : request.reasoning_effort;
   return {
     sourceProtocol: request.source_protocol ?? "openai_chat",
     model: request.model,

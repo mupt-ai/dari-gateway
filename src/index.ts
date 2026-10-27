@@ -27,4 +27,4 @@ export {
 export { createAutoRoutingSelectorBackend } from "./strategies/auto_routing_selector.js";
 export { createPrioritySelectorBackend } from "./strategies/priority_selector.js";
 export { createLlmSelectorBackend, type SelectorBackend } from "./strategies/routing.js";
-export type { ProviderCredential, ResolvedRouter } from "./types.js";
+export type { ProviderCredential, ResolvedRouter, SubscriptionKind } from "./types.js";

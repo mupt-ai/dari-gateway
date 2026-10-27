@@ -4,17 +4,13 @@ import {
   nativeModelId,
   providerForModel,
   type ReasoningEffort,
-  type RouterModelPrice,
   type RouterPrefixHit,
 } from "@mupt-ai/dari-router/policy-engine";
 import { HttpError } from "../http/errors.js";
 import type { ResolveRouterRequest } from "../platform/platform.js";
+import { codexModelConfig } from "../models/subscriptions.js";
 import { registeredModelPrice } from "../providers/pi.js";
-import type {
-  ProviderKeySource,
-  ResolvedRouter,
-  ResolvedRouterModelConfig,
-} from "../types.js";
+import type { ProviderKeySource, ResolvedRouter } from "../types.js";
 import type { GatewayConfig, RouterConfig } from "./config.js";
 import {
   freshAccessToken,
@@ -28,8 +24,6 @@ import {
 // organization and the user a personal subscription belongs to.
 export const SELF_HOSTED_ORGANIZATION_ID = "self-hosted";
 export const SELF_HOSTED_USER_ID = "self-hosted";
-
-const CODEX_BACKEND_URL = "https://chatgpt.com/backend-api";
 
 export type SelfHostedResolverDeps = {
   config: GatewayConfig;
@@ -176,8 +170,8 @@ export function gatewayKeyIndex(keys: readonly string[], presented: string): num
   return null;
 }
 
-// Claude Code plans serve only Claude Code itself; ChatGPT plans serve any
-// client through the Codex backend.
+// Claude Code plans serve only Claude Code itself and Muse Code plans only
+// Muse Code; ChatGPT plans serve any client through the Codex backend.
 function subscriptionProviderFor(
   provider: string,
   clientHarness: ResolveRouterRequest["clientHarness"],
@@ -185,6 +179,7 @@ function subscriptionProviderFor(
   if (provider === "anthropic") {
     return clientHarness === "claude_code" ? "anthropic_claude_code" : null;
   }
+  if (provider === "meta") return clientHarness === "muse_code" ? "meta_muse" : null;
   if (provider === "openai") return "openai_codex";
   return null;
 }
@@ -197,26 +192,17 @@ function servingProviders(provider: string, credential: ProviderCredential): str
     : [provider];
 }
 
-function codexModelConfig(
-  modelId: string,
-  price: RouterModelPrice | null,
-): ResolvedRouterModelConfig {
-  return {
-    provider: "openai-codex",
-    native_model_id: nativeModelId(modelId),
-    api: "openai-codex-responses",
-    base_url: CODEX_BACKEND_URL,
-    // A plan bills no tokens; the catalog price only feeds cost estimates.
-    cost: price ?? { input: 0, output: 0 },
-    fast_mode: false,
-  };
-}
-
 function thinkingLevels(router: RouterConfig): Record<string, ReasoningEffort[]> {
   return Object.fromEntries(
     router.models.flatMap((model) => model.thinking ? [[model.id, model.thinking]] : []),
   );
 }
+
+const SUBSCRIPTION_PLAN_NAMES: Record<SubscriptionProvider, string> = {
+  anthropic_claude_code: "Claude Code",
+  openai_codex: "ChatGPT",
+  meta_muse: "Muse Code",
+};
 
 function unavailableRouterError(
   routerId: string,
@@ -224,7 +210,7 @@ function unavailableRouterError(
 ): HttpError {
   if (exhausted.size > 0) {
     const plans = [...exhausted]
-      .map((provider) => provider === "anthropic_claude_code" ? "Claude Code" : "ChatGPT")
+      .map((provider) => SUBSCRIPTION_PLAN_NAMES[provider])
       .join(" and ");
     return new HttpError(
       424,

@@ -115,8 +115,10 @@ export function prepareProviderExecution(args: {
   }
   const provider = executionProviderForModel(args.credentials, model);
   const supplied = args.credentials.provider_credentials?.[model];
-  const providerKeySource = supplied ? "user" : keySourceForModel(args.credentials, model);
-  if (args.credentials.strict === true && providerKeySource === "subscription") {
+  const providerKeySource = keySourceForModel(args.credentials, model);
+  // A strict router serves a plan only when the platform supplied it for this
+  // request, never a pooled or personal one it resolved.
+  if (args.credentials.strict === true && providerKeySource === "subscription" && !supplied) {
     throw new HttpError(
       400,
       `Strict routers do not serve '${model}' from a personal subscription.`,
@@ -148,7 +150,9 @@ export function prepareProviderExecution(args: {
       : {}),
     provider,
     providerKeySource,
-    ...(providerKeySource === "subscription" && args.credentials.attributed_user_id
+    // Only resolved personal subscriptions are held at their usage limit;
+    // the platform manages the plans it supplies.
+    ...(providerKeySource === "subscription" && !supplied && args.credentials.attributed_user_id
       ? {
           subscriptionUserId: args.credentials.attributed_user_id,
           subscriptionCredentialId: args.credentials.subscription_credential_ids?.[provider],

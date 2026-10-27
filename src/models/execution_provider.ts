@@ -11,12 +11,15 @@ export function executionProviderForModel(
 }
 
 /**
- * The key that serves a model on a resolved router. Missing declarations are
+ * The key that serves a model on a resolved router: a platform-supplied
+ * credential first, then the resolved provider key. Missing declarations are
  * user-owned so unknown platform data cannot trigger managed-key billing.
  */
 export function keySourceForModel(
   credentials: ResolvedRouter,
   model: string,
 ): ProviderKeySource {
+  const supplied = credentials.provider_credentials?.[model];
+  if (supplied) return supplied.subscription ? "subscription" : "user";
   return credentials.provider_key_sources?.[executionProviderForModel(credentials, model)] ?? "user";
 }

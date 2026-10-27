@@ -33,7 +33,10 @@ export type GatewayPlatform = {
    * Optional. Supply the credential for one enabled model of this request,
    * consulted after `resolveRouter` and before its provider keys (for the
    * self-hosted gateway, its environment keys), so an embedder can serve
-   * per-tenant keys from its own store. Undefined keeps the resolved key.
+   * per-tenant keys from its own store. Undefined keeps the resolved key. A
+   * credential with `subscription` serves the model on that plan, even on a
+   * strict router; a plan that cannot serve the model for this client (see
+   * SubscriptionKind) is ignored.
    */
   resolveProviderCredential?(
     request: ProviderCredentialRequest,
@@ -74,6 +77,7 @@ export type ProviderCredentialRequest = {
   organizationId: string;
   // The gateway key the request authenticated with.
   apiKey: string;
+  clientHarness?: ClientHarness;
 };
 
 export type PrefixStateWrite = {

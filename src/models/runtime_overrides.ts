@@ -169,6 +169,28 @@ const MODEL_OFF_WIRE_NONE: ReadonlySet<string> = new Set([
   "deepseek-ai/DeepSeek-V4.1-Flash-1017",
 ]);
 
+// Wire values a provider's API accepts for thinking levels the Pi registry
+// leaves unmapped. Meta's Model API takes reasoning effort "none" on every
+// Muse model (dev.meta.ai/docs/coding-agents).
+const PROVIDER_THINKING_LEVEL_OVERRIDES: Record<string, Record<string, string>> = {
+  meta: { off: "none" },
+};
+
+export function providerThinkingLevelOverrides(provider: string): Record<string, string> | undefined {
+  return PROVIDER_THINKING_LEVEL_OVERRIDES[provider];
+}
+
+/** Registered Pi metadata with the serving provider's thinking level overrides. */
+export function withThinkingLevelOverrides(
+  provider: string,
+  registered: Record<string, unknown> | undefined,
+): Record<string, unknown> | undefined {
+  const override = providerThinkingLevelOverrides(provider);
+  if (registered === undefined || override === undefined) return registered;
+  const map = isRecord(registered.thinkingLevelMap) ? registered.thinkingLevelMap : {};
+  return { ...registered, thinkingLevelMap: { ...map, ...override } };
+}
+
 export function offRequiresWireNone(modelId: string): boolean {
   return MODEL_OFF_WIRE_NONE.has(canonicalModelId(modelId));
 }

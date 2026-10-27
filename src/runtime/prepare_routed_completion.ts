@@ -9,6 +9,7 @@ import {
 } from "../context/routing_context.js";
 import { isBackgroundRequest, type InteractionRequest } from "../interaction/types.js";
 import { executionProviderForModel } from "../models/execution_provider.js";
+import { codexModelConfig, subscriptionServes } from "../models/subscriptions.js";
 import { gatewayPlatform, type RequestTags } from "../platform/platform.js";
 import { resolveRouter } from "../strategies/routing.js";
 import { RequestReporter, type ReportedCandidatePruning } from "../telemetry/report.js";
@@ -129,7 +130,7 @@ export async function prepareRoutedCompletion(args: {
   const access = strictProviderAccess(credentials, args.interaction);
   credentials = access.credentials;
   args = { ...args, interaction: access.interaction };
-  credentials = await withProviderCredentials(credentials, args.apiKey);
+  credentials = await withProviderCredentials(credentials, args.apiKey, args.clientHarness);
   const billable = true;
   const routing = await buildRoutingContext({
     routerId: prefixFingerprintRouterId,
@@ -192,6 +193,7 @@ export async function prepareRoutedCompletion(args: {
 async function withProviderCredentials(
   credentials: ResolvedRouter,
   apiKey: string,
+  clientHarness: ClientHarness | undefined,
 ): Promise<ResolvedRouter> {
   const platform = gatewayPlatform();
   if (platform.resolveProviderCredential === undefined) return credentials;
@@ -204,14 +206,27 @@ async function withProviderCredentials(
         routerId: credentials.router_id,
         organizationId: credentials.organization_id,
         apiKey,
+        ...(clientHarness ? { clientHarness } : {}),
       }),
     ] as const),
   );
   const provider_credentials: Record<string, ProviderCredential> = {};
+  const model_configs = { ...credentials.model_configs };
   for (const [model, credential] of resolved) {
-    if (credential?.apiKey.trim()) provider_credentials[model] = credential;
+    if (!credential?.apiKey.trim()) continue;
+    const plan = credential.subscription;
+    if (plan !== undefined && !subscriptionServes(plan, model, clientHarness)) continue;
+    provider_credentials[model] = credential;
+    if (plan === "openai_codex") {
+      // Keep the catalog's limits and thinking levels; only the serving
+      // endpoint changes.
+      model_configs[model] = {
+        ...model_configs[model],
+        ...codexModelConfig(model, credentials.model_prices?.[model] ?? null),
+      };
+    }
   }
-  return { ...credentials, provider_credentials };
+  return { ...credentials, provider_credentials, model_configs };
 }
 
 // Core's cache-aware pruning audit, extended with the context layer's image

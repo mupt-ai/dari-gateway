@@ -11,6 +11,7 @@ import {
   openCodeRequestContext,
 } from "../runtime/harness_identity/index.js";
 import { parseJsonRequest } from "./json.js";
+import { museCodeClientId } from "./muse_code.js";
 
 export async function handleChatCompletions(
   request: Request,
@@ -22,15 +23,21 @@ export async function handleChatCompletions(
     const payload = await parseJsonRequest<ChatCompletionRequest>(request);
     const interaction = chatCompletionsToInteraction({ ...payload, source_protocol: "openai_chat" });
     const agentContext = openCodeRequestContext(request.headers);
+    const museClientId = museCodeClientId(request.headers);
     return await handleRoutedCompletion({
       request,
       routerId,
       apiKey,
-      payload: agentContext === undefined ? interaction : { ...interaction, agentContext },
+      payload: {
+        ...interaction,
+        ...(agentContext === undefined ? {} : { agentContext }),
+        ...(museClientId === undefined ? {} : { museCodeClientId: museClientId }),
+      },
       responseBody: chatCompletionResponse,
       streamBody: chatCompletionsSseStream,
       errorResponse,
       selectorBackend,
+      clientHarness: museClientId === undefined ? undefined : "muse_code",
       harnessConversationIdentity: chatCompletionsConversationIdentity(
         request.headers,
         payload.prompt_cache_key,
