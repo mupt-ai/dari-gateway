@@ -831,6 +831,7 @@ test("selector payload carries previous decision, cost estimates, and the cost d
         fixed_turn_cost_estimate: {
           output_tokens_per_turn: 2500,
           assumed_reasoning_effort: "medium",
+          cold_start_usd: 0,
           projections: [
             { projected_turns: 1, total_cost_usd: 0.002 },
             { projected_turns: 10, total_cost_usd: 0.014 },
