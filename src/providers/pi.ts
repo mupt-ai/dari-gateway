@@ -26,35 +26,35 @@ import {
   type ReasoningEffort,
   type RouterModelPrice,
 } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
-import { effectiveContextWindow } from "../models/context_limits";
-import { defaultBaseUrl } from "../models/provider_defaults";
-import { contextWindowOverride, inputModalitiesOverride, runtimeCompat } from "../models/runtime_overrides";
-import { BEDROCK_API } from "./model_capabilities";
-import { buildContext } from "./pi_context";
-import { providerIdentityFromModel } from "../interaction/provider_continuation_state";
-import { buildOptions, supportedThinkingLevels } from "./pi_options";
-import type { ProviderFetch } from "./response_capture";
+import { HttpError } from "../http/errors.js";
+import { effectiveContextWindow } from "../models/context_limits.js";
+import { defaultBaseUrl } from "../models/provider_defaults.js";
+import { contextWindowOverride, inputModalitiesOverride, runtimeCompat } from "../models/runtime_overrides.js";
+import { BEDROCK_API } from "./model_capabilities.js";
+import { buildContext } from "./pi_context.js";
+import { providerIdentityFromModel } from "../interaction/provider_continuation_state.js";
+import { buildOptions, supportedThinkingLevels } from "./pi_options.js";
+import type { ProviderFetch } from "./response_capture.js";
 import {
   eventsWithSafeguardResults,
   forwardsAnthropicSafeguards,
   messageWithSafeguardResults,
   safeguardResultsTap,
-} from "./anthropic_safeguards";
+} from "./anthropic_safeguards.js";
 import {
   eventsWithProviderReportedCost,
   messageWithProviderReportedCost,
   providerReportedCostTap,
   reportsProviderCost,
-} from "./provider_reported_cost";
+} from "./provider_reported_cost.js";
 import {
   eventsWithSubscriptionCacheWrites,
   messageWithSubscriptionCacheWrites,
   modelPricingFromPiModel,
   type SubscriptionUsageContext,
-} from "./subscription_usage";
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
-import type { ResolvedProviderAuth, ResolvedRouterModelConfig } from "../types";
+} from "./subscription_usage.js";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
+import type { ResolvedProviderAuth, ResolvedRouterModelConfig } from "../types.js";
 
 type PiAi = {
   completeSimple: (model: Record<string, unknown>, context: Record<string, unknown>, options: Record<string, unknown>) => Promise<Record<string, unknown>>;

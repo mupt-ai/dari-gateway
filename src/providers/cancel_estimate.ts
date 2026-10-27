@@ -8,7 +8,7 @@ import type {
   InteractionOutput,
   InteractionUsage,
   ProviderIdentity,
-} from "../interaction/types";
+} from "../interaction/types.js";
 
 /** Prose from current models averages about 4.8 characters per token. */
 export const ESTIMATED_CHARS_PER_TOKEN = 4.8;

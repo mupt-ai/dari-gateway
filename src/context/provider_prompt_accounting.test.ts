@@ -1,11 +1,11 @@
 import { expect, test } from "bun:test";
 
-import type { InteractionPrefixContext } from "./interaction_fingerprint";
+import type { InteractionPrefixContext } from "./interaction_fingerprint.js";
 import {
   promptMetrics,
   providerPromptAccounting,
-} from "./provider_prompt_accounting";
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
+} from "./provider_prompt_accounting.js";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
 
 const OPENAI_MODEL = "openai/gpt-5.5";
 const CLAUDE_MODEL = "anthropic/claude-sonnet-4-6";

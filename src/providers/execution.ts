@@ -1,27 +1,27 @@
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
-import { piMessageToInteractionOutput } from "./pi_output";
-import type { InteractionRequest } from "../interaction/types";
-import { captureOperationalError } from "../observability/errors";
+import { HttpError } from "../http/errors.js";
+import { piMessageToInteractionOutput } from "./pi_output.js";
+import type { InteractionRequest } from "../interaction/types.js";
+import { captureOperationalError } from "../observability/errors.js";
 import {
   CustomerDisconnectedError,
   customerCanceledProviderMessage,
-} from "../runtime/customer_disconnect";
+} from "../runtime/customer_disconnect.js";
 import {
   isProviderFailureMessage,
   providerFailureFromCaught,
   providerFailureFromTerminal,
   providerFailureMessage,
-} from "../runtime/provider_stream_outcome";
+} from "../runtime/provider_stream_outcome.js";
 import {
   reportedExecution,
   type ReportableProviderOutcome,
   type RoutedRuntimeReporter,
-} from "../runtime/runtime_reporter";
-import type { RoutedProtocol } from "../runtime/routed_protocol";
-import { trackBackgroundTelemetry } from "../telemetry/background";
-import { gatewayPlatform, type SubscriptionHold } from "../platform/platform";
-import { reportRoutingUsage } from "../telemetry/usage";
+} from "../runtime/runtime_reporter.js";
+import type { RoutedProtocol } from "../runtime/routed_protocol.js";
+import { trackBackgroundTelemetry } from "../telemetry/background.js";
+import { gatewayPlatform, type SubscriptionHold } from "../platform/platform.js";
+import { reportRoutingUsage } from "../telemetry/usage.js";
 import {
   prepareProviderExecution,
   primeProviderStream,
@@ -32,20 +32,20 @@ import {
   type ProviderExecution,
   type StartedCompletion,
   type StartedStream,
-} from "./provider_call";
+} from "./provider_call.js";
 import {
   runProviderAttemptPlan,
   type ProviderAttemptFailure,
   type ProviderAttemptPlanResult,
   type ProviderAttemptResult,
-} from "./provider_attempt_runner";
+} from "./provider_attempt_runner.js";
 import {
   estimatedCancelUsage,
   NO_DELIVERED_OUTPUT,
   observeDeliveredOutput,
-} from "./cancel_estimate";
-import { providerResponseCaptureFromError, type ProviderResponseCapture } from "./response_capture";
-import { createStreamFinalizer } from "./stream_finalization";
+} from "./cancel_estimate.js";
+import { providerResponseCaptureFromError, type ProviderResponseCapture } from "./response_capture.js";
+import { createStreamFinalizer } from "./stream_finalization.js";
 import {
   detectSubscriptionUsageLimit,
   failureWithSubscriptionUsageLimit,
@@ -53,7 +53,7 @@ import {
   subscriptionUsageLimitFromFailure,
   subscriptionSwitchedMessage,
   subscriptionUsageLimitMessage,
-} from "./subscription_limits";
+} from "./subscription_limits.js";
 
 export type ProviderChoice = {
   decision: RoutingDecision;

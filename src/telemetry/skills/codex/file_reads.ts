@@ -1,14 +1,14 @@
 import type {
   InteractionOutput,
   InteractionRequest,
-} from "../../../interaction/types";
+} from "../../../interaction/types.js";
 import {
   codexExecCommand,
   readSkillsFromCodexCommand,
-} from "./exec_file_reads";
-import { codexFileSkillCatalog } from "./catalog";
-import { codexSkillCapabilityId } from "./identity";
-import type { SkillObservation } from "../observations";
+} from "./exec_file_reads.js";
+import { codexFileSkillCatalog } from "./catalog.js";
+import { codexSkillCapabilityId } from "./identity.js";
+import type { SkillObservation } from "../observations.js";
 
 /** Match model-emitted Codex file reads to the exact current skill catalog. */
 export function codexAutomaticSkillObservations(

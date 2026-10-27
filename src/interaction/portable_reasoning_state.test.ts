@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
 
-import { HttpError } from "../http/errors";
+import { HttpError } from "../http/errors.js";
 import {
   decodeUntrustedPortableReasoningState,
   encodePortableReasoningState,
-} from "./portable_reasoning_state";
+} from "./portable_reasoning_state.js";
 
 const source = {
   provider: "fireworks",

@@ -1,5 +1,5 @@
 import type { HardCapability } from "@mupt-ai/dari-router/policy-engine";
-import type { InteractionItem, InteractionRequest } from "./types";
+import type { InteractionItem, InteractionRequest } from "./types.js";
 
 export function requiredCapabilitiesFor(
   request: Pick<InteractionRequest, "items" | "responseFormat" | "toolChoice" | "tools">

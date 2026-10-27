@@ -1,10 +1,10 @@
 import type { ChatCompletionRequest } from "@mupt-ai/dari-router/policy-engine";
 
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { buildContext } from "./pi_context";
-import { buildOptions } from "./pi_options";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { buildContext } from "./pi_context.js";
+import { buildOptions } from "./pi_options.js";
 
-import type { ResolvedRouterModelConfig } from "../types";
+import type { ResolvedRouterModelConfig } from "../types.js";
 
 // routing.test.ts and server.test.ts mock ./pi at module scope. Bun keeps those
 // module mocks process-wide when test files share a worker, so load the real Pi
@@ -19,7 +19,7 @@ export const {
   pi,
   streamInteractionModel,
 } =
-  (await import(piModulePath)) as typeof import("./pi");
+  (await import(piModulePath)) as typeof import("./pi.js");
 
 export const modelFixtures: Record<string, Record<string, unknown>> = {
   "deepseek-ai/DeepSeek-V4-Pro-0813": {

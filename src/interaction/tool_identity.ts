@@ -1,5 +1,5 @@
-import { HttpError } from "../http/errors";
-import type { InteractionTool, ProviderIdentity } from "./types";
+import { HttpError } from "../http/errors.js";
+import type { InteractionTool, ProviderIdentity } from "./types.js";
 
 export const TOOL_CALL_ID_MAX_LENGTH = 512;
 

@@ -1,4 +1,4 @@
-import type { SelectorBackend } from "./routing";
+import type { SelectorBackend } from "./routing.js";
 
 const PRIORITY_SELECTOR_MODEL = "dari-gateway/priority";
 // Priority selection reads no messages, so the sized selector input only

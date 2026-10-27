@@ -8,9 +8,9 @@ import {
   type RouterEval,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { publicCatalogSelectorEvals } from "../context/eval_catalog";
-import { scrubSecrets } from "../telemetry/scrub";
-import type { ResolvedRouter } from "../types";
+import { publicCatalogSelectorEvals } from "../context/eval_catalog.js";
+import { scrubSecrets } from "../telemetry/scrub.js";
+import type { ResolvedRouter } from "../types.js";
 
 export type EvalRelevanceDetails =
   | {

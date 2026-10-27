@@ -1,11 +1,11 @@
 import { isReasoningEffort, isRecord, type ReasoningEffort } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../../http/errors";
-import { parseDataImageUrl } from "../../interaction/image";
-import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { decodeUntrustedPortableReasoningState } from "../../interaction/portable_reasoning_state";
-import { toolsByWireName } from "../../interaction/tool_identity";
-import { explicitModelId, isAnthropicRouterModel, unsupportedModelMessage } from "./router_model";
+import { HttpError } from "../../http/errors.js";
+import { parseDataImageUrl } from "../../interaction/image.js";
+import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { decodeUntrustedPortableReasoningState } from "../../interaction/portable_reasoning_state.js";
+import { toolsByWireName } from "../../interaction/tool_identity.js";
+import { explicitModelId, isAnthropicRouterModel, unsupportedModelMessage } from "./router_model.js";
 import type {
   ClientTool,
   InteractionContent,
@@ -17,7 +17,7 @@ import type {
   InteractionToolReference,
   ReasoningControls,
   ServerToolKind,
-} from "../../interaction/types";
+} from "../../interaction/types.js";
 
 const SUPPORTED_SERVER_TOOL_TYPES: readonly ServerToolKind[] = [
   "bash_20250124",

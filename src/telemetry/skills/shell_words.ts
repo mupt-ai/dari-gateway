@@ -1,6 +1,6 @@
 import { posix, win32 } from "node:path";
 
-import type { PathPlatform } from "./paths";
+import type { PathPlatform } from "./paths.js";
 
 const MAX_COMMAND_TOKENS = 4_096;
 const SHELL_ASSIGNMENT = /^[A-Za-z_][A-Za-z0-9_]*=/u;

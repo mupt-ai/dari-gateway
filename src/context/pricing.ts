@@ -1,5 +1,5 @@
 import type { ModelPricing, PricingLookup } from "@mupt-ai/dari-router/policy-engine";
-import type { ResolvedRouter } from "../types";
+import type { ResolvedRouter } from "../types.js";
 
 
 export function pricingLookupForRouter(credentials: ResolvedRouter): PricingLookup {

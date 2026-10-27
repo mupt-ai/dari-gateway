@@ -2,9 +2,9 @@ import {
   gatewayPlatform,
   type OperationalErrorContext,
   type RequestErrorContext,
-} from "../platform/platform";
+} from "../platform/platform.js";
 
-export type { OperationalErrorCode } from "../platform/platform";
+export type { OperationalErrorCode } from "../platform/platform.js";
 
 export function captureRequestError(
   error: unknown,

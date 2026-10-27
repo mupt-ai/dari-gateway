@@ -3,10 +3,10 @@ import { expect, test } from "bun:test";
 import type {
   InteractionOutput,
   ProviderIdentity,
-} from "../../interaction/types";
-import { anthropicMessagesToInteraction } from "../../protocol/input/anthropic_messages";
-import { anthropicContent } from "../../protocol/output/anthropic_messages_output";
-import { toolResultObservations, toolSkillEvents } from "./observations";
+} from "../../interaction/types.js";
+import { anthropicMessagesToInteraction } from "../../protocol/input/anthropic_messages.js";
+import { anthropicContent } from "../../protocol/output/anthropic_messages_output.js";
+import { toolResultObservations, toolSkillEvents } from "./observations.js";
 
 const OPENAI: ProviderIdentity = {
   provider: "openai",

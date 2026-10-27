@@ -3,8 +3,8 @@ import { expect, test } from "bun:test";
 import {
   createAwsRoleCredentials,
   type AssumedRoleCredentials,
-} from "./aws_assume_role";
-import type { AwsAssumeRoleProviderAuth } from "../types";
+} from "./aws_assume_role.js";
+import type { AwsAssumeRoleProviderAuth } from "../types.js";
 
 const roleAuth: AwsAssumeRoleProviderAuth = {
   type: "aws_assume_role",

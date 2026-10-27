@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { openAIResponsesSseStream } from "./openai_responses_stream";
-import type { InteractionRequest, ProviderIdentity } from "../../interaction/types";
+import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { openAIResponsesSseStream } from "./openai_responses_stream.js";
+import type { InteractionRequest, ProviderIdentity } from "../../interaction/types.js";
 
 const OPENAI: ProviderIdentity = { provider: "openai", api: "openai-responses", model: "gpt-5.5" };
 const OPENAI_CODEX: ProviderIdentity = {

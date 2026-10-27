@@ -1,8 +1,8 @@
-import { errorCode } from "../http/errors";
-import type { GatewayPlatform } from "../platform/platform";
-import type { PrefixStore } from "./prefix_store";
-import { resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve";
-import type { SubscriptionStore } from "./subscriptions";
+import { errorCode } from "../http/errors.js";
+import type { GatewayPlatform } from "../platform/platform.js";
+import type { PrefixStore } from "./prefix_store.js";
+import { resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve.js";
+import type { SubscriptionStore } from "./subscriptions/index.js";
 
 /**
  * The self-hosted platform: routers from the config file, subscriptions and

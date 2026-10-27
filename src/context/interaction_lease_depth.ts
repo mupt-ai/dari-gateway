@@ -2,7 +2,7 @@ import type {
   InteractionContent,
   InteractionMessage,
   InteractionRequest,
-} from "../interaction/types";
+} from "../interaction/types.js";
 
 type AssistantGroup = {
   kind: "assistant";

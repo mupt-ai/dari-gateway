@@ -12,8 +12,8 @@ import {
   startOAuth,
   type OAuthFetch,
   type SubscriptionProvider,
-} from "./oauth";
-import { isHeld, type SubscriptionCredential, type SubscriptionStore } from "./store";
+} from "./oauth.js";
+import { isHeld, type SubscriptionCredential, type SubscriptionStore } from "./store.js";
 
 export type SubscriptionHttpDeps = {
   store: SubscriptionStore;

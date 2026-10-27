@@ -1,8 +1,8 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import { providerFailureMessage } from "../runtime/provider_stream_outcome";
-import type { ProviderKeySource } from "../types";
-import type { CapturedProviderResponse } from "./response_capture";
+import { providerFailureMessage } from "../runtime/provider_stream_outcome.js";
+import type { ProviderKeySource } from "../types.js";
+import type { CapturedProviderResponse } from "./response_capture.js";
 
 export type SubscriptionOAuthProvider = "anthropic_claude_code" | "openai_codex";
 

@@ -1,12 +1,12 @@
 import type {
   InteractionMessage,
   InteractionRequest,
-} from "../../../interaction/types";
-import type { SkillObservation } from "../observations";
+} from "../../../interaction/types.js";
+import type { SkillObservation } from "../observations.js";
 import {
   codexSkillCapabilityId,
   normalizedCodexSkillName,
-} from "./identity";
+} from "./identity.js";
 
 const MAX_SKILL_PATH_CHARS = 16 * 1024;
 const UNSAFE_DISPLAY_CHARACTERS = /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u;

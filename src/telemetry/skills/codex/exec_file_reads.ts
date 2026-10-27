@@ -1,7 +1,7 @@
-import type { InteractionOutput } from "../../../interaction/types";
-import { interactionToolInput } from "../../tools/input";
-import { readPathsFromShellCommand } from "../shell_file_reads";
-import type { CatalogSkill, CodexSkillCatalog } from "./catalog";
+import type { InteractionOutput } from "../../../interaction/types.js";
+import { interactionToolInput } from "../../tools/input.js";
+import { readPathsFromShellCommand } from "../shell_file_reads.js";
+import type { CatalogSkill, CodexSkillCatalog } from "./catalog.js";
 
 const MAX_COMMAND_CHARS = 64 * 1024;
 const MAX_SKILL_PATH_CHARS = 16 * 1024;

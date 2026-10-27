@@ -1,4 +1,4 @@
-import { gatewayFor } from "./gateways";
+import { gatewayFor } from "./gateways.js";
 
 // Built-in model provider presentation and endpoint defaults; gateways carry
 // their own. Mirrors the hosted Dari model catalog's provider defaults; keep

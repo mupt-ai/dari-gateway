@@ -2,20 +2,20 @@ import { createHash } from "node:crypto";
 
 import { stableStringify } from "@mupt-ai/dari-router/policy-engine";
 
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { internalChatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { anthropicContent } from "../protocol/output/anthropic_messages_output";
-import { assistantMessagePayload } from "../protocol/output/chat_completions";
-import { compatibleProviderContinuation } from "../interaction/provider_continuation_state";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { internalChatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { anthropicContent } from "../protocol/output/anthropic_messages_output.js";
+import { assistantMessagePayload } from "../protocol/output/chat_completions.js";
+import { compatibleProviderContinuation } from "../interaction/provider_continuation_state.js";
 import type {
   InteractionItem,
   InteractionOutput,
   InteractionRequest,
   ProviderContinuationState,
   ProviderIdentity,
-} from "../interaction/types";
-import { providerToolCallId, toolWireName } from "../interaction/tool_identity";
-import { ROUTING_PREFIX_HASHES_MAX_COUNT } from "../platform/routing_contract";
+} from "../interaction/types.js";
+import { providerToolCallId, toolWireName } from "../interaction/tool_identity.js";
+import { ROUTING_PREFIX_HASHES_MAX_COUNT } from "../platform/routing_contract.js";
 import {
   appendFingerprintContentText,
   canonicalInteractionFingerprintStep,
@@ -25,7 +25,7 @@ import {
   normalizedAssistantFingerprintContent,
   type InteractionFingerprintStep,
   type ReasoningFingerprint,
-} from "./interaction_fingerprint_format";
+} from "./interaction_fingerprint_format.js";
 
 const MAX_CONTINUATION_TARGETS = 16;
 

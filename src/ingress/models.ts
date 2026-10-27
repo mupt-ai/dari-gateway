@@ -4,15 +4,15 @@
    handler detects the caller, authenticates in that protocol's auth shape,
    and selects the matching catalog adapter. */
 
-import { anthropicToken, bearerToken } from "../http/auth";
-import { errorResponse } from "../http/errors";
-import { captureRequestError } from "../observability/errors";
-import { anthropicErrorResponse } from "./anthropic_messages";
-import { modelSupportsImageInput } from "../providers/model_capabilities";
-import { modelMetadataLookup } from "../providers/pi";
-import { resolveRouter } from "../strategies/routing";
-import { anthropicModelsResponse } from "./anthropic_models";
-import { codexModelsResponse } from "./codex_models";
+import { anthropicToken, bearerToken } from "../http/auth.js";
+import { errorResponse } from "../http/errors.js";
+import { captureRequestError } from "../observability/errors.js";
+import { anthropicErrorResponse } from "./anthropic_messages.js";
+import { modelSupportsImageInput } from "../providers/model_capabilities.js";
+import { modelMetadataLookup } from "../providers/pi.js";
+import { resolveRouter } from "../strategies/routing.js";
+import { anthropicModelsResponse } from "./anthropic_models.js";
+import { codexModelsResponse } from "./codex_models.js";
 
 export async function handleModels(request: Request, routerId: string): Promise<Response> {
   // Anthropic SDK clients always send anthropic-version, and API-key probes

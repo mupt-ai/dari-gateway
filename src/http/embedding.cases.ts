@@ -1,10 +1,10 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "bun:test";
 
-import { testPlatform } from "../test_support/platform";
-import { createPrioritySelectorBackend } from "../strategies/priority_selector";
-import type { ProviderCredentialRequest, RequestRecord } from "../platform/platform";
-import type { ResolvedRouter } from "../types";
-import { createRequestHandler } from "./handler";
+import { testPlatform } from "../test_support/platform.js";
+import { createPrioritySelectorBackend } from "../strategies/priority_selector.js";
+import type { ProviderCredentialRequest, RequestRecord } from "../platform/platform.js";
+import type { ResolvedRouter } from "../types.js";
+import { createRequestHandler } from "./handler.js";
 
 // An embedder's view of the gateway: its own platform supplies per-request
 // BYOK credentials and receives exact usage, against a local stand-in for

@@ -1,19 +1,19 @@
 import { afterAll, expect, test } from "bun:test";
 import type { ReasoningEffort } from "@mupt-ai/dari-router/policy-engine";
 
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { openAIResponsesToInteraction } from "../protocol/input/openai_responses";
-import { providerIdentityFromModel } from "../interaction/provider_continuation_state";
-import type { InteractionRequest } from "../interaction/types";
-import type { ResolvedRouterModelConfig } from "../types";
-import { anthropicContent } from "../protocol/output/anthropic_messages_output";
-import { buildContext } from "./pi_context";
-import { buildOptions } from "./pi_options";
-import { piMessageToInteractionOutput } from "./pi_output";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
+import { providerIdentityFromModel } from "../interaction/provider_continuation_state.js";
+import type { InteractionRequest } from "../interaction/types.js";
+import type { ResolvedRouterModelConfig } from "../types.js";
+import { anthropicContent } from "../protocol/output/anthropic_messages_output.js";
+import { buildContext } from "./pi_context.js";
+import { buildOptions } from "./pi_options.js";
+import { piMessageToInteractionOutput } from "./pi_output.js";
 
 const piModulePath = "./pi.ts?payload-contract";
-const { buildModel, pi } = (await import(piModulePath)) as typeof import("./pi");
+const { buildModel, pi } = (await import(piModulePath)) as typeof import("./pi.js");
 const originalFetch = globalThis.fetch;
 
 afterAll(() => {

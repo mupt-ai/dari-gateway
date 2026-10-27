@@ -4,7 +4,7 @@ import {
   runProviderAttemptPlan,
   type ProviderAttemptFailure,
   type ProviderAttemptResult,
-} from "./provider_attempt_runner";
+} from "./provider_attempt_runner.js";
 
 type Choice = "primary" | "fallback";
 

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
-import { createPrioritySelectorBackend } from "./priority_selector";
-import { selectModel } from "./routing";
+import { createPrioritySelectorBackend } from "./priority_selector.js";
+import { selectModel } from "./routing.js";
 
 test("priority selection serves the first candidate and derives its fallback", async () => {
   const run = await selectModel({

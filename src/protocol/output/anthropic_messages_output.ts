@@ -1,7 +1,7 @@
-import { parseDataImageUrl } from "../../interaction/image";
-import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { encodePortableReasoningState } from "../../interaction/portable_reasoning_state";
-import type { InteractionOutput } from "../../interaction/types";
+import { parseDataImageUrl } from "../../interaction/image.js";
+import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { encodePortableReasoningState } from "../../interaction/portable_reasoning_state.js";
+import type { InteractionOutput } from "../../interaction/types.js";
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
 
 export function anthropicMessageId(requestId: string): string {

@@ -3,15 +3,15 @@ import type {
   ReasoningEffort,
   RoutingStrategy,
 } from "@mupt-ai/dari-router/policy-engine";
-import type { HarnessConversationIdentity } from "../runtime/harness_identity";
-import type { InteractionRequest, SourceProtocol } from "../interaction/types";
-import type { SubscriptionUsageLimit } from "../providers/subscription_limits";
+import type { HarnessConversationIdentity } from "../runtime/harness_identity/index.js";
+import type { InteractionRequest, SourceProtocol } from "../interaction/types.js";
+import type { SubscriptionUsageLimit } from "../providers/subscription_limits.js";
 import type {
   ClientHarness,
   ProviderCredential,
   ProviderKeySource,
   ResolvedRouter,
-} from "../types";
+} from "../types.js";
 
 /**
  * Everything the gateway runtime needs from the deployment around it: router

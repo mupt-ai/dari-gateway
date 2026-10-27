@@ -4,8 +4,8 @@ import type {
   AwsAssumeRoleProviderAuth,
   AwsProviderAuth,
   AwsSigV4ProviderAuth,
-} from "../types";
-import { providerAuthForSelectedModel } from "./routing";
+} from "../types.js";
+import { providerAuthForSelectedModel } from "./routing.js";
 
 test("requires stored provider authentication for the selected model", () => {
   expect(

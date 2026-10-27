@@ -6,7 +6,7 @@
    is rejected, bare tier names classify). Fixed created_at keeps the response
    byte-stable. */
 
-import { ANTHROPIC_ROUTER_MODEL_TIERS } from "../protocol/input/router_model";
+import { ANTHROPIC_ROUTER_MODEL_TIERS } from "../protocol/input/router_model.js";
 
 const ROUTER_MODEL_CREATED_AT = "2026-01-01T00:00:00Z";
 

@@ -1,11 +1,11 @@
-import { ProviderStreamLifecycle } from "../../runtime/provider_stream_lifecycle";
+import { ProviderStreamLifecycle } from "../../runtime/provider_stream_lifecycle.js";
 import {
   providerFailure,
   providerFailureFromCaught,
   providerFailureFromTerminal,
   type ProviderStreamOutcome,
-} from "../../runtime/provider_stream_outcome";
-import { DeliveredStreamSnapshot } from "./delivered_stream_snapshot";
+} from "../../runtime/provider_stream_outcome.js";
+import { DeliveredStreamSnapshot } from "./delivered_stream_snapshot.js";
 
 export type SseStreamLifecycleArgs = {
   onFinal?: (outcome: ProviderStreamOutcome) => void;

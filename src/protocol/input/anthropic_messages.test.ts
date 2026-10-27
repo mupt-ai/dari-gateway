@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
 
-import { buildContext } from "../../providers/pi_context";
-import { anthropicMessagesToInteraction } from "./anthropic_messages";
-import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { encodePortableReasoningState } from "../../interaction/portable_reasoning_state";
-import type { ProviderIdentity } from "../../interaction/types";
+import { buildContext } from "../../providers/pi_context.js";
+import { anthropicMessagesToInteraction } from "./anthropic_messages.js";
+import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { encodePortableReasoningState } from "../../interaction/portable_reasoning_state.js";
+import type { ProviderIdentity } from "../../interaction/types.js";
 
 const CLAUDE: ProviderIdentity = {
   provider: "anthropic",

@@ -1,15 +1,15 @@
 import type { BedrockOptions } from "@mupt-ai/pi-ai/api/bedrock-converse-stream";
 import { isReasoningEffort, isRecord, type ReasoningEffort } from "@mupt-ai/dari-router/policy-engine";
-import type { InteractionRequest, InteractionResponseFormat, InteractionToolChoice } from "../interaction/types";
-import { requiredCapabilitiesFor } from "../interaction/capabilities";
-import { toolWireName, toolsByWireName } from "../interaction/tool_identity";
-import { gatewayFor, payloadWithGatewayFields } from "../models/gateways";
-import { offRequiresWireNone } from "../models/runtime_overrides";
-import { effectiveReasoningForModel, validateReasoningEffortForModel } from "./reasoning";
-import { isBedrockApi, isOpenAIResponsesApi } from "./model_capabilities";
-import type { ResolvedProviderAuth } from "../types";
-import type { ProviderFetch } from "./response_capture";
-import { forwardsAnthropicSafeguards, payloadWithSafeguards } from "./anthropic_safeguards";
+import type { InteractionRequest, InteractionResponseFormat, InteractionToolChoice } from "../interaction/types.js";
+import { requiredCapabilitiesFor } from "../interaction/capabilities.js";
+import { toolWireName, toolsByWireName } from "../interaction/tool_identity.js";
+import { gatewayFor, payloadWithGatewayFields } from "../models/gateways.js";
+import { offRequiresWireNone } from "../models/runtime_overrides.js";
+import { effectiveReasoningForModel, validateReasoningEffortForModel } from "./reasoning.js";
+import { isBedrockApi, isOpenAIResponsesApi } from "./model_capabilities.js";
+import type { ResolvedProviderAuth } from "../types.js";
+import type { ProviderFetch } from "./response_capture.js";
+import { forwardsAnthropicSafeguards, payloadWithSafeguards } from "./anthropic_safeguards.js";
 
 type PiOptionsSupport = {
   getSupportedThinkingLevels?: (model: Record<string, unknown>) => string[];

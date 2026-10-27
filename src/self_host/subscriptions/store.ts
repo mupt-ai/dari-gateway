@@ -13,7 +13,7 @@
 import type { Database } from "bun:sqlite";
 import { randomBytes, randomUUID } from "node:crypto";
 
-import type { OAuthTokens, SubscriptionProvider } from "./oauth";
+import type { OAuthTokens, SubscriptionProvider } from "./oauth.js";
 
 export type SubscriptionCredential = {
   id: string;

@@ -1,17 +1,17 @@
-import { bearerToken } from "../http/auth";
-import { errorResponse } from "../http/errors";
-import { captureRequestError } from "../observability/errors";
-import { openAIResponsesResponse } from "../protocol/output/openai_responses";
-import { openAIResponsesSseStream } from "../protocol/output/openai_responses_stream";
-import { openAIResponsesToInteraction } from "../protocol/input/openai_responses";
-import { parseJsonRequest } from "./json";
-import { handleRoutedCompletion } from "../runtime/routed_completion";
-import type { SelectorBackend } from "../strategies/routing";
+import { bearerToken } from "../http/auth.js";
+import { errorResponse } from "../http/errors.js";
+import { captureRequestError } from "../observability/errors.js";
+import { openAIResponsesResponse } from "../protocol/output/openai_responses.js";
+import { openAIResponsesSseStream } from "../protocol/output/openai_responses_stream.js";
+import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
+import { parseJsonRequest } from "./json.js";
+import { handleRoutedCompletion } from "../runtime/routed_completion.js";
+import type { SelectorBackend } from "../strategies/routing.js";
 import {
   codexConversationIdentity,
   codexRequestPurpose,
   codexRequestContext,
-} from "../runtime/harness_identity";
+} from "../runtime/harness_identity/index.js";
 
 export async function handleResponses(
   request: Request,

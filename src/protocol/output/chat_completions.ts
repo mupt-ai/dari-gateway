@@ -1,17 +1,17 @@
 import { isRecord, type ChatMessage, type RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
 
-import { piMessageToInteractionOutput } from "../../providers/pi_output";
-import { providerToolCallIdentity } from "../../interaction/tool_identity";
-import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { chatReasoningDetailId } from "./chat_reasoning_detail";
-import type { InteractionOutput, InteractionRequest, ProviderContinuationState, ProviderIdentity } from "../../interaction/types";
+import { piMessageToInteractionOutput } from "../../providers/pi_output.js";
+import { providerToolCallIdentity } from "../../interaction/tool_identity.js";
+import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { chatReasoningDetailId } from "./chat_reasoning_detail.js";
+import type { InteractionOutput, InteractionRequest, ProviderContinuationState, ProviderIdentity } from "../../interaction/types.js";
 import {
   isProviderFailureMessage,
   providerFailureFromEvent,
   providerFailureMessage,
   type ProviderStreamOutcome,
-} from "../../runtime/provider_stream_outcome";
-import { sseStream } from "./sse_stream";
+} from "../../runtime/provider_stream_outcome.js";
+import { sseStream } from "./sse_stream.js";
 
 export function chatCompletionResponse(args: {
   id: string;

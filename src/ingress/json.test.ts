@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import { brotliCompressSync, deflateSync, gzipSync } from "node:zlib";
 
-import { HttpError } from "../http/errors";
-import { parseJsonRequest } from "./json";
+import { HttpError } from "../http/errors.js";
+import { parseJsonRequest } from "./json.js";
 
 const URL = "https://routing.test/rtr_test/v1/responses";
 const MIB = 1024 * 1024;

@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
 
 import type { ChatCompletionRequest } from "@mupt-ai/dari-router/policy-engine";
-import { requiredCapabilitiesFor } from "../interaction/capabilities";
-import { HttpError } from "../http/errors";
-import { encodeProviderContinuationState } from "../interaction/provider_continuation_state";
-import { chatCompletionsToInteraction } from "./input/chat_completions";
+import { requiredCapabilitiesFor } from "../interaction/capabilities.js";
+import { HttpError } from "../http/errors.js";
+import { encodeProviderContinuationState } from "../interaction/provider_continuation_state.js";
+import { chatCompletionsToInteraction } from "./input/chat_completions.js";
 
 const CLAUDE = { provider: "anthropic", api: "anthropic-messages", model: "claude-sonnet-4-6" };
 

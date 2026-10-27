@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 import { calculateCost } from "@mupt-ai/pi-ai";
-import { buildModel, piFixture } from "./pi.fixtures";
-import { modelPricingForRouter } from "../context/pricing";
-import { estimateBenchmarkReplay } from "../telemetry/benchmark_replay";
-import type { ResolvedRouterModelConfig } from "../types";
+import { buildModel, piFixture } from "./pi.fixtures.js";
+import { modelPricingForRouter } from "../context/pricing.js";
+import { estimateBenchmarkReplay } from "../telemetry/benchmark_replay.js";
+import type { ResolvedRouterModelConfig } from "../types.js";
 
 const config: ResolvedRouterModelConfig = {
   provider: "openai", native_model_id: "gpt-6-astra", api: "openai-responses",

@@ -1,6 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 
-import { HttpError } from "./errors";
+import { HttpError } from "./errors.js";
 
 export function bearerToken(headers: Headers): string {
   const value = headers.get("authorization") ?? "";

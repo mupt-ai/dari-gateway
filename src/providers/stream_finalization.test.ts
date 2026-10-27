@@ -2,14 +2,14 @@ import { describe, expect, test } from "bun:test";
 
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
 
-import type { InteractionRequest } from "../interaction/types";
-import type { RoutedProtocol } from "../runtime/routed_protocol";
+import type { InteractionRequest } from "../interaction/types.js";
+import type { RoutedProtocol } from "../runtime/routed_protocol.js";
 import {
   createExperimentRoutedRuntimeReporter,
   type ReportableProviderOutcome,
-} from "../runtime/runtime_reporter";
-import { NO_DELIVERED_OUTPUT } from "./cancel_estimate";
-import { createStreamFinalizer } from "./stream_finalization";
+} from "../runtime/runtime_reporter.js";
+import { NO_DELIVERED_OUTPUT } from "./cancel_estimate.js";
+import { createStreamFinalizer } from "./stream_finalization.js";
 
 const ABORTED = { status: "aborted", message: null, responseBody: {} } as const;
 

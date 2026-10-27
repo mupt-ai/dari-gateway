@@ -1,4 +1,4 @@
-import type { PublicEvalCatalogCard } from "../types";
+import type { PublicEvalCatalogCard } from "../types.js";
 import type { RouterEval } from "@mupt-ai/dari-router/policy-engine";
 
 // Convert public cards into hidden ratio-calibration inputs. Cards without a

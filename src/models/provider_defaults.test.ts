@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { defaultBaseUrl, providerLabel } from "./provider_defaults";
+import { defaultBaseUrl, providerLabel } from "./provider_defaults.js";
 
 test("built-in providers use their branded labels", () => {
   expect(providerLabel("openai")).toBe("OpenAI");

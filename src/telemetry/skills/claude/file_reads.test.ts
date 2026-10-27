@@ -4,8 +4,8 @@ import type {
   InteractionItem,
   InteractionOutput,
   InteractionRequest,
-} from "../../../interaction/types";
-import { claudeFileReadObservations } from "./file_reads";
+} from "../../../interaction/types.js";
+import { claudeFileReadObservations } from "./file_reads.js";
 import {
   ANTHROPIC,
   CLAUDE,
@@ -13,7 +13,7 @@ import {
   message,
   output,
   request,
-} from "./test_support";
+} from "./test_support.js";
 
 test("records a Claude Read call matched to the trusted current catalog", () => {
   expect(observations(

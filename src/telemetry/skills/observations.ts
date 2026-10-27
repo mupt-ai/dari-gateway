@@ -1,13 +1,13 @@
-import { isBackgroundRequest, type InteractionOutput, type InteractionRequest } from "../../interaction/types";
-import type { HarnessConversationIdentity } from "../../runtime/harness_identity";
+import { isBackgroundRequest, type InteractionOutput, type InteractionRequest } from "../../interaction/types.js";
+import type { HarnessConversationIdentity } from "../../runtime/harness_identity/index.js";
 import {
   piStyleAutomaticSkillObservations,
   piStyleExplicitSkillObservations,
-} from "./pi";
-import { claudeFileReadObservations } from "./claude/file_reads";
-import { claudeSkillObservations } from "./claude/observations";
-import { codexExplicitSkillObservations } from "./codex/explicit";
-import { codexAutomaticSkillObservations } from "./codex/file_reads";
+} from "./pi.js";
+import { claudeFileReadObservations } from "./claude/file_reads.js";
+import { claudeSkillObservations } from "./claude/observations.js";
+import { codexExplicitSkillObservations } from "./codex/explicit.js";
+import { codexAutomaticSkillObservations } from "./codex/file_reads.js";
 
 export type SkillEvidenceSource =
   | "skill_content_injection"

@@ -1,4 +1,4 @@
-import type { ResolvedRouterModelConfig } from "../types";
+import type { ResolvedRouterModelConfig } from "../types.js";
 
 export function effectiveContextWindow(config: ResolvedRouterModelConfig | undefined, allowLongContext = false): number | null {
   const window = config?.context_window;

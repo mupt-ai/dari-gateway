@@ -1,5 +1,5 @@
-import { refreshOAuth, type OAuthFetch } from "./oauth";
-import type { SubscriptionCredential, SubscriptionStore } from "./store";
+import { refreshOAuth, type OAuthFetch } from "./oauth.js";
+import type { SubscriptionCredential, SubscriptionStore } from "./store.js";
 
 const REFRESH_MARGIN_MS = 5 * 60_000;
 

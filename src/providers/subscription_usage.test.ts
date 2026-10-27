@@ -5,7 +5,7 @@ import {
   messageWithSubscriptionCacheWrites,
   modelPricingFromPiModel,
   subscriptionCacheWriteUsage,
-} from "./subscription_usage";
+} from "./subscription_usage.js";
 
 const SOL_PRICING = { input: 4, output: 20, cacheRead: 0.4, cacheWrite: 5 };
 const SOL = { api: "openai-codex-responses", model: "openai/gpt-5.6-sol", pricing: SOL_PRICING };

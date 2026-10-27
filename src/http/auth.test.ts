@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 
-import { anthropicToken, bearerToken } from "./auth";
+import { anthropicToken, bearerToken } from "./auth.js";
 
 const INTERNAL_TOKEN = "internal-secret-1234";
 let previous: string | undefined;

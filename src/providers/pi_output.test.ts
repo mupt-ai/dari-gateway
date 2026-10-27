@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { piMessageToInteractionOutput } from "./pi_output";
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
-import { buildContext } from "./pi_context";
+import { piMessageToInteractionOutput } from "./pi_output.js";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
+import { buildContext } from "./pi_context.js";
 
 const OPENAI: ProviderIdentity = { provider: "openai", api: "openai-responses", model: "gpt-5.5" };
 const AZURE: ProviderIdentity = { provider: "azure", api: "azure-openai-responses", model: "gpt-5.5" };

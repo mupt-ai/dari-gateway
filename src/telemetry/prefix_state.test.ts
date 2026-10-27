@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { leaseCountdownForPrefix } from "./prefix_state";
+import { leaseCountdownForPrefix } from "./prefix_state.js";
 
 test("lease countdown starts only when the granting turn served the leased pair", () => {
   const lease = {

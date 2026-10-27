@@ -4,9 +4,9 @@ import {
 } from "@mupt-ai/dari-router/policy-engine";
 import { expect, test } from "bun:test";
 
-import type { ResolvedRouter } from "../types";
-import { routeDecision } from "./route_decision";
-import type { SelectorBackend } from "./routing";
+import type { ResolvedRouter } from "../types.js";
+import { routeDecision } from "./route_decision.js";
+import type { SelectorBackend } from "./routing.js";
 
 const candidate: RoutingCandidate = {
   model: "openai/gpt-5.6-sol",

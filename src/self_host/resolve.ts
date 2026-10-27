@@ -7,22 +7,22 @@ import {
   type RouterModelPrice,
   type RouterPrefixHit,
 } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
-import type { ResolveRouterRequest } from "../platform/platform";
-import { registeredModelPrice } from "../providers/pi";
+import { HttpError } from "../http/errors.js";
+import type { ResolveRouterRequest } from "../platform/platform.js";
+import { registeredModelPrice } from "../providers/pi.js";
 import type {
   ProviderKeySource,
   ResolvedRouter,
   ResolvedRouterModelConfig,
-} from "../types";
-import type { GatewayConfig, RouterConfig } from "./config";
+} from "../types.js";
+import type { GatewayConfig, RouterConfig } from "./config.js";
 import {
   freshAccessToken,
   type OAuthFetch,
   type SubscriptionCredential,
   type SubscriptionProvider,
   type SubscriptionStore,
-} from "./subscriptions";
+} from "./subscriptions/index.js";
 
 // A self-hosted gateway is one tenant; these stand in for the hosted
 // organization and the user a personal subscription belongs to.

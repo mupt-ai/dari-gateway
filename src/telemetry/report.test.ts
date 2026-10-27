@@ -4,8 +4,8 @@ import type {
   InteractionOutput,
   InteractionRequest,
   ProviderIdentity,
-} from "../interaction/types";
-import { buildCompletedPrefixHit } from "./prefix_state";
+} from "../interaction/types.js";
+import { buildCompletedPrefixHit } from "./prefix_state.js";
 
 test("divergent replies to the same opening prompt keep distinct identity hashes", () => {
   const source: ProviderIdentity = {

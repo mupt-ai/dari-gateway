@@ -4,8 +4,8 @@ import {
   openAIResponsesRouting,
   openAIResponsesTerminal,
   openAIResponsesUsage,
-} from "./openai_responses_output";
-import type { InteractionOutput, InteractionRequest } from "../../interaction/types";
+} from "./openai_responses_output.js";
+import type { InteractionOutput, InteractionRequest } from "../../interaction/types.js";
 
 export function openAIResponsesResponse(args: {
   id: string;

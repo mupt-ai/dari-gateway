@@ -1,6 +1,6 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import type { InteractionToolCall } from "../../interaction/types";
+import type { InteractionToolCall } from "../../interaction/types.js";
 
 export function interactionToolInput(
   item: InteractionToolCall,

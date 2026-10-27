@@ -1,14 +1,14 @@
 import {
   handleResponses,
   handleResponsesWebSocketFallback,
-} from "../ingress/codex";
-import { handleModels } from "../ingress/models";
-import { handleChatCompletions } from "../ingress/chat_completions";
-import { handleAnthropicMessages } from "../ingress/anthropic_messages";
-import { bindGatewayPlatform, type GatewayPlatform } from "../platform/platform";
-import { DEFAULT_ROUTER_ALIAS } from "../platform/routing_contract";
-import type { SelectorBackend } from "../strategies/routing";
-import { errorResponse, HttpError } from "./errors";
+} from "../ingress/codex.js";
+import { handleModels } from "../ingress/models.js";
+import { handleChatCompletions } from "../ingress/chat_completions.js";
+import { handleAnthropicMessages } from "../ingress/anthropic_messages.js";
+import { bindGatewayPlatform, type GatewayPlatform } from "../platform/platform.js";
+import { DEFAULT_ROUTER_ALIAS } from "../platform/routing_contract.js";
+import type { SelectorBackend } from "../strategies/routing.js";
+import { errorResponse, HttpError } from "./errors.js";
 
 export type GatewayHandlerOptions = {
   platform: GatewayPlatform;

@@ -1,7 +1,7 @@
-import type { ResolvedRouter } from "../types";
-import { CANONICAL_ROUTER_MODEL, explicitModelSlug } from "../protocol/input/router_model";
-import { effectiveContextWindow } from "../models/context_limits";
-import { modelSupportsHostedWebSearch } from "../providers/model_capabilities";
+import type { ResolvedRouter } from "../types.js";
+import { CANONICAL_ROUTER_MODEL, explicitModelSlug } from "../protocol/input/router_model.js";
+import { effectiveContextWindow } from "../models/context_limits.js";
+import { modelSupportsHostedWebSearch } from "../providers/model_capabilities.js";
 
 const DEFAULT_CODEX_CONTEXT_WINDOW = 128_000;
 

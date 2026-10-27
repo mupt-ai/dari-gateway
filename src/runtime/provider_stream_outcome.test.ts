@@ -3,7 +3,7 @@ import { expect, test } from "bun:test";
 import {
   providerFailureFromCaught,
   providerFailureMessage,
-} from "./provider_stream_outcome";
+} from "./provider_stream_outcome.js";
 
 test("scrubs provider failure details before exposing them", () => {
   expect(

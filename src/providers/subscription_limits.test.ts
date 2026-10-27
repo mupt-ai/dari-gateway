@@ -8,8 +8,8 @@ import {
   subscriptionUsageLimitFromFailure,
   subscriptionSwitchedMessage,
   subscriptionUsageLimitMessage,
-} from "./subscription_limits";
-import { createProviderResponseCapture, type CapturedProviderResponse } from "./response_capture";
+} from "./subscription_limits.js";
+import { createProviderResponseCapture, type CapturedProviderResponse } from "./response_capture.js";
 
 const NOW = new Date("2026-09-19T12:00:00Z");
 const RESET_SECONDS = Math.floor(NOW.getTime() / 1000) + 3600 * 3;

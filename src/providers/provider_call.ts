@@ -8,46 +8,46 @@ import {
   type RoutingDecision,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { executionProviderForModel, keySourceForModel } from "../models/execution_provider";
-import { HttpError } from "../http/errors";
-import type { RequestTags } from "../platform/platform";
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
+import { executionProviderForModel, keySourceForModel } from "../models/execution_provider.js";
+import { HttpError } from "../http/errors.js";
+import type { RequestTags } from "../platform/platform.js";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
 import {
   CustomerDisconnectedError,
   createProviderAttemptAbort,
   type ProviderAttemptAbort,
-} from "../runtime/customer_disconnect";
+} from "../runtime/customer_disconnect.js";
 import {
   isProviderFailureMessage,
   providerFailureFromCaught,
   providerFailureFromEvent,
-} from "../runtime/provider_stream_outcome";
-import { providerAuthForSelectedModel } from "../strategies/routing";
-import { scrubSecretValues } from "../telemetry/scrub";
+} from "../runtime/provider_stream_outcome.js";
+import { providerAuthForSelectedModel } from "../strategies/routing.js";
+import { scrubSecretValues } from "../telemetry/scrub.js";
 import {
   usageContextFor,
   type RoutingUsageContext,
-} from "../telemetry/usage";
+} from "../telemetry/usage.js";
 import type {
   ProviderAuth,
   ProviderKeySource,
   ResolvedRouter,
   ResolvedRouterModelConfig,
-} from "../types";
-import { awsRoleCredentials } from "./aws_assume_role";
+} from "../types.js";
+import { awsRoleCredentials } from "./aws_assume_role.js";
 import {
   attachProviderResponseCapture,
   createProviderResponseCapture,
   type ProviderFetch,
   type ProviderResponseCapture,
-} from "./response_capture";
+} from "./response_capture.js";
 import {
   completeInteractionModel,
   streamInteractionModel,
   type ProviderEndpoint,
   type ProviderEventStream,
-} from "./pi";
-import { promptTokenEstimateFor, type PromptTokenEstimate } from "./cancel_estimate";
+} from "./pi.js";
+import { promptTokenEstimateFor, type PromptTokenEstimate } from "./cancel_estimate.js";
 
 type ProviderCallConfig = {
   model: string;

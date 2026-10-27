@@ -5,7 +5,7 @@ import {
   observeDeliveredOutput,
   partialInteractionOutput,
   promptTokenEstimateFor,
-} from "./cancel_estimate";
+} from "./cancel_estimate.js";
 
 const pricing = { input: 1, output: 5, cacheRead: 0.1, cacheWrite: 1.25 };
 

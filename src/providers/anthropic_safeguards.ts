@@ -1,7 +1,7 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import type { AnthropicSafeguards, InteractionRequest } from "../interaction/types";
-import type { ProviderFetch } from "./response_capture";
+import type { AnthropicSafeguards, InteractionRequest } from "../interaction/types.js";
+import type { ProviderFetch } from "./response_capture.js";
 
 // Claude Code's auto mode asks the Anthropic API to run its dangerous-tool-use
 // classifier server-side, at no charge, by sending `safeguards` with a paired

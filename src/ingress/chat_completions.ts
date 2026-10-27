@@ -1,16 +1,16 @@
 import type { ChatCompletionRequest } from "@mupt-ai/dari-router/policy-engine";
-import { bearerToken } from "../http/auth";
-import { errorResponse } from "../http/errors";
-import { captureRequestError } from "../observability/errors";
-import { chatCompletionResponse, chatCompletionsSseStream } from "../protocol/output/chat_completions";
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { handleRoutedCompletion } from "../runtime/routed_completion";
-import type { SelectorBackend } from "../strategies/routing";
+import { bearerToken } from "../http/auth.js";
+import { errorResponse } from "../http/errors.js";
+import { captureRequestError } from "../observability/errors.js";
+import { chatCompletionResponse, chatCompletionsSseStream } from "../protocol/output/chat_completions.js";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { handleRoutedCompletion } from "../runtime/routed_completion.js";
+import type { SelectorBackend } from "../strategies/routing.js";
 import {
   chatCompletionsConversationIdentity,
   openCodeRequestContext,
-} from "../runtime/harness_identity";
-import { parseJsonRequest } from "./json";
+} from "../runtime/harness_identity/index.js";
+import { parseJsonRequest } from "./json.js";
 
 export async function handleChatCompletions(
   request: Request,

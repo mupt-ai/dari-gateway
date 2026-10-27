@@ -1,5 +1,5 @@
 import { providerForModel } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
+import { HttpError } from "../http/errors.js";
 
 export function requireCandidateModels(value: unknown): string[] {
   if (!Array.isArray(value) || value.length === 0) {

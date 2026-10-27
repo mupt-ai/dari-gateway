@@ -8,8 +8,8 @@ import {
   type RoutingDecision,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { buildRoutingContext } from "../context/routing_context";
-import type { InteractionRequest } from "../interaction/types";
+import { buildRoutingContext } from "../context/routing_context.js";
+import type { InteractionRequest } from "../interaction/types.js";
 import {
   completeNonStreaming,
   executeNonStreaming,
@@ -17,7 +17,7 @@ import {
   prepareStreamingExecution,
   type CompletedNonStreamingExecution,
   type ProviderChoice,
-} from "../providers/execution";
+} from "../providers/execution.js";
 import {
   prepareProviderExecution,
   startProviderCompletion,
@@ -25,16 +25,16 @@ import {
   type ProviderExecution,
   type StartedCompletion,
   type StartedStream,
-} from "../providers/provider_call";
-import type { SelectorBackend } from "../strategies/routing";
-import { routeDecision, type RoutedDecision } from "../strategies/route_decision";
-import { executionProviderForModel } from "../models/execution_provider";
-import { trackBackgroundTelemetry } from "../telemetry/background";
-import { estimateBenchmarkReplay } from "../telemetry/benchmark_replay";
-import { buildCompletedPrefixHit } from "../telemetry/prefix_state";
-import { scrubSecrets } from "../telemetry/scrub";
-import type { ResolvedRouter } from "../types";
-import type { PreparedRoutedCompletion } from "./prepare_routed_completion";
+} from "../providers/provider_call.js";
+import type { SelectorBackend } from "../strategies/routing.js";
+import { routeDecision, type RoutedDecision } from "../strategies/route_decision.js";
+import { executionProviderForModel } from "../models/execution_provider.js";
+import { trackBackgroundTelemetry } from "../telemetry/background.js";
+import { estimateBenchmarkReplay } from "../telemetry/benchmark_replay.js";
+import { buildCompletedPrefixHit } from "../telemetry/prefix_state.js";
+import { scrubSecrets } from "../telemetry/scrub.js";
+import type { ResolvedRouter } from "../types.js";
+import type { PreparedRoutedCompletion } from "./prepare_routed_completion.js";
 import { auxiliaryDecision } from "./claude_code/auxiliary_routing.js";
 import { explicitModelDecision, strictModelDecision } from "./explicit_model.js";
 import {
@@ -47,12 +47,12 @@ import {
   prefetchNextLease,
   selectorNegotiatesLeases,
 } from "./routing_lease.js";
-import type { RoutedProtocol } from "./routed_protocol";
+import type { RoutedProtocol } from "./routed_protocol.js";
 import {
   createExperimentRoutedRuntimeReporter,
   type RoutedRuntimeReporter,
-} from "./runtime_reporter";
-import { HttpError } from "../http/errors";
+} from "./runtime_reporter.js";
+import { HttpError } from "../http/errors.js";
 
 type SpeculativeExecution = {
   decision: RoutingDecision;
@@ -113,12 +113,12 @@ export type {
   SelectorAdapterArgs,
   SelectorBackend,
   SelectorRun,
-} from "../strategies/routing";
+} from "../strategies/routing.js";
 export type {
   ExperimentRoutedRuntimeReporter,
   RoutedRuntimeReporter,
-} from "./runtime_reporter";
-export { createExperimentRoutedRuntimeReporter } from "./runtime_reporter";
+} from "./runtime_reporter.js";
+export { createExperimentRoutedRuntimeReporter } from "./runtime_reporter.js";
 
 export async function runPreparedRoutedCompletion(args: {
   prepared: PreparedRoutedCompletion;

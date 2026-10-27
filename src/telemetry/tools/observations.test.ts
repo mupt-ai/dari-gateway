@@ -5,10 +5,10 @@ import type {
   InteractionOutput,
   InteractionRequest,
   ProviderIdentity,
-} from "../../interaction/types";
-import { internalChatCompletionsToInteraction } from "../../protocol/input/chat_completions";
-import { assistantMessagePayload } from "../../protocol/output/chat_completions";
-import { toolResultObservations, toolSkillEvents } from "./observations";
+} from "../../interaction/types.js";
+import { internalChatCompletionsToInteraction } from "../../protocol/input/chat_completions.js";
+import { assistantMessagePayload } from "../../protocol/output/chat_completions.js";
+import { toolResultObservations, toolSkillEvents } from "./observations.js";
 
 const OPENAI: ProviderIdentity = {
   provider: "openai",

@@ -1,5 +1,5 @@
 import { providerForModel } from "@mupt-ai/dari-router/policy-engine";
-import type { ProviderKeySource, ResolvedRouter } from "../types";
+import type { ProviderKeySource, ResolvedRouter } from "../types.js";
 
 /** Actual serving provider for a canonical model on a resolved managed router. */
 export function executionProviderForModel(

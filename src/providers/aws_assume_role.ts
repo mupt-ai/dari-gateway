@@ -1,12 +1,12 @@
 import { AssumeRoleCommand, STSClient } from "@aws-sdk/client-sts";
 
-import { HttpError } from "../http/errors";
+import { HttpError } from "../http/errors.js";
 import type {
   AwsAssumeRoleProviderAuth,
   AwsSigV4ProviderAuth,
   ProviderAuth,
   ResolvedProviderAuth,
-} from "../types";
+} from "../types.js";
 
 const ROLE_SESSION_NAME = "dari-routing";
 // AssumeRole always goes through this regional STS endpoint. The customer's

@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
-import { prepareProviderExecution } from "./provider_call";
-import type { ResolvedRouter } from "../types";
+import { prepareProviderExecution } from "./provider_call.js";
+import type { ResolvedRouter } from "../types.js";
 
 const mappedRouter = (overrides: Partial<ResolvedRouter> = {}): ResolvedRouter => ({
   router_id: "rtr_openrouter",

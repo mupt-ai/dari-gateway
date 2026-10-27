@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
-import type { InteractionRequest } from "../../interaction/types";
-import { encodeRetainedInteractionRequest } from "./retained_interaction_request";
+import type { InteractionRequest } from "../../interaction/types.js";
+import { encodeRetainedInteractionRequest } from "./retained_interaction_request.js";
 
 test("serializes the normalized interaction without projecting it through Chat", () => {
   const request: InteractionRequest = {

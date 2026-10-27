@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { modelCost } from "./model_cost";
-import { routingBillingProviderAttemptFacts } from "./billing_finalization";
+import { modelCost } from "./model_cost.js";
+import { routingBillingProviderAttemptFacts } from "./billing_finalization.js";
 
 function attempt(cost: number, outcome: "completed" | "provider_failed" = "completed") {
   return routingBillingProviderAttemptFacts({ provider: "openai", model: "openai/gpt-6.1-sol",

@@ -6,7 +6,7 @@ import {
   codexConversationIdentity,
   codexRequestPurpose,
   openCodeRequestContext,
-} from "./extract";
+} from "./extract.js";
 
 const THREAD_ID = "019f930c-1ddf-7692-9c16-d09acb4e98fb";
 const OTHER_THREAD_ID = "019f930c-9394-7ca2-b53b-fde828de11ff";

@@ -1,5 +1,5 @@
-import { HttpError } from "../http/errors";
-import type { RequestTags } from "../platform/platform";
+import { HttpError } from "../http/errors.js";
+import type { RequestTags } from "../platform/platform.js";
 
 const TAGS_MAX_CHARS = 2048;
 const TAGS_MAX_COUNT = 32;

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { codexModelsResponse } from "./codex_models";
-import type { ResolvedRouterModelConfig } from "../types";
+import { codexModelsResponse } from "./codex_models.js";
+import type { ResolvedRouterModelConfig } from "../types.js";
 
 const config: ResolvedRouterModelConfig = {
   provider: "openai", native_model_id: "test", api: "openai-responses",

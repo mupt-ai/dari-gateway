@@ -6,7 +6,7 @@ import {
   createZstdDecompress,
 } from "node:zlib";
 
-import { HttpError } from "../http/errors";
+import { HttpError } from "../http/errors.js";
 
 const MAX_ENCODED_JSON_REQUEST_BYTES = 64 * 1024 * 1024;
 const MAX_DECODED_JSON_REQUEST_BYTES = 64 * 1024 * 1024;

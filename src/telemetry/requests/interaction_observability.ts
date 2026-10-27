@@ -5,7 +5,7 @@ import {
   type InteractionRequest,
   type InteractionToolChoice,
   type ProviderContinuationState,
-} from "../../interaction/types";
+} from "../../interaction/types.js";
 
 const SCHEMA_VERSION = 1 as const;
 

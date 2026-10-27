@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { requireCandidateModels } from "./ids";
+import { requireCandidateModels } from "./ids.js";
 
 test("validates candidate models", () => {
   expect(requireCandidateModels(["openai/gpt-4.1-mini", "openai/gpt-4.1-mini", "zai-org/GLM-5.2"])).toEqual([

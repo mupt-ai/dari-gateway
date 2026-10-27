@@ -1,6 +1,6 @@
 import { canonicalModelId, isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import { gatewayFor } from "./gateways";
+import { gatewayFor } from "./gateways.js";
 
 const MODEL_CONTEXT_OVERRIDES: Record<string, number> = {
   // Selector and title models are not router candidate configs, so their

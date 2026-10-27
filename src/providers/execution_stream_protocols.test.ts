@@ -7,32 +7,32 @@ import type {
 import type {
   InteractionRequest,
   ProviderIdentity,
-} from "../interaction/types";
-import { deferred } from "../test_support/deferred";
-import { bindTestPlatform } from "../test_support/platform";
-import { anthropicMessagesResponse } from "../protocol/output/anthropic_messages";
-import { anthropicMessagesSseStream } from "../protocol/output/anthropic_messages_stream";
+} from "../interaction/types.js";
+import { deferred } from "../test_support/deferred.js";
+import { bindTestPlatform } from "../test_support/platform.js";
+import { anthropicMessagesResponse } from "../protocol/output/anthropic_messages.js";
+import { anthropicMessagesSseStream } from "../protocol/output/anthropic_messages_stream.js";
 import {
   chatCompletionResponse,
   chatCompletionsSseStream,
-} from "../protocol/output/chat_completions";
-import { openAIResponsesResponse } from "../protocol/output/openai_responses";
-import { openAIResponsesSseStream } from "../protocol/output/openai_responses_stream";
-import type { ProviderStreamOutcome } from "../runtime/provider_stream_outcome";
+} from "../protocol/output/chat_completions.js";
+import { openAIResponsesResponse } from "../protocol/output/openai_responses.js";
+import { openAIResponsesSseStream } from "../protocol/output/openai_responses_stream.js";
+import type { ProviderStreamOutcome } from "../runtime/provider_stream_outcome.js";
 import {
   createProviderAttemptAbort,
   type ProviderAttemptAbort,
-} from "../runtime/customer_disconnect";
-import type { RoutedProtocol } from "../runtime/routed_protocol";
+} from "../runtime/customer_disconnect.js";
+import type { RoutedProtocol } from "../runtime/routed_protocol.js";
 import type {
   ReportableProviderOutcome,
   RoutedRuntimeReporter,
-} from "../runtime/runtime_reporter";
-import { drainBackgroundTelemetry } from "../telemetry/background";
+} from "../runtime/runtime_reporter.js";
+import { drainBackgroundTelemetry } from "../telemetry/background.js";
 import {
   executeStreaming,
   type ProviderChoice,
-} from "./execution";
+} from "./execution.js";
 
 const protocolCases: ProtocolCase[] = [
   {

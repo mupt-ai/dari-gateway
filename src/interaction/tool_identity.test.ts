@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
-import type { ProviderIdentity } from "./types";
-import { providerToolCallId, providerToolCallIdentity } from "./tool_identity";
+import type { ProviderIdentity } from "./types.js";
+import { providerToolCallId, providerToolCallIdentity } from "./tool_identity.js";
 
 const OPENAI_RESPONSES: ProviderIdentity = {
   provider: "openai",

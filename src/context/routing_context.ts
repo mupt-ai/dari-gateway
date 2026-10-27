@@ -15,34 +15,34 @@ import {
 } from "@mupt-ai/dari-router/policy-engine";
 import { randomUUID } from "node:crypto";
 
-import { HttpError } from "../http/errors";
-import { effectiveContextWindow } from "../models/context_limits";
-import { keySourceForModel } from "../models/execution_provider";
-import { requiredCapabilitiesFor } from "../interaction/capabilities";
-import { providerIdentityFromModel } from "../interaction/provider_continuation_state";
-import { isBackgroundRequest, type InteractionRequest, type ProviderIdentity } from "../interaction/types";
-import { requireCandidateModels } from "../models/ids";
-import { modelMetadataLookup } from "../providers/pi";
+import { HttpError } from "../http/errors.js";
+import { effectiveContextWindow } from "../models/context_limits.js";
+import { keySourceForModel } from "../models/execution_provider.js";
+import { requiredCapabilitiesFor } from "../interaction/capabilities.js";
+import { providerIdentityFromModel } from "../interaction/provider_continuation_state.js";
+import { isBackgroundRequest, type InteractionRequest, type ProviderIdentity } from "../interaction/types.js";
+import { requireCandidateModels } from "../models/ids.js";
+import { modelMetadataLookup } from "../providers/pi.js";
 import {
   modelSupportsImageInput,
   modelSupportsHostedWebSearch,
   modelSupportsReasoningConfigurationUpdate,
   providerApiCanSerializeResponseFormat,
-} from "../providers/model_capabilities";
+} from "../providers/model_capabilities.js";
 import {
   selectorMessagesForInteraction,
   type SelectorImage,
-} from "../strategies/selector_projection";
-import type { ResolvedRouter } from "../types";
+} from "../strategies/selector_projection.js";
+import type { ResolvedRouter } from "../types.js";
 import {
   interactionPrefixContext,
   interactionPrefixLookupHashes,
   type InteractionPrefixContext,
-} from "./interaction_fingerprint";
-import { pricingLookupForRouter } from "./pricing";
-import { providerPromptAccounting } from "./provider_prompt_accounting";
-import { leaseHistoryFromPrefixHits } from "./lease_history";
-import { interactionLeaseFenceDepth } from "./interaction_lease_depth";
+} from "./interaction_fingerprint.js";
+import { pricingLookupForRouter } from "./pricing.js";
+import { providerPromptAccounting } from "./provider_prompt_accounting.js";
+import { leaseHistoryFromPrefixHits } from "./lease_history.js";
+import { interactionLeaseFenceDepth } from "./interaction_lease_depth.js";
 
 export type ImageCapabilityPrunedModel = {
   model: string;

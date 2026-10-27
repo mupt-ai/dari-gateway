@@ -1,12 +1,12 @@
 import type { ChatMessage } from "@mupt-ai/dari-router/policy-engine";
 
-import { toolWireName } from "../interaction/tool_identity";
+import { toolWireName } from "../interaction/tool_identity.js";
 import type {
   InteractionContent,
   InteractionMessage,
   InteractionRequest,
   InteractionToolCall,
-} from "../interaction/types";
+} from "../interaction/types.js";
 
 export const IMAGE_OMITTED = "<image omitted>";
 // Matches every numbered placeholder in a rendered selector prompt.

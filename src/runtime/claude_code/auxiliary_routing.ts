@@ -4,11 +4,11 @@ import {
   type RoutingDecision,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import type { RoutedDecision } from "../../strategies/route_decision";
-import { isBackgroundRequest } from "../../interaction/types";
-import { HttpError } from "../../http/errors";
-import { assertCreditAvailableBeforeRouting } from "../../telemetry/usage";
-import type { PreparedRoutedCompletion } from "../prepare_routed_completion";
+import type { RoutedDecision } from "../../strategies/route_decision.js";
+import { isBackgroundRequest } from "../../interaction/types.js";
+import { HttpError } from "../../http/errors.js";
+import { assertCreditAvailableBeforeRouting } from "../../telemetry/usage.js";
+import type { PreparedRoutedCompletion } from "../prepare_routed_completion.js";
 import { leaseFallbackDecision } from "../routing_lease.js";
 
 // Explicit background classes bypass the selector and every lease path.

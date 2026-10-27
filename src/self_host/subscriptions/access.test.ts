@@ -1,9 +1,9 @@
 import { Database } from "bun:sqlite";
 import { expect, test } from "bun:test";
 
-import { freshAccessToken } from "./access";
-import { SubscriptionStore } from "./store";
-import { fakeFetch, jsonResponse, tokens } from "./test_support";
+import { freshAccessToken } from "./access.js";
+import { SubscriptionStore } from "./store.js";
+import { fakeFetch, jsonResponse, tokens } from "./test_support.js";
 
 const now = new Date("2026-10-20T12:00:00Z");
 

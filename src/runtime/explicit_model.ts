@@ -1,9 +1,9 @@
 import type { RoutingCandidate, RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../http/errors";
-import { explicitModelId } from "../protocol/input/router_model";
-import type { RoutedDecision } from "../strategies/route_decision";
-import type { PreparedRoutedCompletion } from "./prepare_routed_completion";
+import { HttpError } from "../http/errors.js";
+import { explicitModelId } from "../protocol/input/router_model.js";
+import type { RoutedDecision } from "../strategies/route_decision.js";
+import type { PreparedRoutedCompletion } from "./prepare_routed_completion.js";
 
 /* A request for `dari/model/<id>` is served by exactly that enabled model,
    with no selector, lease, or fallback: the user chose it, like picking a

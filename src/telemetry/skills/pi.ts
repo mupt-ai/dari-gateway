@@ -2,9 +2,9 @@ import type {
   InteractionMessage,
   InteractionOutput,
   InteractionRequest,
-} from "../../interaction/types";
-import { interactionToolInput } from "../tools/input";
-import type { SkillObservation } from "./observations";
+} from "../../interaction/types.js";
+import { interactionToolInput } from "../tools/input.js";
+import type { SkillObservation } from "./observations.js";
 
 const CAPABILITY_PREFIX = "unattributed:name:";
 const MAX_CAPABILITY_ID_CHARS = 512;

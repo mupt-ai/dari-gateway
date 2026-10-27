@@ -4,8 +4,8 @@ import type {
   InteractionContent,
   InteractionItem,
   InteractionRequest,
-} from "../../../interaction/types";
-import { claudeSkillObservations } from "./observations";
+} from "../../../interaction/types.js";
+import { claudeSkillObservations } from "./observations.js";
 import {
   ANTHROPIC,
   CLAUDE,
@@ -15,7 +15,7 @@ import {
   message,
   output,
   request,
-} from "./test_support";
+} from "./test_support.js";
 
 test("Claude Code Skill attempts remain ordinary tool calls until activation", () => {
   const emitted = events({

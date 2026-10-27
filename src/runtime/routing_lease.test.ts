@@ -6,12 +6,12 @@ import type {
   ReasoningEffort,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import type { ResolvedRouter } from "../types";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { openAIResponsesToInteraction } from "../protocol/input/openai_responses";
-import { selectorMessagesForInteraction } from "../strategies/selector_projection";
-import { leasedRoutingDecision, leaseFallbackDecision } from "./routing_lease";
+import type { ResolvedRouter } from "../types.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
+import { selectorMessagesForInteraction } from "../strategies/selector_projection.js";
+import { leasedRoutingDecision, leaseFallbackDecision } from "./routing_lease.js";
 
 function msg(role: string): ChatMessage {
   return { role, content: "test" };

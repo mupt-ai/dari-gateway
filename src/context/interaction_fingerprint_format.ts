@@ -5,7 +5,7 @@ import { stableStringify } from "@mupt-ai/dari-router/policy-engine";
 import type {
   InteractionContent,
   InteractionRequest,
-} from "../interaction/types";
+} from "../interaction/types.js";
 
 // Bump when canonical fingerprint semantics change so persisted hashes from
 // incompatible contracts remain disjoint.

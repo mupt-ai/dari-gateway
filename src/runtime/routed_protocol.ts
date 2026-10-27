@@ -1,6 +1,6 @@
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
-import type { InteractionOutput, InteractionRequest, ProviderIdentity } from "../interaction/types";
-import type { ProviderStreamOutcome } from "./provider_stream_outcome";
+import type { InteractionOutput, InteractionRequest, ProviderIdentity } from "../interaction/types.js";
+import type { ProviderStreamOutcome } from "./provider_stream_outcome.js";
 
 export type RoutedCompletionResponseArgs = {
   id: string;

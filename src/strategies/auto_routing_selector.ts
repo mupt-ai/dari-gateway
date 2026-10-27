@@ -1,6 +1,6 @@
 import { parseSelectorDecision } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
-import type { SelectorBackend } from "./routing";
+import { HttpError } from "../http/errors.js";
+import type { SelectorBackend } from "./routing.js";
 
 export const DARI_AUTO_ROUTING_ENDPOINT = "https://routing.dari.dev/v1/auto-router";
 // Same selector identity and input budget as `createAutoRouter` in

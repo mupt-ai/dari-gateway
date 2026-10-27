@@ -3,13 +3,13 @@ import {
   resolvedSkillPath,
   type NormalizedSkillPath,
   type PathPlatform,
-} from "./paths";
+} from "./paths.js";
 import {
   executableCommand,
   restrictedShellSegments,
   trustedExecutableName,
   type ShellOperator,
-} from "./shell_words";
+} from "./shell_words.js";
 
 const MAX_SHELL_NESTING = 16;
 const NO_VALUE_FLAGS = new Set<string>();

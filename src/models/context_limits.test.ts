@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
-import { effectiveContextWindow } from "./context_limits";
-import type { ResolvedRouterModelConfig } from "../types";
+import { effectiveContextWindow } from "./context_limits.js";
+import type { ResolvedRouterModelConfig } from "../types.js";
 
 const config: ResolvedRouterModelConfig = {
   provider: "openai",

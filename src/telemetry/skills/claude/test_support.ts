@@ -4,9 +4,9 @@ import type {
   InteractionOutput,
   InteractionRequest,
   ProviderIdentity,
-} from "../../../interaction/types";
-import type { HarnessConversationIdentity } from "../../../runtime/harness_identity";
-import { toolSkillEvents } from "../../tools/observations";
+} from "../../../interaction/types.js";
+import type { HarnessConversationIdentity } from "../../../runtime/harness_identity/index.js";
+import { toolSkillEvents } from "../../tools/observations.js";
 
 export const ANTHROPIC: ProviderIdentity = {
   provider: "anthropic",

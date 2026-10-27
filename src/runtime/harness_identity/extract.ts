@@ -1,12 +1,12 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../../http/errors";
+import { HttpError } from "../../http/errors.js";
 import type {
   AgentRequestClass,
   AgentRequestContext,
   InteractionRequestPurpose,
-} from "../../interaction/types";
-import type { HarnessConversationIdentity } from "./conversation";
+} from "../../interaction/types.js";
+import type { HarnessConversationIdentity } from "./conversation.js";
 
 const MAX_ID_CHARS = 200;
 

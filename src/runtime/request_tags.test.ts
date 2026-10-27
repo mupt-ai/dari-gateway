@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { requestTags } from "./request_tags";
+import { requestTags } from "./request_tags.js";
 
 test("tags parse as trimmed key=value pairs", () => {
   expect(requestTags("run=r1, trial=3,setting=a=b")).toEqual({ run: "r1", trial: "3", setting: "a=b" });

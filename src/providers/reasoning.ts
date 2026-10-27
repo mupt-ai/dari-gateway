@@ -1,6 +1,6 @@
 import type { ReasoningEffort } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
-import type { InteractionRequest } from "../interaction/types";
+import { HttpError } from "../http/errors.js";
+import type { InteractionRequest } from "../interaction/types.js";
 
 type ReasoningRequest = Pick<InteractionRequest, "reasoning">;
 

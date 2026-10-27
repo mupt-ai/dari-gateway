@@ -14,8 +14,8 @@
 import type { Database } from "bun:sqlite";
 import type { ReasoningEffort, RouterPrefixHit } from "@mupt-ai/dari-router/policy-engine";
 
-import type { PendingLeaseWrite, PrefixStateWrite } from "../platform/platform";
-import { ROUTING_PREFIX_HASHES_MAX_COUNT } from "../platform/routing_contract";
+import type { PendingLeaseWrite, PrefixStateWrite } from "../platform/platform.js";
+import { ROUTING_PREFIX_HASHES_MAX_COUNT } from "../platform/routing_contract.js";
 
 // Resolve returns entries up to this age so a continuation after a pause still
 // recovers its conversation id and previous decision; the runtime itself

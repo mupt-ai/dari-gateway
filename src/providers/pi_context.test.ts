@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
-import { buildContext } from "./pi_context";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
+import { buildContext } from "./pi_context.js";
 
 const OPENAI_GPT_55: ProviderIdentity = {
   provider: "openai",

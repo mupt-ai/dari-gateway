@@ -1,19 +1,19 @@
 import type {
   InteractionOutput,
   InteractionRequest,
-} from "../../../interaction/types";
-import { interactionToolInput } from "../../tools/input";
+} from "../../../interaction/types.js";
+import { interactionToolInput } from "../../tools/input.js";
 import {
   claudeSkillCapabilityId,
   claudeSystemSkillNames,
-} from "./catalog";
+} from "./catalog.js";
 import {
   normalizedAbsoluteSkillPath,
   skillPathSegments,
   type NormalizedSkillPath,
-} from "../paths";
-import type { SkillObservation } from "../observations";
-import { readPathsFromShellCommand } from "../shell_file_reads";
+} from "../paths.js";
+import type { SkillObservation } from "../observations.js";
+import { readPathsFromShellCommand } from "../shell_file_reads.js";
 
 const MAX_COMMAND_CHARS = 64 * 1024;
 const SKILL_FILE_NAME = "SKILL.md";

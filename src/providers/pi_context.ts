@@ -1,7 +1,7 @@
 import { encodeOpenAIReasoningSignature } from "@mupt-ai/dari-router/protocols";
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../http/errors";
+import { HttpError } from "../http/errors.js";
 import type {
   InteractionContent,
   InteractionItem,
@@ -9,14 +9,14 @@ import type {
   InteractionTool,
   ProviderContinuationState,
   ProviderIdentity,
-} from "../interaction/types";
-import { parseDataImageUrl } from "../interaction/image";
-import { providerToolCallId, toolWireName } from "../interaction/tool_identity";
+} from "../interaction/types.js";
+import { parseDataImageUrl } from "../interaction/image.js";
+import { providerToolCallId, toolWireName } from "../interaction/tool_identity.js";
 import {
   compatibleProviderContinuation,
   sameProviderIdentity,
-} from "../interaction/provider_continuation_state";
-import { isOpenAIResponsesApi } from "./model_capabilities";
+} from "../interaction/provider_continuation_state.js";
+import { isOpenAIResponsesApi } from "./model_capabilities.js";
 
 const UNKNOWN_SOURCE: ProviderIdentity = {
   provider: "dari",

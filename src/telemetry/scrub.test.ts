@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { scrubSecretValues, scrubSecrets } from "./scrub";
+import { scrubSecretValues, scrubSecrets } from "./scrub.js";
 
 test("scrubs explicit AWS credential values from nested provider output", () => {
   const secrets = ["AKIAEXAMPLE", "secret-example", "session-example"];

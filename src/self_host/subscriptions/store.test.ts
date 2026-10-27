@@ -1,8 +1,8 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 
-import { SubscriptionStore } from "./store";
-import { tokens } from "./test_support";
+import { SubscriptionStore } from "./store.js";
+import { tokens } from "./test_support.js";
 
 const now = new Date("2026-10-20T12:00:00Z");
 const later = (minutes: number) => new Date(now.getTime() + minutes * 60_000);

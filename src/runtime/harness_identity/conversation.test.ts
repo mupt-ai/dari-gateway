@@ -4,7 +4,7 @@ import {
   scopedHarnessConversationId,
   scopedHarnessSessionId,
   type HarnessConversationScope,
-} from "./conversation";
+} from "./conversation.js";
 
 const SCOPE: HarnessConversationScope = {
   organizationId: "org_1",

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { messageWithProviderReportedCost, providerReportedCostTap, reportedCost } from "./provider_reported_cost";
+import { messageWithProviderReportedCost, providerReportedCostTap, reportedCost } from "./provider_reported_cost.js";
 
 test("reads OpenRouter and Vercel AI Gateway billed cost", () => {
   expect(reportedCost({ usage: { cost: 0.012 } })).toBe(0.012);
@@ -39,8 +39,8 @@ test("a reported cost on a thrown error keeps its message and marks it failed", 
 });
 
 test("a reported cost on an error event survives failure handling", async () => {
-  const { eventsWithProviderReportedCost } = await import("./provider_reported_cost");
-  const { providerFailureFromEvent } = await import("../runtime/provider_stream_outcome");
+  const { eventsWithProviderReportedCost } = await import("./provider_reported_cost.js");
+  const { providerFailureFromEvent } = await import("../runtime/provider_stream_outcome.js");
   async function* events() {
     yield { type: "error", error: new Error("upstream reset") };
   }

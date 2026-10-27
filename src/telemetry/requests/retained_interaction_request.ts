@@ -1,4 +1,4 @@
-import type { InteractionRequest } from "../../interaction/types";
+import type { InteractionRequest } from "../../interaction/types.js";
 
 export const RETAINED_INTERACTION_REQUEST_FORMAT = "interaction_request_v1" as const;
 

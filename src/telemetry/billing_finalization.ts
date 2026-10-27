@@ -1,6 +1,6 @@
-import type { InteractionUsage } from "../interaction/types";
-import type { ProviderKeySource } from "../types";
-import { finiteNumber, isRecord, tokenCount } from "./ingest_values";
+import type { InteractionUsage } from "../interaction/types.js";
+import type { ProviderKeySource } from "../types.js";
+import { finiteNumber, isRecord, tokenCount } from "./ingest_values.js";
 
 const BILLING_EVENT_SCHEMA_VERSION = 1;
 

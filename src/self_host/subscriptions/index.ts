@@ -18,8 +18,8 @@
  * `store.markUnavailable` holds that subscription until its reset and says
  * whether another one can serve the retry.
  */
-export { freshAccessToken } from "./access";
-export { handleSubscriptionRequest, type SubscriptionHttpDeps } from "./http";
+export { freshAccessToken } from "./access.js";
+export { handleSubscriptionRequest, type SubscriptionHttpDeps } from "./http.js";
 export {
   CODEX_APPROVAL_PENDING,
   SUBSCRIPTION_PROVIDERS,
@@ -34,10 +34,10 @@ export {
   type OAuthOptions,
   type OAuthTokens,
   type SubscriptionProvider,
-} from "./oauth";
+} from "./oauth.js";
 export {
   SubscriptionStore,
   isHeld,
   type PendingOAuthSession,
   type SubscriptionCredential,
-} from "./store";
+} from "./store.js";

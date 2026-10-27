@@ -21,21 +21,21 @@ import {
   type SelectorInput,
   type SelectorLeaseHistoryEntry,
 } from "@mupt-ai/dari-router/policy-engine";
-import { HttpError } from "../http/errors";
-import { executionProviderForModel } from "../models/execution_provider";
-import { providerLabel } from "../models/provider_defaults";
-import { internalChatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { gatewayPlatform, type ResolveRouterRequest } from "../platform/platform";
-import { isBedrockApi } from "../providers/model_capabilities";
-import { completeInteractionModel, modelContextWindow } from "../providers/pi";
+import { HttpError } from "../http/errors.js";
+import { executionProviderForModel } from "../models/execution_provider.js";
+import { providerLabel } from "../models/provider_defaults.js";
+import { internalChatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { gatewayPlatform, type ResolveRouterRequest } from "../platform/platform.js";
+import { isBedrockApi } from "../providers/model_capabilities.js";
+import { completeInteractionModel, modelContextWindow } from "../providers/pi.js";
 import type {
   AwsAssumeRoleProviderAuth,
   AwsSigV4ProviderAuth,
   ProviderAuth,
   ResolvedRouter,
-} from "../types";
-import { deriveFallbackDecision } from "./fallback_decision";
-import type { SelectorImage } from "./selector_projection";
+} from "../types.js";
+import { deriveFallbackDecision } from "./fallback_decision.js";
+import type { SelectorImage } from "./selector_projection.js";
 
 export function resolveRouter(args: ResolveRouterRequest): Promise<ResolvedRouter> {
   return gatewayPlatform().resolveRouter(args);

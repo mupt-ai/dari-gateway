@@ -1,14 +1,14 @@
 import { expect, test } from "bun:test";
 
-import type { InteractionRequest } from "../interaction/types";
-import { piMessageToInteractionOutput } from "./pi_output";
+import type { InteractionRequest } from "../interaction/types.js";
+import { piMessageToInteractionOutput } from "./pi_output.js";
 import {
   completeInteractionModel,
   modelFixtures,
   piFixture,
   streamInteractionModel,
-} from "./pi.fixtures";
-import { buildOptions } from "./pi_options";
+} from "./pi.fixtures.js";
+import { buildOptions } from "./pi_options.js";
 
 const SAFEGUARDS = [{
   type: "dangerous_tool_use",

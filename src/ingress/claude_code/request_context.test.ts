@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { claudeCodeRequestContext } from "./request_context";
+import { claudeCodeRequestContext } from "./request_context.js";
 
 for (const requestClass of ["main", "subagent", "workflow", "auxiliary", "compaction", "side_reply"] as const) {
   test(`Claude header classifies ${requestClass}`, () => {

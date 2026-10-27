@@ -1,4 +1,4 @@
-import { bindGatewayPlatform, type GatewayPlatform } from "../platform/platform";
+import { bindGatewayPlatform, type GatewayPlatform } from "../platform/platform.js";
 
 /**
  * A platform for unit tests: state writes and reporting are accepted and

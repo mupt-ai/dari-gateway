@@ -1,4 +1,4 @@
-import type { ProviderContinuationState } from "../../interaction/types";
+import type { ProviderContinuationState } from "../../interaction/types.js";
 
 export function chatReasoningDetailId(
   continuation: ProviderContinuationState,

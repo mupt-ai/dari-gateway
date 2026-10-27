@@ -1,12 +1,12 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 
-import { HttpError } from "../http/errors";
-import type { ResolveRouterRequest } from "../platform/platform";
-import { parseGatewayConfig } from "./config";
-import { resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve";
-import { SubscriptionStore } from "./subscriptions";
-import { codexAccessToken, tokens } from "./subscriptions/test_support";
+import { HttpError } from "../http/errors.js";
+import type { ResolveRouterRequest } from "../platform/platform.js";
+import { parseGatewayConfig } from "./config.js";
+import { resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve.js";
+import { SubscriptionStore } from "./subscriptions/index.js";
+import { codexAccessToken, tokens } from "./subscriptions/test_support.js";
 
 const FUTURE = new Date(Date.now() + 24 * 60 * 60_000);
 

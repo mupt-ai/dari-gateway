@@ -1,7 +1,7 @@
 import type {
   InteractionMessage,
   InteractionRequest,
-} from "../../../interaction/types";
+} from "../../../interaction/types.js";
 
 const MAX_CAPABILITY_ID_CHARS = 512;
 const MAX_SKILL_NAME_CHARS = 512;

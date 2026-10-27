@@ -1,23 +1,23 @@
 import { isRecord, stableStringify } from "@mupt-ai/dari-router/policy-engine";
 
-import { interactionPrefixChain } from "../../context/interaction_fingerprint";
+import { interactionPrefixChain } from "../../context/interaction_fingerprint.js";
 import type {
   InteractionContent,
   InteractionItem,
   InteractionOutput,
   InteractionRequest,
   InteractionToolResult,
-} from "../../interaction/types";
-import { isProtocolToolCallId } from "../../interaction/tool_identity";
-import { anthropicMessagesToInteraction } from "../../protocol/input/anthropic_messages";
-import { internalChatCompletionsToInteraction } from "../../protocol/input/chat_completions";
-import { anthropicContent } from "../../protocol/output/anthropic_messages_output";
-import { assistantMessagePayload } from "../../protocol/output/chat_completions";
-import type { HarnessConversationIdentity } from "../../runtime/harness_identity";
+} from "../../interaction/types.js";
+import { isProtocolToolCallId } from "../../interaction/tool_identity.js";
+import { anthropicMessagesToInteraction } from "../../protocol/input/anthropic_messages.js";
+import { internalChatCompletionsToInteraction } from "../../protocol/input/chat_completions.js";
+import { anthropicContent } from "../../protocol/output/anthropic_messages_output.js";
+import { assistantMessagePayload } from "../../protocol/output/chat_completions.js";
+import type { HarnessConversationIdentity } from "../../runtime/harness_identity/index.js";
 import {
   inputSkillObservations,
   outputSkillObservations,
-} from "../skills/observations";
+} from "../skills/observations.js";
 
 const MAX_TOOL_SKILL_EVENTS = 1000;
 

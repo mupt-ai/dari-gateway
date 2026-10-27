@@ -1,18 +1,18 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
-import { anthropicMessagesResponse } from "../protocol/output/anthropic_messages";
-import { anthropicMessagesSseStream } from "../protocol/output/anthropic_messages_stream";
-import { anthropicToken } from "../http/auth";
-import { errorResponseHeaders, normalizeError } from "../http/errors";
-import { captureRequestError } from "../observability/errors";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { handleRoutedCompletion } from "../runtime/routed_completion";
-import type { SelectorBackend } from "../strategies/routing";
-import { claudeCodeRequestContext } from "./claude_code/request_context";
+import { anthropicMessagesResponse } from "../protocol/output/anthropic_messages.js";
+import { anthropicMessagesSseStream } from "../protocol/output/anthropic_messages_stream.js";
+import { anthropicToken } from "../http/auth.js";
+import { errorResponseHeaders, normalizeError } from "../http/errors.js";
+import { captureRequestError } from "../observability/errors.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { handleRoutedCompletion } from "../runtime/routed_completion.js";
+import type { SelectorBackend } from "../strategies/routing.js";
+import { claudeCodeRequestContext } from "./claude_code/request_context.js";
 import {
   claudeCodeConversationIdentity,
-} from "../runtime/harness_identity";
-import { parseJsonRequest } from "./json";
-import type { AnthropicSafeguards } from "../interaction/types";
+} from "../runtime/harness_identity/index.js";
+import { parseJsonRequest } from "./json.js";
+import type { AnthropicSafeguards } from "../interaction/types.js";
 
 type AnthropicErrorType =
   | "authentication_error"

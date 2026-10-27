@@ -1,8 +1,8 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 
-import type { PendingLeaseWrite, PrefixStateWrite } from "../platform/platform";
-import { PrefixStore } from "./prefix_store";
+import type { PendingLeaseWrite, PrefixStateWrite } from "../platform/platform.js";
+import { PrefixStore } from "./prefix_store.js";
 
 const ROUTER = "router-1";
 const T0 = new Date("2026-10-20T12:00:00.000Z");

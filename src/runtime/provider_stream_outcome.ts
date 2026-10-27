@@ -1,6 +1,6 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
-import type { InteractionOutput } from "../interaction/types";
-import { scrubSecrets } from "../telemetry/scrub";
+import type { InteractionOutput } from "../interaction/types.js";
+import { scrubSecrets } from "../telemetry/scrub.js";
 
 export type ProviderStreamOutcome =
   | {

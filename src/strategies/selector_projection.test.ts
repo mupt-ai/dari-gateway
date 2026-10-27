@@ -1,10 +1,10 @@
 import { expect, test } from "bun:test";
 
-import { encodeProviderContinuationState } from "../interaction/provider_continuation_state";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
-import { selectorMessagesForInteraction } from "./selector_projection";
+import { encodeProviderContinuationState } from "../interaction/provider_continuation_state.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
+import { selectorMessagesForInteraction } from "./selector_projection.js";
 
 const OPENAI: ProviderIdentity = {
   provider: "openai",

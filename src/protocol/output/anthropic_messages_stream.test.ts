@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 
-import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { decodeUntrustedPortableReasoningState } from "../../interaction/portable_reasoning_state";
-import type { InteractionRequest, ProviderIdentity } from "../../interaction/types";
-import { anthropicMessagesSseStream } from "./anthropic_messages_stream";
+import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { decodeUntrustedPortableReasoningState } from "../../interaction/portable_reasoning_state.js";
+import type { InteractionRequest, ProviderIdentity } from "../../interaction/types.js";
+import { anthropicMessagesSseStream } from "./anthropic_messages_stream.js";
 
 const CLAUDE: ProviderIdentity = {
   provider: "anthropic",

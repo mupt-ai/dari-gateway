@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { HttpError } from "../http/errors";
-import { createAutoRoutingSelectorBackend } from "./auto_routing_selector";
-import { selectModel } from "./routing";
+import { HttpError } from "../http/errors.js";
+import { createAutoRoutingSelectorBackend } from "./auto_routing_selector.js";
+import { selectModel } from "./routing.js";
 
 const candidates = [
   { model: "anthropic/claude-sonnet-4-5", reasoningEffort: "medium" as const },

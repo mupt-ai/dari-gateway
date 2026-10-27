@@ -1,12 +1,12 @@
 import { expect, test } from "bun:test";
 
-import { HttpError } from "../http/errors";
+import { HttpError } from "../http/errors.js";
 import {
   decodeUntrustedProviderContinuationState,
   encodeProviderContinuationState,
   providerIdentityFromModel,
-} from "./provider_continuation_state";
-import type { ProviderContinuationState } from "./types";
+} from "./provider_continuation_state.js";
+import type { ProviderContinuationState } from "./types.js";
 
 const states: ProviderContinuationState[] = [
   {

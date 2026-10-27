@@ -2,12 +2,12 @@ import { expect, test } from "bun:test";
 
 import { conversationBlockCount } from "@mupt-ai/dari-router/policy-engine";
 
-import type { InteractionRequest } from "../interaction/types";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { openAIResponsesToInteraction } from "../protocol/input/openai_responses";
-import { selectorMessagesForInteraction } from "../strategies/selector_projection";
-import { interactionLeaseFenceDepth } from "./interaction_lease_depth";
+import type { InteractionRequest } from "../interaction/types.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
+import { selectorMessagesForInteraction } from "../strategies/selector_projection.js";
+import { interactionLeaseFenceDepth } from "./interaction_lease_depth.js";
 
 const CHAT = chatCompletionsToInteraction({
   model: "dari/routing",

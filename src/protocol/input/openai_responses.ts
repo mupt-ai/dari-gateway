@@ -2,15 +2,15 @@ import { createHash } from "node:crypto";
 
 import { isReasoningEffort, isRecord, type ReasoningEffort } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../../http/errors";
-import { parseDataImageUrl } from "../../interaction/image";
-import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { CANONICAL_ROUTER_MODEL, explicitModelId, unsupportedModelMessage } from "./router_model";
+import { HttpError } from "../../http/errors.js";
+import { parseDataImageUrl } from "../../interaction/image.js";
+import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { CANONICAL_ROUTER_MODEL, explicitModelId, unsupportedModelMessage } from "./router_model.js";
 import {
   isProtocolToolCallId,
   TOOL_CALL_ID_MAX_LENGTH,
   toolsByWireName,
-} from "../../interaction/tool_identity";
+} from "../../interaction/tool_identity.js";
 import type {
   InteractionContent,
   InteractionItem,
@@ -20,7 +20,7 @@ import type {
   InteractionTool,
   InteractionToolChoice,
   ToolKind,
-} from "../../interaction/types";
+} from "../../interaction/types.js";
 
 const UNSUPPORTED_INPUT_ITEM_TYPES = new Set([
   "additional_tools",

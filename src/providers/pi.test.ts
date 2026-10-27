@@ -4,11 +4,11 @@ import {
   getSupportedThinkingLevels as getPiSupportedThinkingLevels,
 } from "@mupt-ai/pi-ai";
 
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { openAIResponsesToInteraction } from "../protocol/input/openai_responses";
-import { buildOptions, supportedThinkingLevels } from "./pi_options";
-import type { ResolvedRouterModelConfig } from "../types";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
+import { buildOptions, supportedThinkingLevels } from "./pi_options.js";
+import type { ResolvedRouterModelConfig } from "../types.js";
 import {
   buildModel,
   buildModelOptions,
@@ -19,7 +19,7 @@ import {
   piFixture,
   providerEvents,
   requestWithReasoning,
-} from "./pi.fixtures";
+} from "./pi.fixtures.js";
 
 test("builds request-scoped AWS environment values for Bedrock SigV4", () => {
   const options = buildOptions(

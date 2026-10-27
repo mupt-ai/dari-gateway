@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { RouterPrefixHit } from "@mupt-ai/dari-router/policy-engine";
 
-import { leaseHistoryFromPrefixHits } from "./lease_history";
+import { leaseHistoryFromPrefixHits } from "./lease_history.js";
 
 describe("production lease history", () => {
   test("reconstructs an in-progress lease from prefix countdown state", () => {

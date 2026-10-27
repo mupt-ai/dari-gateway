@@ -1,4 +1,4 @@
-import type { OAuthFetch, OAuthTokens } from "./oauth";
+import type { OAuthFetch, OAuthTokens } from "./oauth.js";
 
 export type RecordedCall = { url: string; init: RequestInit; body: string };
 

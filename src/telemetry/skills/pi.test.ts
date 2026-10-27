@@ -4,8 +4,8 @@ import type {
   InteractionItem,
   InteractionOutput,
   InteractionRequest,
-} from "../../interaction/types";
-import { toolSkillEvents } from "../tools/observations";
+} from "../../interaction/types.js";
+import { toolSkillEvents } from "../tools/observations.js";
 
 const EXPANDED_SKILL = `<skill name="openai-docs" location="/tmp/skills/openai-docs/SKILL.md">
 References are relative to /tmp/skills/openai-docs.

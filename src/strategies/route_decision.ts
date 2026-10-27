@@ -5,13 +5,13 @@ import type {
   StrategyCandidateResolution,
   SelectorLeaseHistoryEntry,
 } from "@mupt-ai/dari-router/policy-engine";
-import { publicCatalogSelectorEvals } from "../context/eval_catalog";
-import { HttpError } from "../http/errors";
-import { relevantEvals } from "./eval_relevance";
-import { executionProviderForModel } from "../models/execution_provider";
-import { selectModel, type SelectorBackend, type SelectorRun } from "./routing";
-import type { SelectorImage } from "./selector_projection";
-import type { ResolvedRouter } from "../types";
+import { publicCatalogSelectorEvals } from "../context/eval_catalog.js";
+import { HttpError } from "../http/errors.js";
+import { relevantEvals } from "./eval_relevance.js";
+import { executionProviderForModel } from "../models/execution_provider.js";
+import { selectModel, type SelectorBackend, type SelectorRun } from "./routing.js";
+import type { SelectorImage } from "./selector_projection.js";
+import type { ResolvedRouter } from "../types.js";
 
 export type RoutedDecision = {
   decision: RoutingDecision;

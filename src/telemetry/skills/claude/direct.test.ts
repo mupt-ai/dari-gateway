@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { anthropicMessagesToInteraction } from "../../../protocol/input/anthropic_messages";
+import { anthropicMessagesToInteraction } from "../../../protocol/input/anthropic_messages.js";
 import {
   ANTHROPIC,
   availableSkills,
@@ -12,7 +12,7 @@ import {
   output,
   request,
   skillEvent,
-} from "./test_support";
+} from "./test_support.js";
 
 test("records exact Claude Code direct skill command envelopes", () => {
   const emitted = events({

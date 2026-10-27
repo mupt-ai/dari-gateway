@@ -5,16 +5,16 @@ import type {
   InteractionRequest,
   InteractionToolCall,
   InteractionToolResult,
-} from "../../../interaction/types";
+} from "../../../interaction/types.js";
 import type {
   SkillEvidenceSource,
   SkillObservation,
-} from "../observations";
+} from "../observations.js";
 import {
   claudeAvailableSkillNames,
   claudeSkillCapabilityId,
   normalizedClaudeSkillName,
-} from "./catalog";
+} from "./catalog.js";
 
 const MAX_SKILL_PATH_CHARS = 16 * 1024;
 const UNSAFE_DISPLAY_CHARACTERS = /[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/u;

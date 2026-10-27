@@ -1,6 +1,6 @@
-import { captureOperationalError } from "../observability/errors";
-import { drainBackgroundTelemetryFor } from "../telemetry/background";
-import { startHttp2Server } from "./http2_server";
+import { captureOperationalError } from "../observability/errors.js";
+import { drainBackgroundTelemetryFor } from "../telemetry/background.js";
+import { startHttp2Server } from "./http2_server.js";
 
 const GRACEFUL_SERVER_STOP_TIMEOUT_MS = 5_000;
 const FORCE_STOP_SETTLE_TIMEOUT_MS = 250;

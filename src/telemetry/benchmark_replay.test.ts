@@ -5,7 +5,7 @@ import type { PrefixHit, RouterModelPrice } from "@mupt-ai/dari-router/policy-en
 import {
   BENCHMARK_REPLAY_ESTIMATOR_VERSION,
   estimateBenchmarkReplay,
-} from "./benchmark_replay";
+} from "./benchmark_replay.js";
 
 const RECEIVED_AT_MS = Date.parse("2026-07-14T12:00:00Z");
 const PRICES: Record<string, RouterModelPrice> = {

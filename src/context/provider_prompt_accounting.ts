@@ -4,15 +4,15 @@ import {
   type CandidatePromptAccounting,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { toolsByWireName } from "../interaction/tool_identity";
+import { toolsByWireName } from "../interaction/tool_identity.js";
 import type {
   InteractionContent,
   InteractionRequest,
   ProviderIdentity,
-} from "../interaction/types";
-import { buildContext } from "../providers/pi_context";
-import { isOpenAIResponsesApi } from "../providers/model_capabilities";
-import type { InteractionPrefixContext } from "./interaction_fingerprint";
+} from "../interaction/types.js";
+import { buildContext } from "../providers/pi_context.js";
+import { isOpenAIResponsesApi } from "../providers/model_capabilities.js";
+import type { InteractionPrefixContext } from "./interaction_fingerprint.js";
 
 type PromptMetrics = {
   blockDepth: number;

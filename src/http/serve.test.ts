@@ -1,7 +1,7 @@
 import { beforeEach, expect, test } from "bun:test";
 
-import { bindTestPlatform } from "../test_support/platform";
-import { stopServerForShutdown } from "./serve";
+import { bindTestPlatform } from "../test_support/platform.js";
+import { stopServerForShutdown } from "./serve.js";
 
 beforeEach(() => {
   bindTestPlatform();

@@ -1,12 +1,12 @@
 import { isReasoningEffort, isRecord, type ChatCompletionRequest } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../../http/errors";
-import { parseDataImageUrl } from "../../interaction/image";
-import { CANONICAL_ROUTER_MODEL, explicitModelId, unsupportedModelMessage } from "./router_model";
+import { HttpError } from "../../http/errors.js";
+import { parseDataImageUrl } from "../../interaction/image.js";
+import { CANONICAL_ROUTER_MODEL, explicitModelId, unsupportedModelMessage } from "./router_model.js";
 import {
   isProtocolToolCallId,
   TOOL_CALL_ID_MAX_LENGTH,
-} from "../../interaction/tool_identity";
+} from "../../interaction/tool_identity.js";
 
 export function validateChatCompletionsRequest(request: ChatCompletionRequest): void {
   if (request.model !== CANONICAL_ROUTER_MODEL && explicitModelId(request.model) === null) {

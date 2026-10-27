@@ -1,9 +1,9 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 
-import { handleSubscriptionRequest } from "./http";
-import { SubscriptionStore } from "./store";
-import { codexAccessToken, fakeFetch, jsonResponse, type RecordedCall } from "./test_support";
+import { handleSubscriptionRequest } from "./http.js";
+import { SubscriptionStore } from "./store.js";
+import { codexAccessToken, fakeFetch, jsonResponse, type RecordedCall } from "./test_support.js";
 
 const BASE = "http://gateway.test/v1/organizations/current/credentials";
 const now = new Date("2026-10-20T12:00:00Z");

@@ -1,27 +1,27 @@
 import type { CandidatePruningAudit } from "@mupt-ai/dari-router/policy-engine";
 
-import { interactionConversationPrefix } from "../context/interaction_fingerprint";
+import { interactionConversationPrefix } from "../context/interaction_fingerprint.js";
 import {
   buildRoutingContext,
   derivePrefixLookupHashes,
   type ImageCapabilityPrunedModel,
   type RoutingContext,
-} from "../context/routing_context";
-import { isBackgroundRequest, type InteractionRequest } from "../interaction/types";
-import { executionProviderForModel } from "../models/execution_provider";
-import { gatewayPlatform, type RequestTags } from "../platform/platform";
-import { resolveRouter } from "../strategies/routing";
-import { RequestReporter, type ReportedCandidatePruning } from "../telemetry/report";
-import { RoutingBillingFinalization } from "../telemetry/billing_finalization";
-import type { ClientHarness, ProviderCredential, ResolvedRouter } from "../types";
-import { requestTags } from "./request_tags";
-import type { RoutedRuntimeReporter } from "./runtime_reporter";
-import type { RoutedProtocol } from "./routed_protocol";
+} from "../context/routing_context.js";
+import { isBackgroundRequest, type InteractionRequest } from "../interaction/types.js";
+import { executionProviderForModel } from "../models/execution_provider.js";
+import { gatewayPlatform, type RequestTags } from "../platform/platform.js";
+import { resolveRouter } from "../strategies/routing.js";
+import { RequestReporter, type ReportedCandidatePruning } from "../telemetry/report.js";
+import { RoutingBillingFinalization } from "../telemetry/billing_finalization.js";
+import type { ClientHarness, ProviderCredential, ResolvedRouter } from "../types.js";
+import { requestTags } from "./request_tags.js";
+import type { RoutedRuntimeReporter } from "./runtime_reporter.js";
+import type { RoutedProtocol } from "./routed_protocol.js";
 import {
   scopedHarnessConversationId,
   scopedHarnessSessionId,
   type HarnessConversationIdentity,
-} from "./harness_identity";
+} from "./harness_identity/index.js";
 
 export type PreparedRoutedCompletion = {
   requestId: string;

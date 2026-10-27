@@ -6,7 +6,7 @@ import {
   type ProviderIdentity,
 } from "@mupt-ai/dari-router/protocols";
 
-import { rethrowFrameworkErrorAsHttp } from "../http/errors";
+import { rethrowFrameworkErrorAsHttp } from "../http/errors.js";
 
 export type { ProviderContinuationState, ProviderIdentity } from "@mupt-ai/dari-router/protocols";
 export { compatibleProviderContinuation, isAnthropicEffort, sameProviderIdentity } from "@mupt-ai/dari-router/protocols";

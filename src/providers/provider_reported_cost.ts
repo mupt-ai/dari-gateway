@@ -1,8 +1,8 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import { gatewayFor } from "../models/gateways";
-import { providerFailureFromCaught } from "../runtime/provider_stream_outcome";
-import type { ProviderFetch } from "./response_capture";
+import { gatewayFor } from "../models/gateways.js";
+import { providerFailureFromCaught } from "../runtime/provider_stream_outcome.js";
+import type { ProviderFetch } from "./response_capture.js";
 
 // Gateways bill per call and say what they billed: OpenRouter as `usage.cost`
 // on the final chunk, Vercel AI Gateway as `providerMetadata.gateway.cost`.

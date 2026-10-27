@@ -1,5 +1,5 @@
-import { HttpError } from "../../http/errors";
-import type { AgentRequestContext, AgentRequestClass } from "../../interaction/types";
+import { HttpError } from "../../http/errors.js";
+import type { AgentRequestContext, AgentRequestClass } from "../../interaction/types.js";
 
 const REQUEST_CLASSES = new Set<AgentRequestClass>([
   "main", "subagent", "workflow", "auxiliary", "compaction", "side_reply",

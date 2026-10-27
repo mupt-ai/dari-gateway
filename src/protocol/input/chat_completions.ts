@@ -5,7 +5,7 @@ import {
   type ResponseFormat,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../../http/errors";
+import { HttpError } from "../../http/errors.js";
 import type {
   InteractionContent,
   InteractionItem,
@@ -14,10 +14,10 @@ import type {
   InteractionResponseFormat,
   InteractionTool,
   InteractionToolChoice,
-} from "../../interaction/types";
-import { toolsByWireName } from "../../interaction/tool_identity";
-import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state";
-import { validateChatCompletionsRequest } from "./chat_completions_validation";
+} from "../../interaction/types.js";
+import { toolsByWireName } from "../../interaction/tool_identity.js";
+import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import { validateChatCompletionsRequest } from "./chat_completions_validation.js";
 
 export function chatCompletionsToInteraction(request: ChatCompletionRequest): InteractionRequest {
   validateChatCompletionsRequest(request);

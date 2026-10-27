@@ -1,7 +1,7 @@
 import { expect, test } from "bun:test";
 
-import { executionProviderForModel } from "./execution_provider";
-import type { ResolvedRouter } from "../types";
+import { executionProviderForModel } from "./execution_provider.js";
+import type { ResolvedRouter } from "../types.js";
 
 const router = {
   router_id: "rtr_1",

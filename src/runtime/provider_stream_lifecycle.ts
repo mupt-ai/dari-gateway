@@ -1,4 +1,4 @@
-import type { ProviderStreamOutcome } from "./provider_stream_outcome";
+import type { ProviderStreamOutcome } from "./provider_stream_outcome.js";
 
 type LifecycleArgs = {
   partialResponse: () => Record<string, unknown>;

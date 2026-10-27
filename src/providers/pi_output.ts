@@ -1,9 +1,9 @@
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
 
-import { HttpError } from "../http/errors";
-import { providerToolCallIdentity, toolsByWireName } from "../interaction/tool_identity";
-import { isAnthropicEffort } from "../interaction/provider_continuation_state";
-import { isBedrockApi, isOpenAIResponsesApi } from "./model_capabilities";
+import { HttpError } from "../http/errors.js";
+import { providerToolCallIdentity, toolsByWireName } from "../interaction/tool_identity.js";
+import { isAnthropicEffort } from "../interaction/provider_continuation_state.js";
+import { isBedrockApi, isOpenAIResponsesApi } from "./model_capabilities.js";
 import type {
   InteractionItem,
   InteractionOutput,
@@ -13,7 +13,7 @@ import type {
   ProviderContinuationState,
   ProviderIdentity,
   ToolKind,
-} from "../interaction/types";
+} from "../interaction/types.js";
 
 export function piMessageToInteractionOutput(
   message: Record<string, unknown>,

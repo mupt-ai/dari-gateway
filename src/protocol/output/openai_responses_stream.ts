@@ -5,21 +5,21 @@ import {
   openAIResponsesRouting,
   openAIResponsesTerminal,
   openAIResponsesUsage,
-} from "./openai_responses_output";
-import { piMessageToInteractionOutput } from "../../providers/pi_output";
+} from "./openai_responses_output.js";
+import { piMessageToInteractionOutput } from "../../providers/pi_output.js";
 import type {
   InteractionOutput,
   InteractionOutputItem,
   InteractionRequest,
   ProviderIdentity,
-} from "../../interaction/types";
+} from "../../interaction/types.js";
 import {
   isProviderFailureMessage,
   providerFailureFromEvent,
   providerFailureMessage,
   type ProviderStreamOutcome,
-} from "../../runtime/provider_stream_outcome";
-import { sseStream } from "./sse_stream";
+} from "../../runtime/provider_stream_outcome.js";
+import { sseStream } from "./sse_stream.js";
 
 type StreamArgs = {
   id: string;

@@ -1,16 +1,16 @@
 import { randomUUID } from "node:crypto";
 
-import { isBackgroundRequest, type InteractionRequest } from "../interaction/types";
-import { explicitModelId } from "../protocol/input/router_model";
-import { captureRequestError } from "../observability/errors";
-import type { SelectorBackend } from "../strategies/routing";
-import type { ClientHarness } from "../types";
-import { assertAutoroutingAllowed, assertCreditAvailableBeforeRouting, routerSelectsModels } from "../telemetry/usage";
-import type { HarnessConversationIdentity } from "./harness_identity";
-import { CustomerDisconnectedError } from "./customer_disconnect";
-import { prepareRoutedCompletion } from "./prepare_routed_completion";
-import type { RoutedProtocol } from "./routed_protocol";
-import { runPreparedRoutedCompletion } from "./routed_runtime";
+import { isBackgroundRequest, type InteractionRequest } from "../interaction/types.js";
+import { explicitModelId } from "../protocol/input/router_model.js";
+import { captureRequestError } from "../observability/errors.js";
+import type { SelectorBackend } from "../strategies/routing.js";
+import type { ClientHarness } from "../types.js";
+import { assertAutoroutingAllowed, assertCreditAvailableBeforeRouting, routerSelectsModels } from "../telemetry/usage.js";
+import type { HarnessConversationIdentity } from "./harness_identity/index.js";
+import { CustomerDisconnectedError } from "./customer_disconnect.js";
+import { prepareRoutedCompletion } from "./prepare_routed_completion.js";
+import type { RoutedProtocol } from "./routed_protocol.js";
+import { runPreparedRoutedCompletion } from "./routed_runtime.js";
 
 export async function handleRoutedCompletion(args: {
   request: Request;

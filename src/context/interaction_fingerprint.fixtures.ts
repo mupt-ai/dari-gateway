@@ -2,7 +2,7 @@ import type {
   InteractionOutput,
   InteractionRequest,
   ProviderIdentity,
-} from "../interaction/types";
+} from "../interaction/types.js";
 
 export const OPENAI: ProviderIdentity = {
   provider: "openai",

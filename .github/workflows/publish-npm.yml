@@ -72,9 +72,9 @@ jobs:
         if: steps.version.outputs.publish == 'true'
         run: bun install
 
-      - name: Validate package
+      - name: Validate and build package
         if: steps.version.outputs.publish == 'true'
-        run: bun run typecheck && bun test
+        run: bun run typecheck && bun test && bun run build
 
       # Installs the packed tarball the way a consumer would, against the router
       # on npm, and imports it. Catches a router that lacks the gateway's APIs.
@@ -90,7 +90,8 @@ jobs:
 
           cd "${consumer}"
           npm init -y >/dev/null
-          npm install --no-audit --no-fund "${tarball}"
+          npm pkg set type=module
+          npm install --no-audit --no-fund "${tarball}" typescript@5.9.3 @types/node@24
           bun -e '
             const root = await import("@mupt-ai/dari-gateway");
             const handler = await import("@mupt-ai/dari-gateway/http/handler");
@@ -98,6 +99,21 @@ jobs:
             if (typeof handler.createRequestHandler !== "function") throw new Error("subpath export missing");
             console.log("published shape imports ok");
           '
+
+          # Strict NodeNext consumers type-check against the emitted declarations.
+          cat > tsconfig.json <<'JSON'
+          {"compilerOptions":{"target":"ES2022","module":"nodenext","moduleResolution":"nodenext","strict":true,"noUncheckedIndexedAccess":true,"exactOptionalPropertyTypes":true,"noEmit":true,"types":["node"]},"include":["index.ts"]}
+          JSON
+          cat > index.ts <<'TS'
+          import { createRequestHandler } from "@mupt-ai/dari-gateway";
+          import { createPrioritySelectorBackend } from "@mupt-ai/dari-gateway/strategies/priority_selector";
+          import { HttpError } from "@mupt-ai/dari-gateway/http/errors";
+          import type { GatewayPlatform, RequestSummary } from "@mupt-ai/dari-gateway/platform/platform";
+          export const used = [createRequestHandler, createPrioritySelectorBackend, HttpError];
+          export type Used = [GatewayPlatform, RequestSummary];
+          TS
+          npx tsc -p .
+          node -e 'import("@mupt-ai/dari-gateway").then((m) => { if (typeof m.createRequestHandler !== "function") process.exit(1); })'
 
       - name: Publish package
         if: steps.version.outputs.publish == 'true'

@@ -1,10 +1,10 @@
 import type { ChatCompletionRequest } from "@mupt-ai/dari-router/policy-engine";
 import { afterAll, beforeEach, expect, mock, test } from "bun:test";
 
-import { validateChatCompletionsRequest } from "../protocol/input/chat_completions_validation";
-import type { InteractionRequest } from "../interaction/types";
+import { validateChatCompletionsRequest } from "../protocol/input/chat_completions_validation.js";
+import type { InteractionRequest } from "../interaction/types.js";
 
-const { registeredModelPrice: realRegisteredModelPrice } = await import("../providers/pi");
+const { registeredModelPrice: realRegisteredModelPrice } = await import("../providers/pi.js");
 
 let selectorMessage: Record<string, unknown>;
 let selectorMessageQueue: Array<Record<string, unknown>>;
@@ -46,7 +46,7 @@ const {
   createLlmSelectorBackend,
   selectModel: selectModelWithBackend,
   selectorTraceFromError,
-} = await import("./routing");
+} = await import("./routing.js");
 mock.restore();
 
 type SelectModelArgs = Omit<

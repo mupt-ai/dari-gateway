@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { SourceProtocol } from "../../interaction/types";
+import type { SourceProtocol } from "../../interaction/types.js";
 
 export type HarnessConversationIdentity =
   | {

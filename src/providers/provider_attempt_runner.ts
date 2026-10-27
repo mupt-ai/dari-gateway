@@ -1,4 +1,4 @@
-import { subscriptionUsageLimitFromFailure } from "./subscription_limits";
+import { subscriptionUsageLimitFromFailure } from "./subscription_limits.js";
 
 export type ProviderAttemptFailure =
   | {

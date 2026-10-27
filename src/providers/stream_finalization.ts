@@ -3,32 +3,32 @@ import type {
   RoutingDecision,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import type { InteractionRequest, ProviderIdentity } from "../interaction/types";
+import type { InteractionRequest, ProviderIdentity } from "../interaction/types.js";
 import {
   captureOperationalError,
   type OperationalErrorCode,
-} from "../observability/errors";
-import type { ProviderStreamOutcome } from "../runtime/provider_stream_outcome";
-import type { RoutedProtocol } from "../runtime/routed_protocol";
+} from "../observability/errors.js";
+import type { ProviderStreamOutcome } from "../runtime/provider_stream_outcome.js";
+import type { RoutedProtocol } from "../runtime/routed_protocol.js";
 import {
   reportedExecution,
   type FrozenProviderTerminal,
   type ProviderAttemptRecord,
   type ReportableProviderOutcome,
   type RoutedRuntimeReporter,
-} from "../runtime/runtime_reporter";
-import type { ProviderKeySource } from "../types";
+} from "../runtime/runtime_reporter.js";
+import type { ProviderKeySource } from "../types.js";
 import {
   reportRoutingUsage,
   type RoutingUsageContext,
-} from "../telemetry/usage";
-import { customerCanceledProviderMessage } from "../runtime/customer_disconnect";
+} from "../telemetry/usage.js";
+import { customerCanceledProviderMessage } from "../runtime/customer_disconnect.js";
 import {
   estimatedCancelUsage,
   partialInteractionOutput,
   type DeliveredOutput,
   type PromptTokenEstimate,
-} from "./cancel_estimate";
+} from "./cancel_estimate.js";
 
 // Structurally a subset of ProviderExecution. The narrowing is deliberate: it
 // keeps apiKey and auth out of the finalizer.

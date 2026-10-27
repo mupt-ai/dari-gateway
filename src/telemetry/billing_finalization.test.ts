@@ -3,7 +3,7 @@ import { expect, test } from "bun:test";
 import {
   routingBillingProviderAttemptFacts,
   RoutingBillingFinalization,
-} from "./billing_finalization";
+} from "./billing_finalization.js";
 
 test("the first freeze wins and every later freeze reads the same payload", () => {
   const finalization = createFinalization();

@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 import { connect, type ClientHttp2Stream, type IncomingHttpHeaders } from "node:http2";
 
-import { parseJsonRequest } from "../ingress/json";
-import { startHttp2Server } from "./http2_server";
+import { parseJsonRequest } from "../ingress/json.js";
+import { startHttp2Server } from "./http2_server.js";
 
 const MIB = 1024 * 1024;
 

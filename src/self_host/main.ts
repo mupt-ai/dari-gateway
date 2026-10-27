@@ -3,18 +3,18 @@ import { chmodSync, existsSync } from "node:fs";
 import { Database } from "bun:sqlite";
 import { builtinModels } from "@mupt-ai/pi-ai/providers/all";
 
-import { bearerToken } from "../http/auth";
-import { errorResponse, HttpError } from "../http/errors";
-import { createRequestHandler } from "../http/handler";
-import { installShutdownHandlers, startServer } from "../http/serve";
-import { createAutoRoutingSelectorBackend } from "../strategies/auto_routing_selector";
-import { createPrioritySelectorBackend } from "../strategies/priority_selector";
-import type { SelectorBackend } from "../strategies/routing";
-import { loadGatewayConfig } from "./config";
-import { createSelfHostedPlatform } from "./platform";
-import { gatewayKeyIndex } from "./resolve";
-import { PrefixStore } from "./prefix_store";
-import { handleSubscriptionRequest, SubscriptionStore } from "./subscriptions";
+import { bearerToken } from "../http/auth.js";
+import { errorResponse, HttpError } from "../http/errors.js";
+import { createRequestHandler } from "../http/handler.js";
+import { installShutdownHandlers, startServer } from "../http/serve.js";
+import { createAutoRoutingSelectorBackend } from "../strategies/auto_routing_selector.js";
+import { createPrioritySelectorBackend } from "../strategies/priority_selector.js";
+import type { SelectorBackend } from "../strategies/routing.js";
+import { loadGatewayConfig } from "./config.js";
+import { createSelfHostedPlatform } from "./platform.js";
+import { gatewayKeyIndex } from "./resolve.js";
+import { PrefixStore } from "./prefix_store.js";
+import { handleSubscriptionRequest, SubscriptionStore } from "./subscriptions/index.js";
 
 const SUBSCRIPTION_ROUTES = "/v1/organizations/current/credentials";
 

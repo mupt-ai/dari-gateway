@@ -3,7 +3,7 @@ export {
   scopedHarnessSessionId,
   type HarnessConversationIdentity,
   type HarnessConversationScope,
-} from "./conversation";
+} from "./conversation.js";
 export {
   chatCompletionsConversationIdentity,
   claudeCodeConversationIdentity,
@@ -11,4 +11,4 @@ export {
   codexRequestPurpose,
   codexRequestContext,
   openCodeRequestContext,
-} from "./extract";
+} from "./extract.js";

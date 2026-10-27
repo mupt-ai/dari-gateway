@@ -1,13 +1,13 @@
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
 
-import type { InteractionOutput, InteractionRequest } from "../../interaction/types";
+import type { InteractionOutput, InteractionRequest } from "../../interaction/types.js";
 import {
   anthropicContent,
   anthropicMessageId,
   anthropicRouting,
   anthropicStopReason,
   anthropicUsage,
-} from "./anthropic_messages_output";
+} from "./anthropic_messages_output.js";
 
 export function anthropicMessagesResponse(args: {
   id: string;

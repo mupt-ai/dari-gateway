@@ -1,6 +1,6 @@
 {
   "name": "@mupt-ai/dari-gateway",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Self-hostable LLM gateway for coding agents and APIs: one endpoint for Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses, with subscription pooling, failover, and prompt-cache-aware routing.",
   "license": "Apache-2.0",
   "repository": {
@@ -9,14 +9,27 @@
   },
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./bun": "./src/bun.ts",
-    "./*": "./src/*.ts"
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./bun": {
+      "bun": "./src/bun.ts",
+      "types": "./dist/bun.d.ts",
+      "default": "./dist/bun.js"
+    },
+    "./*": {
+      "bun": "./src/*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
   },
   "bin": {
-    "dari-gateway": "./src/self_host/main.ts"
+    "dari-gateway": "./dist/self_host/main.js"
   },
   "files": [
+    "dist",
     "src",
     "!src/**/*.test.ts",
     "!src/**/*.fixtures.ts",
@@ -29,8 +42,10 @@
   ],
   "scripts": {
     "start": "bun run src/self_host/main.ts",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "prepack": "bun run build"
   },
   "dependencies": {
     "@aws-sdk/client-sts": "3.1063.0",

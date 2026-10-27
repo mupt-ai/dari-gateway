@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
 
-import { requiredCapabilitiesFor } from "../../interaction/capabilities";
-import { openAIResponsesToInteraction } from "./openai_responses";
-import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state";
+import { requiredCapabilitiesFor } from "../../interaction/capabilities.js";
+import { openAIResponsesToInteraction } from "./openai_responses.js";
+import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
 
 test("Responses ingress preserves ordered reasoning, message, function, custom, and result items", () => {
   const continuation = {

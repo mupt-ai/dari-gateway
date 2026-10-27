@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
-import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state";
+import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
 import type {
   InteractionRequest,
   ProviderIdentity,
-} from "../../interaction/types";
-import { anthropicMessagesToInteraction } from "../../protocol/input/anthropic_messages";
-import { chatCompletionsToInteraction } from "../../protocol/input/chat_completions";
-import { openAIResponsesToInteraction } from "../../protocol/input/openai_responses";
-import { extractInteractionObservability } from "./interaction_observability";
+} from "../../interaction/types.js";
+import { anthropicMessagesToInteraction } from "../../protocol/input/anthropic_messages.js";
+import { chatCompletionsToInteraction } from "../../protocol/input/chat_completions.js";
+import { openAIResponsesToInteraction } from "../../protocol/input/openai_responses.js";
+import { extractInteractionObservability } from "./interaction_observability.js";
 
 const OPENAI: ProviderIdentity = {
   provider: "openai",

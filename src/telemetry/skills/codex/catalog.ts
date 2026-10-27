@@ -1,12 +1,12 @@
-import type { InteractionRequest } from "../../../interaction/types";
-import { normalizedCodexSkillName } from "./identity";
+import type { InteractionRequest } from "../../../interaction/types.js";
+import { normalizedCodexSkillName } from "./identity.js";
 import {
   joinedSkillPath,
   normalizedAbsoluteSkillPath,
   skillPathBasename,
   type NormalizedSkillPath,
   type PathPlatform,
-} from "../paths";
+} from "../paths.js";
 
 const MAX_CATALOG_ENTRIES = 2_000;
 const SKILLS_OPEN = "<skills_instructions>";

@@ -6,10 +6,10 @@ import type {
   InteractionOutput,
   InteractionRequest,
   ProviderIdentity,
-} from "../../../interaction/types";
-import type { HarnessConversationIdentity } from "../../../runtime/harness_identity";
-import { toolSkillEvents } from "../../tools/observations";
-import { codexExplicitSkillObservations } from "./explicit";
+} from "../../../interaction/types.js";
+import type { HarnessConversationIdentity } from "../../../runtime/harness_identity/index.js";
+import { toolSkillEvents } from "../../tools/observations.js";
+import { codexExplicitSkillObservations } from "./explicit.js";
 
 const OPENAI: ProviderIdentity = {
   provider: "openai",

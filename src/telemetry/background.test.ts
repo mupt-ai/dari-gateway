@@ -1,11 +1,11 @@
 import { afterEach, expect, test } from "bun:test";
 
-import { deferred } from "../test_support/deferred";
+import { deferred } from "../test_support/deferred.js";
 import {
   drainBackgroundTelemetry,
   drainBackgroundTelemetryFor,
   trackBackgroundTelemetry,
-} from "./background";
+} from "./background.js";
 
 afterEach(async () => {
   await drainBackgroundTelemetry();

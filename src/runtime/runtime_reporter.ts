@@ -1,7 +1,7 @@
 import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
-import type { InteractionOutput } from "../interaction/types";
-import type { SelectorRun } from "../strategies/routing";
-import type { ProviderKeySource } from "../types";
+import type { InteractionOutput } from "../interaction/types.js";
+import type { SelectorRun } from "../strategies/routing.js";
+import type { ProviderKeySource } from "../types.js";
 
 export type ReportedProviderExecution = {
   provider: string;

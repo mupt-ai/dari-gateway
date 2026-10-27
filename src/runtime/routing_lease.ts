@@ -6,16 +6,16 @@ import {
   type RoutingDecision,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { deriveFallbackDecision } from "../strategies/fallback_decision";
-import { executionProviderForModel } from "../models/execution_provider";
-import type { SelectorBackend } from "../strategies/routing";
+import { deriveFallbackDecision } from "../strategies/fallback_decision.js";
+import { executionProviderForModel } from "../models/execution_provider.js";
+import type { SelectorBackend } from "../strategies/routing.js";
 import {
   routeDecision,
   type RoutedDecision,
-} from "../strategies/route_decision";
-import { reportPendingLease } from "../telemetry/prefix_state";
-import { scrubSecrets } from "../telemetry/scrub";
-import type { PreparedRoutedCompletion } from "./prepare_routed_completion";
+} from "../strategies/route_decision.js";
+import { reportPendingLease } from "../telemetry/prefix_state.js";
+import { scrubSecrets } from "../telemetry/scrub.js";
+import type { PreparedRoutedCompletion } from "./prepare_routed_completion.js";
 
 export type RoutingLeaseDecision = {
   decision: RoutingDecision;

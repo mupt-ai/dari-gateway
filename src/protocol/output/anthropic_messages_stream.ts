@@ -1,20 +1,20 @@
-import { piMessageToInteractionOutput } from "../../providers/pi_output";
-import { providerToolCallIdentity } from "../../interaction/tool_identity";
-import type { InteractionOutput, InteractionRequest, ProviderIdentity } from "../../interaction/types";
+import { piMessageToInteractionOutput } from "../../providers/pi_output.js";
+import { providerToolCallIdentity } from "../../interaction/tool_identity.js";
+import type { InteractionOutput, InteractionRequest, ProviderIdentity } from "../../interaction/types.js";
 import {
   isProviderFailureMessage,
   providerFailureFromEvent,
   providerFailureMessage,
   type ProviderStreamOutcome,
-} from "../../runtime/provider_stream_outcome";
-import { sseStream } from "./sse_stream";
+} from "../../runtime/provider_stream_outcome.js";
+import { sseStream } from "./sse_stream.js";
 import {
   anthropicMessageId,
   anthropicReasoningBlock,
   anthropicRouting,
   anthropicStopReason,
   anthropicUsage,
-} from "./anthropic_messages_output";
+} from "./anthropic_messages_output.js";
 
 export function anthropicMessagesSseStream(args: {
   id: string;

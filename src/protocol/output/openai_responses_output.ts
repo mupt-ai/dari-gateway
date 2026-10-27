@@ -1,5 +1,5 @@
-import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state";
-import type { InteractionOutput } from "../../interaction/types";
+import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
+import type { InteractionOutput } from "../../interaction/types.js";
 
 export function openAIResponsesResponseId(requestId: string): string {
   return `resp_${requestId}`;

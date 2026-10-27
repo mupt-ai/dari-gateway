@@ -5,17 +5,17 @@ import {
 } from "@mupt-ai/pi-ai";
 import { getBuiltinModel } from "@mupt-ai/pi-ai/providers/all";
 
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { modelSupportsImageInput } from "./model_capabilities";
-import { buildOptions } from "./pi_options";
-import type { ResolvedRouterModelConfig } from "../types";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { modelSupportsImageInput } from "./model_capabilities.js";
+import { buildOptions } from "./pi_options.js";
+import type { ResolvedRouterModelConfig } from "../types.js";
 import {
   buildModel,
   modelContextWindow,
   modelMetadataLookup,
   piFixture,
   requestWithReasoning,
-} from "./pi.fixtures";
+} from "./pi.fixtures.js";
 
 test("Claude Fable 5 is available in the Pi model registry", () => {
   const anthropic = getBuiltinModel("anthropic", "claude-fable-5");

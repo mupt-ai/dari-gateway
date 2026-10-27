@@ -1,9 +1,9 @@
 import { expect, test } from "bun:test";
 
-import { chatCompletionResponse, chatCompletionsSseStream } from "./chat_completions";
+import { chatCompletionResponse, chatCompletionsSseStream } from "./chat_completions.js";
 import { isRecord } from "@mupt-ai/dari-router/policy-engine";
-import type { InteractionOutput, InteractionRequest, ProviderIdentity } from "../../interaction/types";
-import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state";
+import type { InteractionOutput, InteractionRequest, ProviderIdentity } from "../../interaction/types.js";
+import { decodeUntrustedProviderContinuationState } from "../../interaction/provider_continuation_state.js";
 
 const routing = {
   selectedModel: "openai/gpt-4.1-mini",

@@ -6,15 +6,15 @@ import {
 import {
   extendInteractionChain,
   extendInteractionLooseChain,
-} from "../context/interaction_fingerprint";
+} from "../context/interaction_fingerprint.js";
 import type {
   InteractionOutput,
   InteractionRequest,
   InteractionUsage,
   ProviderIdentity,
-} from "../interaction/types";
-import { gatewayPlatform, type PrefixStateWrite } from "../platform/platform";
-import { tokenCount } from "./ingest_values";
+} from "../interaction/types.js";
+import { gatewayPlatform, type PrefixStateWrite } from "../platform/platform.js";
+import { tokenCount } from "./ingest_values.js";
 
 export type CompletedPrefixHit = Omit<RouterPrefixHit, "updated_at"> & {
   lease_depth: number;

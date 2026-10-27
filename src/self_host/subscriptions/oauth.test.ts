@@ -9,8 +9,8 @@ import {
   parseAuthorizationResponse,
   refreshOAuth,
   startOAuth,
-} from "./oauth";
-import { codexAccessToken, fakeFetch, jsonResponse, jwt } from "./test_support";
+} from "./oauth.js";
+import { codexAccessToken, fakeFetch, jsonResponse, jwt } from "./test_support.js";
 
 const now = new Date("2026-10-20T12:00:00Z");
 

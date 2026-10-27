@@ -1,4 +1,4 @@
-import type { RoutingBillingProviderAttemptFacts } from "./billing_finalization";
+import type { RoutingBillingProviderAttemptFacts } from "./billing_finalization.js";
 
 /** Model reference cost only, including retries; unknown/estimated usage is never free. */
 export function modelCost(attempts: readonly RoutingBillingProviderAttemptFacts[]): number | null {

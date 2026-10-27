@@ -4,7 +4,7 @@ import {
   type PortableReasoningState,
 } from "@mupt-ai/dari-router/protocols";
 
-import { rethrowFrameworkErrorAsHttp } from "../http/errors";
+import { rethrowFrameworkErrorAsHttp } from "../http/errors.js";
 
 export type { PortableReasoningState } from "@mupt-ai/dari-router/protocols";
 

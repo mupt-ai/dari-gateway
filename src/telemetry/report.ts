@@ -14,34 +14,34 @@ import {
   type RoutingDecision,
   type RoutingStrategy,
 } from "@mupt-ai/dari-router/policy-engine";
-import type { ImageCapabilityPrunedModel } from "../context/routing_context";
-import { HttpError, errorCode } from "../http/errors";
-import { executionProviderForModel } from "../models/execution_provider";
+import type { ImageCapabilityPrunedModel } from "../context/routing_context.js";
+import { HttpError, errorCode } from "../http/errors.js";
+import { executionProviderForModel } from "../models/execution_provider.js";
 import {
   isBackgroundRequest,
   type InteractionOutput,
   type InteractionRequest,
   type InteractionUsage,
   type ProviderIdentity,
-} from "../interaction/types";
-import { captureOperationalError } from "../observability/errors";
-import { gatewayPlatform, type RequestTags } from "../platform/platform";
+} from "../interaction/types.js";
+import { captureOperationalError } from "../observability/errors.js";
+import { gatewayPlatform, type RequestTags } from "../platform/platform.js";
 import type {
   ProviderAttemptRecord,
   ProviderAttemptReport,
   FrozenProviderTerminal,
   ReportableProviderOutcome,
   ReportedProviderExecution,
-} from "../runtime/runtime_reporter";
+} from "../runtime/runtime_reporter.js";
 import {
   selectorTraceFromError,
   type SelectorRun,
   type SelectorTrace,
-} from "../strategies/routing";
-import type { ResolvedRouter } from "../types";
-import type { HarnessConversationIdentity } from "../runtime/harness_identity";
-import { trackBackgroundTelemetry } from "./background";
-import { modelCost } from "./model_cost";
+} from "../strategies/routing.js";
+import type { ResolvedRouter } from "../types.js";
+import type { HarnessConversationIdentity } from "../runtime/harness_identity/index.js";
+import { trackBackgroundTelemetry } from "./background.js";
+import { modelCost } from "./model_cost.js";
 import {
   routingBillingProviderAttemptFacts,
   type FrozenRoutingBillingTerminal,
@@ -49,26 +49,26 @@ import {
   type RoutingBillingFinalizationPayload,
   type RoutingBillingProviderAttemptFacts,
   type RoutingBillingTerminalOutcome,
-} from "./billing_finalization";
-import { estimateBenchmarkReplay } from "./benchmark_replay";
-import { extractInteractionObservability } from "./requests/interaction_observability";
+} from "./billing_finalization.js";
+import { estimateBenchmarkReplay } from "./benchmark_replay.js";
+import { extractInteractionObservability } from "./requests/interaction_observability.js";
 import {
   costString,
   finiteNumber,
   isRecord,
   tokenCount,
-} from "./ingest_values";
+} from "./ingest_values.js";
 import {
   buildCompletedPrefixHit,
   leaseCountdownForPrefix,
   prefixEntryForIngest,
   reportPendingLease,
   reportPrefixState,
-} from "./prefix_state";
-import { subscriptionUsageLimitFromFailure } from "../providers/subscription_limits";
-import { scrubSecrets } from "./scrub";
-import { encodeRetainedInteractionRequest } from "./requests/retained_interaction_request";
-import { toolResultObservations, toolSkillEvents } from "./tools/observations";
+} from "./prefix_state.js";
+import { subscriptionUsageLimitFromFailure } from "../providers/subscription_limits.js";
+import { scrubSecrets } from "./scrub.js";
+import { encodeRetainedInteractionRequest } from "./requests/retained_interaction_request.js";
+import { toolResultObservations, toolSkillEvents } from "./tools/observations.js";
 
 // The decision's candidate_pruning audit: core cache-aware pruning, extended
 // with models excluded up front for missing hard capabilities (image input).

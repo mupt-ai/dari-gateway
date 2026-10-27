@@ -6,13 +6,13 @@ import type {
   InteractionOutput,
   InteractionRequest,
   ProviderIdentity,
-} from "../interaction/types";
-import { chatCompletionsToInteraction } from "../protocol/input/chat_completions";
-import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages";
-import { openAIResponsesToInteraction } from "../protocol/input/openai_responses";
-import { assistantMessagePayload } from "../protocol/output/chat_completions";
-import { piMessageToInteractionOutput } from "../providers/pi_output";
-import { ROUTING_PREFIX_HASHES_MAX_COUNT } from "../platform/routing_contract";
+} from "../interaction/types.js";
+import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
+import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
+import { assistantMessagePayload } from "../protocol/output/chat_completions.js";
+import { piMessageToInteractionOutput } from "../providers/pi_output.js";
+import { ROUTING_PREFIX_HASHES_MAX_COUNT } from "../platform/routing_contract.js";
 import {
   extendInteractionChain,
   extendInteractionLooseChain,
@@ -20,13 +20,13 @@ import {
   interactionPrefixChain,
   interactionPrefixContext,
   interactionPrefixLookupHashes,
-} from "./interaction_fingerprint";
+} from "./interaction_fingerprint.js";
 import {
   CLAUDE,
   interactionOutput,
   OPENAI,
   request,
-} from "./interaction_fingerprint.fixtures";
+} from "./interaction_fingerprint.fixtures.js";
 
 // The loose tier exists for clients that drop reasoning from echoes (the
 // official OpenAI SDK types have no reasoning_content field): the strict

@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { inputModalitiesOverride, offRequiresWireNone, runtimeCompat } from "./runtime_overrides";
+import { inputModalitiesOverride, offRequiresWireNone, runtimeCompat } from "./runtime_overrides.js";
 
 test("DeepSeek V4.1 Flash 1017 preserves image input and DeepSeek reasoning compat", () => {
   expect(inputModalitiesOverride("deepseek-ai/DeepSeek-V4.1-Flash-1017")).toEqual([
