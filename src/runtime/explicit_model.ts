@@ -14,14 +14,7 @@ export function explicitModelDecision(
 ): RoutedDecision | null {
   const modelId = explicitModelId(prepared.interaction.model);
   if (modelId === null) return null;
-  if (!prepared.credentials.enabled_models.includes(modelId)) {
-    throw new HttpError(
-      400,
-      `Model '${modelId}' is not enabled on this router.`,
-      "model_not_enabled",
-      "model",
-    );
-  }
+  if (!prepared.credentials.enabled_models.includes(modelId)) throw modelNotEnabled(modelId);
   const candidates = prepared.routing.candidateResolution.candidates.filter(
     (candidate) => candidate.model === modelId,
   );
@@ -63,14 +56,7 @@ function pickCandidate(
    refuses everything else instead of substituting. */
 export function strictModelDecision(prepared: PreparedRoutedCompletion): RoutedDecision {
   const modelId = explicitModelId(prepared.interaction.model);
-  if (modelId === null) {
-    throw new HttpError(
-      400,
-      "This router is strict: request a pinned model as 'dari/model/<id>'.",
-      "strict_model_required",
-      "model",
-    );
-  }
+  if (modelId === null) throw strictModelRequired();
   const { decision } = explicitModelDecision(prepared)!;
   const requested = prepared.interaction.reasoning?.effort
     ?? prepared.credentials.model_configs?.[modelId]?.default_thinking_level;
@@ -83,4 +69,17 @@ export function strictModelDecision(prepared: PreparedRoutedCompletion): RoutedD
     );
   }
   return { decision };
+}
+
+export function modelNotEnabled(modelId: string): HttpError {
+  return new HttpError(400, `Model '${modelId}' is not enabled on this router.`, "model_not_enabled", "model");
+}
+
+export function strictModelRequired(): HttpError {
+  return new HttpError(
+    400,
+    "This router is strict: request a pinned model as 'dari/model/<id>'.",
+    "strict_model_required",
+    "model",
+  );
 }

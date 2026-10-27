@@ -120,7 +120,7 @@ The root entry needs no Bun APIs, so any runtime with web-standard `fetch`, `Req
 Platforms can also:
 
 - implement `resolveProviderCredential({ provider, model, routerId, organizationId, apiKey })` to supply a per-request `{ apiKey, baseUrl?, headers? }`, such as a tenant's own key, in place of the router's resolved key;
-- resolve routers with `strict: true` to serve only the requested `dari/model/<id>` at the requested thinking level, with no selector, lease, fallback, or personal subscription;
+- resolve routers with `strict: true` to serve only the requested `dari/model/<id>` at the requested thinking level, with no selector, lease, fallback, or personal subscription. Set `strict_providers: ["openai"]` on the resolved router to permit any bundled-catalog model from that provider without enumerating `enabled_models`. Use `dari/model/openai/gpt-5.5`; bare IDs and unknown models remain refused. This grant is ignored on non-strict routers and does not discover uncatalogued models;
 - read exact usage from `recordRequest`: the summary carries input, output, cache-read, and cache-write tokens and `total_cost_usd`, preferring the provider's billed cost (`cost_source: "provider"`, from OpenRouter and Vercel AI Gateway). Failed and aborted requests are recorded too;
 - attribute cost with `X-Dari-Tags: run=r1,trial=3`, which is parsed into `RequestRecord.tags` and the `recordUsage` payload's `tags`.
 

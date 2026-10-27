@@ -114,6 +114,9 @@ export type ResolvedRouter = {
   // level: no selector, lease, fallback, or personal subscription, and an
   // error for anything else, whatever the client sends.
   strict?: boolean;
+  // On strict routers only, allow requested catalog models of these providers.
+  // Requires dari/model/<provider>/<id>; never enables fallback.
+  strict_providers?: string[];
   model_fallback_enabled?: boolean;
   fallback_requires_different_provider?: boolean;
   evals?: RouterEval[];

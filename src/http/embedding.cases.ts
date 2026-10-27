@@ -146,6 +146,31 @@ test("a strict router refuses unpinned models and unavailable thinking levels", 
   expect(upstreamCalls).toEqual([]);
 });
 
+test("provider-wide strict access serves a catalog model and never falls back", async () => {
+  router = resolvedRouter({ strict: true, strict_providers: ["openai"], model_fallback_enabled: true });
+  upstreamStatus = 500;
+  const response = await chat({ model: "dari/model/openai/gpt-5.5" });
+  expect(response.status).toBeGreaterThanOrEqual(400);
+  await response.text();
+  expect(credentialRequests.some((request) => request.model === "openai/gpt-5.5")).toBe(true);
+  expect(upstreamCalls.length).toBeGreaterThan(0);
+  expect(new Set(upstreamCalls.map((call) => call.model))).toEqual(new Set(["gpt-5.5"]));
+});
+
+test("a grant-only strict router refuses ungranted models with strict errors", async () => {
+  router = resolvedRouter({ strict: true, strict_providers: ["openai"], enabled_models: [] });
+  for (const [model, code] of [
+    ["dari/routing", "strict_model_required"],
+    ["dari/model/openai/not-a-real-model", "model_not_enabled"],
+    [`dari/model/${MODEL_A}`, "model_not_enabled"],
+  ]) {
+    const response = await chat({ model });
+    expect(response.status).toBe(400);
+    expect((await response.json() as { error: { code: string } }).error.code).toBe(code!);
+  }
+  expect(upstreamCalls).toEqual([]);
+});
+
 test("a strict router refuses personal subscriptions", async () => {
   router = resolvedRouter({ strict: true, provider_key_sources: { openrouter: "subscription" } });
   supplyCredentials = false;

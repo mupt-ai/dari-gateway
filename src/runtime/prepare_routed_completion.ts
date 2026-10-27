@@ -15,6 +15,7 @@ import { RequestReporter, type ReportedCandidatePruning } from "../telemetry/rep
 import { RoutingBillingFinalization } from "../telemetry/billing_finalization.js";
 import type { ClientHarness, ProviderCredential, ResolvedRouter } from "../types.js";
 import { requestTags } from "./request_tags.js";
+import { strictProviderAccess } from "./strict_provider_access.js";
 import type { RoutedRuntimeReporter } from "./runtime_reporter.js";
 import type { RoutedProtocol } from "./routed_protocol.js";
 import {
@@ -125,6 +126,9 @@ export async function prepareRoutedCompletion(args: {
     }
     credentials = conversationCredentials;
   }
+  const access = strictProviderAccess(credentials, args.interaction);
+  credentials = access.credentials;
+  args = { ...args, interaction: access.interaction };
   credentials = await withProviderCredentials(credentials, args.apiKey);
   const billable = true;
   const routing = await buildRoutingContext({
