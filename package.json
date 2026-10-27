@@ -1,6 +1,6 @@
 {
   "name": "@mupt-ai/dari-gateway",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Self-hostable LLM gateway for coding agents and APIs: one endpoint for Anthropic Messages, OpenAI Chat Completions, and OpenAI Responses, with subscription pooling, failover, and prompt-cache-aware routing.",
   "license": "Apache-2.0",
   "repository": {
