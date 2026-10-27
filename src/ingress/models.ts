@@ -2,12 +2,15 @@
    Codex reads the Codex catalog; Anthropic-SDK clients (Claude Desktop /
    Cowork gateway probes, Claude Code) read the Anthropic list shape. The
    handler detects the caller, authenticates in that protocol's auth shape,
-   and selects the matching catalog adapter. */
+   and selects the matching catalog adapter. `?detail=1` instead returns the
+   model catalog (models/catalog.ts), optionally narrowed with
+   `provider=<id>[,<id>...]`. */
 
 import { anthropicToken, bearerToken } from "../http/auth.js";
 import { errorResponse } from "../http/errors.js";
 import { captureRequestError } from "../observability/errors.js";
 import { anthropicErrorResponse } from "./anthropic_messages.js";
+import { listModelCatalog } from "../models/catalog.js";
 import { modelSupportsImageInput } from "../providers/model_capabilities.js";
 import { modelMetadataLookup } from "../providers/pi.js";
 import { resolveRouter } from "../strategies/routing.js";
@@ -26,6 +29,15 @@ export async function handleModels(request: Request, routerId: string): Promise<
     // Resolution authenticates the key and confirms the router exists even
     // when the response body (Anthropic shape) does not depend on it.
     const router = await resolveRouter({ routerId, apiKey });
+    const query = new URL(request.url).searchParams;
+    if (query.get("detail") === "1") {
+      const providers = query.get("provider")?.split(",").map((id) => id.trim()).filter(Boolean);
+      const data = await listModelCatalog({
+        ...(providers?.length ? { providers } : {}),
+        signal: request.signal,
+      });
+      return Response.json({ object: "list", data }, { headers: { "Cache-Control": "no-store" } });
+    }
     if (anthropicClient) {
       return Response.json(anthropicModelsResponse(), {
         headers: {

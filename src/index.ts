@@ -16,6 +16,14 @@ export type {
   ResolveRouterRequest,
   SubscriptionHold,
 } from "./platform/platform.js";
+export {
+  DEFAULT_CATALOG_PROVIDERS,
+  listModelCatalog,
+  type CatalogModel,
+  type CatalogModelPrice,
+  type CatalogPriceTier,
+  type ModelCatalogOptions,
+} from "./models/catalog.js";
 export { createAutoRoutingSelectorBackend } from "./strategies/auto_routing_selector.js";
 export { createPrioritySelectorBackend } from "./strategies/priority_selector.js";
 export { createLlmSelectorBackend, type SelectorBackend } from "./strategies/routing.js";

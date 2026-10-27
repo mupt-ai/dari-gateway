@@ -88,6 +88,10 @@ providers:                 # endpoints outside the built-in catalog
 
 Model ids are `provider/model`. Clients send `model: "dari/routing"` to let the router choose, or `model: "dari/model/<id>"` to pin one of its models. A Claude Code subscription serves Anthropic models only for Claude Code itself; a ChatGPT subscription serves OpenAI models for every client.
 
+### Model catalog
+
+`GET /v1/models?detail=1` (any gateway key; optionally `&provider=openrouter,meta`) and `listModelCatalog({ providers?, fetch?, signal? })` list each provider's tool-capable models as `dari/model/<id>`-ready ids with context window, max output tokens, input modalities, accepted thinking levels, and list prices in USD per million tokens (input, output, cache read, cache write, long-context tiers) with `price_as_of`. OpenRouter and Vercel AI Gateway are read live from their public models endpoints; other providers (default: OpenAI, Anthropic, Meta, xAI, Fireworks) come from the bundled Pi catalog.
+
 ## Coding agents
 
 ```bash
