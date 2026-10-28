@@ -5,7 +5,8 @@ import { providerFailureFromCaught } from "../runtime/provider_stream_outcome.js
 import type { ProviderFetch } from "./response_capture.js";
 
 // Gateways bill per call and say what they billed: OpenRouter as `usage.cost`
-// on the final chunk, Vercel AI Gateway as `providerMetadata.gateway.cost`.
+// on the final chunk (plus the provider's charge on a BYOK call), Vercel AI
+// Gateway as `providerMetadata.gateway.cost`.
 // Pi prices usage from model rates and drops both, so the amount is read off
 // the raw response bytes and replaces the priced total.
 
@@ -84,7 +85,20 @@ export function reportedCost(body: unknown): number | undefined {
   const gateway = isRecord(body.providerMetadata) && isRecord(body.providerMetadata.gateway)
     ? body.providerMetadata.gateway
     : undefined;
-  return usd(isRecord(body.usage) ? body.usage.cost : undefined) ?? usd(gateway?.cost);
+  return openRouterCost(body.usage) ?? usd(gateway?.cost);
+}
+
+// On a BYOK call OpenRouter bills the provider's charge to the org's own key:
+// `usage.cost` is only its fee (often 0), and the charge is in
+// `cost_details.upstream_inference_cost`.
+function openRouterCost(usage: unknown): number | undefined {
+  if (!isRecord(usage)) return undefined;
+  const cost = usd(usage.cost);
+  if (cost === undefined || usage.is_byok !== true) return cost;
+  const upstream = isRecord(usage.cost_details)
+    ? usd(usage.cost_details.upstream_inference_cost)
+    : undefined;
+  return cost + (upstream ?? 0);
 }
 
 function usd(value: unknown): number | undefined {

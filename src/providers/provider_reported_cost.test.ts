@@ -8,6 +8,14 @@ test("reads OpenRouter and Vercel AI Gateway billed cost", () => {
   expect(reportedCost({ usage: { prompt_tokens: 3 } })).toBeUndefined();
 });
 
+test("adds the provider's charge to OpenRouter's fee on a BYOK call", () => {
+  const byok = { cost: 0, is_byok: true, cost_details: { upstream_inference_cost: 0.0412 } };
+  expect(reportedCost({ usage: byok })).toBe(0.0412);
+  expect(reportedCost({ usage: { ...byok, cost: 0.002 } })).toBeCloseTo(0.0432);
+  // Off BYOK, OpenRouter's cost already includes the upstream charge.
+  expect(reportedCost({ usage: { ...byok, is_byok: false, cost: 0.0412 } })).toBe(0.0412);
+});
+
 test("the tap reads cost from SSE and JSON bodies without changing them", async () => {
   const sse = "data: {\"choices\":[]}\n\ndata: {\"usage\":{\"cost\":0.5}}\n\ndata: [DONE]\n\n";
   const json = JSON.stringify({ usage: { cost: 0.25 } });
