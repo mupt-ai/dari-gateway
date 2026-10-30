@@ -189,7 +189,7 @@ export async function prepareRoutedCompletion(args: {
 }
 
 // Ask the platform for each enabled model's credential up front, so provider
-// execution and fallback stay synchronous.
+// execution stays synchronous.
 async function withProviderCredentials(
   credentials: ResolvedRouter,
   apiKey: string,

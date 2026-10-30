@@ -14,7 +14,6 @@ import {
  *       - anthropic/claude-sonnet-5-5
  *       - id: openai/gpt-5.5
  *         thinking: [medium, high]
- *     fallback: true        # retry on the next model when a provider fails
  *     subscriptions: true   # serve with connected Claude Code / ChatGPT plans
  * providers:                # optional: OpenAI-compatible or self-run endpoints
  *   local:
@@ -44,8 +43,6 @@ export type ProviderEndpointConfig = {
 
 export type RouterConfig = {
   models: RouterModelConfig[];
-  fallback: boolean;
-  fallbackRequiresDifferentProvider: boolean;
   retries: number;
   subscriptions: boolean;
   zdr: boolean;
@@ -129,9 +126,6 @@ function parseRouter(id: string, raw: unknown): RouterConfig {
   }
   return {
     models,
-    fallback: optionalBoolean(raw.fallback, `routers.${id}.fallback`) ?? true,
-    fallbackRequiresDifferentProvider:
-      optionalBoolean(raw.fallbackRequiresDifferentProvider, `routers.${id}.fallbackRequiresDifferentProvider`) ?? false,
     retries: optionalRetries(raw.retries, `routers.${id}.retries`) ?? 1,
     subscriptions: optionalBoolean(raw.subscriptions, `routers.${id}.subscriptions`) ?? true,
     zdr: optionalBoolean(raw.zdr, `routers.${id}.zdr`) ?? false,

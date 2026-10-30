@@ -49,7 +49,6 @@ function finalizerWith(args: {
     reporter,
     protocol: {} as RoutedProtocol,
     providerLatencyMs: () => 1,
-    role: "primary",
     attempt: 1,
     reportBarrier: args.reportBarrier,
     delivered: () => NO_DELIVERED_OUTPUT,

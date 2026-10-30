@@ -50,7 +50,6 @@ type CreateStreamFinalizerArgs = {
   reporter: RoutedRuntimeReporter;
   protocol: RoutedProtocol;
   providerLatencyMs: () => number;
-  role: "primary" | "fallback";
   attempt: number;
   reportBarrier?: Promise<unknown>;
   delivered: () => DeliveredOutput;
@@ -171,7 +170,6 @@ function buildStreamTerminalReport(
   const attemptBase = {
     model: args.decision.selectedModel,
     reasoning_effort: args.decision.reasoningEffort,
-    role: args.role,
     attempt: args.attempt,
     execution,
   } as const;

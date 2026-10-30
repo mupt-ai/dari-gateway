@@ -7,8 +7,7 @@ const PRIORITY_CONTEXT_WINDOW_CHARS = 1_000_000;
 
 /**
  * Serve the router's first eligible model/thinking-level pair, in the order
- * the router lists them. Provider failures still fall back to the next pair
- * when the router enables model fallback.
+ * the router lists them.
  */
 export function createPrioritySelectorBackend(): SelectorBackend {
   return {

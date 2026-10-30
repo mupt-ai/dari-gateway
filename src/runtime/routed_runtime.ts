@@ -39,7 +39,6 @@ import { auxiliaryDecision } from "./claude_code/auxiliary_routing.js";
 import { explicitModelDecision, strictModelDecision } from "./explicit_model.js";
 import {
   clearPendingLease,
-  committedLeaseDecision,
   leaseHoldDecision,
   leasePrefetchDue,
   leasedDecision,
@@ -69,7 +68,6 @@ type SpeculativeExecution = {
 type RuntimeExecutionPlan = {
   primary: ProviderChoice;
   primaryRetries: number;
-  resolveFallback: () => Promise<ProviderChoice | null>;
   reportBarrier?: Promise<unknown>;
   startedCompletion?: StartedCompletion;
   startedStream?: StartedStream;
@@ -137,7 +135,6 @@ export async function runPreparedRoutedCompletion(args: {
       interaction: prepared.interaction,
       primary: plan.primary,
       primaryRetries: plan.primaryRetries,
-      resolveFallback: plan.resolveFallback,
       reporter: prepared.reporter,
       protocol: prepared.protocol,
       startedCompletion: plan.startedCompletion,
@@ -150,7 +147,6 @@ export async function runPreparedRoutedCompletion(args: {
     interaction: prepared.interaction,
     primary: plan.primary,
     primaryRetries: plan.primaryRetries,
-    resolveFallback: plan.resolveFallback,
     reporter: prepared.reporter,
     startedStream: plan.startedStream,
     initialError: plan.initialStreamError,
@@ -191,7 +187,6 @@ export async function runPreparedRoutedInteraction(args: {
     interaction: args.prepared.interaction,
     primary: plan.primary,
     primaryRetries: plan.primaryRetries,
-    resolveFallback: plan.resolveFallback,
     reporter: args.prepared.reporter,
     protocol: args.prepared.protocol,
     startedCompletion: plan.startedCompletion,
@@ -253,8 +248,7 @@ async function prepareRuntimeExecution(args: {
 }): Promise<RuntimeExecutionPlan> {
   const { prepared } = args;
 
-  // A strict router never selects, leases, or falls back: the pinned pair or
-  // an error.
+  // A strict router never selects or leases: the pinned pair or an error.
   if (prepared.credentials.strict === true) {
     const pinned = strictModelDecision(prepared);
     prepared.reporter.attachServingDecision(pinned.decision);
@@ -303,9 +297,6 @@ async function prepareRuntimeExecution(args: {
   // selector and must not consume or prefetch live conversations' leases.
   const held = args.requireSelectorDecision ? null : leaseHoldDecision(prepared);
   if (held) {
-    // Serving-only attach: nextDecision stays unset so if a fallback serves
-    // this turn, execution's attachServingDecision moves both the prefix's
-    // next_model and inherited countdown onto the healthy serving pair.
     prepared.reporter.attachServingDecision(held);
     prepared.reporter.attachDecisionDetails({
       decision_source: "lease_hold",
@@ -324,7 +315,7 @@ async function prepareRuntimeExecution(args: {
     if (leasePrefetchDue(prepared)) {
       trackBackgroundTelemetry(prefetchNextLease(prepared, args.selectorBackend));
     }
-    return selectedExecutionPlan(prepared, committedLeaseDecision(prepared, held));
+    return selectedExecutionPlan(prepared, { decision: held });
   }
   const adopted = args.requireSelectorDecision ? null : pendingLeaseDecision(prepared);
   if (adopted) {
@@ -349,7 +340,7 @@ async function prepareRuntimeExecution(args: {
     // wait elapses, the next lease's own prefetch overwrites the stale rows
     // before its expiry (the menu's shortest lease exceeds the lag).
     await clearPendingLease(prepared);
-    return selectedExecutionPlan(prepared, committedLeaseDecision(prepared, adopted));
+    return selectedExecutionPlan(prepared, { decision: adopted });
   }
 
   // The stateless ten-turn hold covers per-turn policies. A lease-negotiating
@@ -380,7 +371,6 @@ async function prepareRuntimeExecution(args: {
   const primary: ProviderChoice = {
     decision: speculative.decision,
     execution: speculative.execution,
-    role: "primary",
   };
   const selectionPromise = selectDecision(
     prepared,
@@ -390,23 +380,13 @@ async function prepareRuntimeExecution(args: {
   );
   // The execution layer awaits selection as its report barrier only after the
   // provider settles, which can be long after a rejection. Mark the promise
-  // handled now; fallback still consumes the original and its rejection.
+  // handled now; the report barrier still observes the original rejection.
   selectionPromise.catch(() => undefined);
-  let fallbackPromise: Promise<ProviderChoice | null> | null = null;
-  const resolveFallback = (): Promise<ProviderChoice | null> => {
-    fallbackPromise ??= selectionPromise.then((selected) => {
-      const decision = fallbackForPrimary(prepared, primary.decision, selected);
-      if (decision) prepared.reporter.attachFallbackDecision(decision);
-      return decision ? providerChoice(prepared, decision, "fallback") : null;
-    });
-    return fallbackPromise;
-  };
   return {
     primary,
     primaryRetries: configuredPrimaryRetries(
       prepared.credentials.primary_retries,
     ),
-    resolveFallback,
     reportBarrier: selectionPromise,
     startedCompletion:
       speculative.transport === "completion" ? speculative.started : undefined,
@@ -424,20 +404,10 @@ function selectedExecutionPlan(
   selected: RoutedDecision,
 ): RuntimeExecutionPlan {
   return {
-    primary: providerChoice(prepared, selected.decision, "primary"),
+    primary: providerChoice(prepared, selected.decision),
     primaryRetries: configuredPrimaryRetries(
       prepared.credentials.primary_retries,
     ),
-    resolveFallback: async () => {
-      if (!selected.fallbackDecision) return null;
-      const fallbackDecision = selected.decision.leaseTurnsRemaining === undefined
-        ? selected.fallbackDecision
-        : {
-            ...selected.fallbackDecision,
-            leaseTurnsRemaining: selected.decision.leaseTurnsRemaining,
-          };
-      return providerChoice(prepared, fallbackDecision, "fallback");
-    },
   };
 }
 
@@ -544,7 +514,6 @@ async function selectDecision(
       reporter.attachSelectorRun(routed.run);
     } else {
       reporter.attachDecision(routed.decision);
-      reporter.attachFallbackDecision(routed.fallbackDecision);
     }
     return routed;
   } catch (error) {
@@ -592,35 +561,13 @@ function configuredPrimaryRetries(value: number | undefined): number {
   return Number.isInteger(retries) && retries >= 0 && retries <= 5 ? retries : 1;
 }
 
-function fallbackForPrimary(
-  prepared: PreparedRoutedCompletion,
-  primary: RoutingDecision,
-  selected: RoutedDecision,
-): RoutingDecision | undefined {
-  if (prepared.credentials.model_fallback_enabled === false) return undefined;
-  const fallback = [selected.fallbackDecision, selected.decision].find(
-    (candidate): candidate is RoutingDecision =>
-      candidate !== undefined &&
-      candidate.selectedModel !== primary.selectedModel,
-  );
-  if (!fallback || selected.decision.leaseTurnsRemaining === undefined) {
-    return fallback;
-  }
-  return {
-    ...fallback,
-    leaseTurnsRemaining: selected.decision.leaseTurnsRemaining,
-  };
-}
-
 function providerChoice(
   prepared: PreparedRoutedCompletion,
   decision: RoutingDecision,
-  role: ProviderChoice["role"],
 ): ProviderChoice {
   return {
     decision,
     execution: providerExecution(prepared, decision),
-    role,
   };
 }
 

@@ -84,14 +84,14 @@ test("chat completions route to the first model with the configured endpoint key
   ]);
 });
 
-test("a failing provider falls back to the next model", async () => {
+test("a failing provider fails the request without trying another model", async () => {
   upstreamCalls.length = 0;
   failingModels.add("model-a");
   try {
-    const response = await chat({ model: "dari/routing", content: "fallback please" });
-    expect(response.status).toBe(200);
-    expect(response.headers.get("x-dari-selected-model")).toBe("local/model-b");
-    expect(upstreamCalls.map((call) => call.model)).toEqual(["model-a", "model-b"]);
+    const response = await chat({ model: "dari/routing", content: "please fail" });
+    expect(response.status).toBe(502);
+    await response.text();
+    expect(upstreamCalls.map((call) => call.model)).toEqual(["model-a"]);
   } finally {
     failingModels.delete("model-a");
   }

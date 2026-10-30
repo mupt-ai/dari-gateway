@@ -31,7 +31,6 @@ export type ProviderAttemptPlanResult<TChoice, TValue> = {
 type RunProviderAttemptPlanArgs<TChoice, TValue, TInitial> = {
   primary: TChoice;
   retries: number;
-  resolveFallback: () => Promise<TChoice | null>;
   primaryInitial?: TInitial;
   isCustomerCanceled: (choice: TChoice) => boolean;
   canceledFailure: () => Record<string, unknown>;
@@ -51,8 +50,8 @@ type ChoiceResult<TChoice, TValue> = ProviderAttemptPlanResult<TChoice, TValue>;
 
 /**
  * Owns the order-sensitive provider plan shared by completion and stream setup:
- * retries within one choice, cancellation fences around asynchronous fallback
- * resolution, and one contiguous attempt record for every failed dispatch.
+ * retries within the choice, cancellation fences between attempts, and one
+ * contiguous attempt record for every failed dispatch.
  */
 export async function runProviderAttemptPlan<TChoice, TValue, TInitial>(
   args: RunProviderAttemptPlanArgs<TChoice, TValue, TInitial>,
@@ -62,29 +61,19 @@ export async function runProviderAttemptPlan<TChoice, TValue, TInitial>(
   }
   const primary = await runChoice(args, args.primary, args.primaryInitial);
   if (primary.kind !== "provider_failed") return primary;
-  // The user's next subscription serves a retry of this same choice, which
-  // beats a fallback model billed elsewhere.
+  // The user's next subscription serves the client's retry of this choice, so
+  // the failure stands even if the client has already gone.
   if (subscriptionUsageLimitFromFailure(primary.failure)?.switched === true) return primary;
-  // A disconnect before or during fallback resolution stays attributed to the
-  // primary: it is the only choice that was dispatched, and a resolved but
-  // undispatched fallback must not appear as the serving model.
-  const canceledAfterPrimary = () =>
-    syntheticCancellation(args, {
+  // A client that disconnected while the plan settled is a cancellation,
+  // attributed to the only choice that was dispatched.
+  if (args.isCustomerCanceled(args.primary)) {
+    return syntheticCancellation(args, {
       choice: args.primary,
       attempt: primary.attempt + 1,
       latencyMs: primary.latencyMs,
     });
-  if (args.isCustomerCanceled(args.primary)) return canceledAfterPrimary();
-
-  const fallback = await args.resolveFallback();
-  if (args.isCustomerCanceled(args.primary)) return canceledAfterPrimary();
-  if (fallback === null) return primary;
-
-  const fallbackResult = await runChoice(args, fallback, undefined);
-  return {
-    ...fallbackResult,
-    latencyMs: primary.latencyMs + fallbackResult.latencyMs,
-  };
+  }
+  return primary;
 }
 
 async function runChoice<TChoice, TValue, TInitial>(

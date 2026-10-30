@@ -105,8 +105,6 @@ export async function resolveSelfHostedRouter(
     zdr: router.zdr,
     speculative_routing: false,
     primary_retries: router.retries,
-    model_fallback_enabled: router.fallback,
-    fallback_requires_different_provider: router.fallbackRequiresDifferentProvider,
     lease_context_enabled: false,
     routing_strategy: "dari",
     custom_config: null,

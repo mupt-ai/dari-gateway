@@ -80,15 +80,10 @@ export function buildCompletedPrefixHit(args: {
 export function leaseCountdownForPrefix(args: {
   served: RoutingDecision | null;
   next: RoutingDecision | null;
-  // True when a completed fallback attempt served this turn. A lease-aware
-  // fallback carries the remaining countdown on the serving decision; an
-  // ordinary fallback has no countdown and ends any primary commitment.
-  fallbackServed?: boolean;
 }): number | null {
-  const granted = args.fallbackServed === true ? args.served : args.next ?? args.served;
+  const granted = args.next ?? args.served;
   const remaining = granted?.leaseTurnsRemaining;
   if (remaining === undefined || remaining === null) return null;
-  if (args.fallbackServed === true) return remaining;
   const servedGrantedPair =
     args.next === null ||
     (args.served !== null &&

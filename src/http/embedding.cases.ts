@@ -125,15 +125,6 @@ test("failed requests are recorded too", async () => {
   expect(records[0]!.summary.selected_model).toBe(MODEL_A);
 });
 
-test("a strict router serves the pinned model without fallback", async () => {
-  router = resolvedRouter({ strict: true, model_fallback_enabled: true });
-  upstreamStatus = 500;
-  const response = await chat({ model: `dari/model/${MODEL_A}` });
-  expect(response.status).toBeGreaterThanOrEqual(400);
-  await response.text();
-  expect(new Set(upstreamCalls.map((call) => call.model))).toEqual(new Set(["acme/model-a"]));
-});
-
 test("a strict router refuses unpinned models and unavailable thinking levels", async () => {
   router = resolvedRouter({ strict: true });
   const routed = await chat({ model: "dari/routing" });
@@ -146,8 +137,8 @@ test("a strict router refuses unpinned models and unavailable thinking levels", 
   expect(upstreamCalls).toEqual([]);
 });
 
-test("provider-wide strict access serves a catalog model and never falls back", async () => {
-  router = resolvedRouter({ strict: true, strict_providers: ["openai"], model_fallback_enabled: true });
+test("provider-wide strict access serves a catalog model", async () => {
+  router = resolvedRouter({ strict: true, strict_providers: ["openai"] });
   upstreamStatus = 500;
   const response = await chat({ model: "dari/model/openai/gpt-5.5" });
   expect(response.status).toBeGreaterThanOrEqual(400);
@@ -197,7 +188,6 @@ function resolvedRouter(overrides: Partial<ResolvedRouter>): ResolvedRouter {
     enabled_models: [MODEL_A, MODEL_B],
     provider_keys: { openrouter: "resolved-key" },
     primary_retries: 0,
-    model_fallback_enabled: true,
     lease_context_enabled: false,
     routing_strategy: "dari",
     model_thinking_levels: { [MODEL_A]: ["off"], [MODEL_B]: ["off", "high"] },

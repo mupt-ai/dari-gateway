@@ -58,10 +58,7 @@ import {
 export type ProviderChoice = {
   decision: RoutingDecision;
   execution: ProviderExecution;
-  role: "primary" | "fallback";
 };
-
-export type ResolveFallbackChoice = () => Promise<ProviderChoice | null>;
 
 export type PreparedStreamExecution = {
   choice: ProviderChoice;
@@ -86,7 +83,6 @@ export async function executeNonStreaming(args: {
   interaction: InteractionRequest;
   primary: ProviderChoice;
   primaryRetries: number;
-  resolveFallback: ResolveFallbackChoice;
   reporter: RoutedRuntimeReporter;
   protocol: RoutedProtocol;
   startedCompletion?: StartedCompletion;
@@ -111,7 +107,6 @@ export async function completeNonStreaming(args: {
   interaction: InteractionRequest;
   primary: ProviderChoice;
   primaryRetries: number;
-  resolveFallback: ResolveFallbackChoice;
   reporter: RoutedRuntimeReporter;
   protocol: RoutedProtocol;
   startedCompletion?: StartedCompletion;
@@ -157,7 +152,7 @@ export async function completeNonStreaming(args: {
       output,
       modelCost: args.reporter.modelCost({
         model: choice.decision.selectedModel, reasoning_effort: choice.decision.reasoningEffort,
-        role: choice.role, attempt: result.attempt, outcome: "completed", billingOutcome: "completed",
+        attempt: result.attempt, outcome: "completed", billingOutcome: "completed",
         execution: reportedExecution(choice.execution), message: completion.message,
       }),
       request: args.interaction,
@@ -231,7 +226,6 @@ async function completeWithRetries(args: {
   interaction: InteractionRequest;
   primary: ProviderChoice;
   primaryRetries: number;
-  resolveFallback: ResolveFallbackChoice;
   reporter: RoutedRuntimeReporter;
   startedCompletion?: StartedCompletion;
   clientSignal?: AbortSignal;
@@ -239,7 +233,6 @@ async function completeWithRetries(args: {
   return runProviderAttemptPlan({
     primary: args.primary,
     retries: args.primaryRetries,
-    resolveFallback: args.resolveFallback,
     primaryInitial: args.startedCompletion,
     isCustomerCanceled: () => customerAbortRequested(args.clientSignal),
     canceledFailure: customerCanceledProviderMessage,
@@ -459,7 +452,6 @@ export async function prepareStreamingExecution(args: {
   interaction: InteractionRequest;
   primary: ProviderChoice;
   primaryRetries: number;
-  resolveFallback: ResolveFallbackChoice;
   reporter: RoutedRuntimeReporter;
   startedStream?: StartedStream;
   initialError?: unknown;
@@ -475,7 +467,6 @@ export async function prepareStreamingExecution(args: {
   const result = await runProviderAttemptPlan({
     primary: args.primary,
     retries: args.primaryRetries,
-    resolveFallback: args.resolveFallback,
     primaryInitial,
     isCustomerCanceled: () => customerAbortRequested(args.clientSignal),
     canceledFailure: customerCanceledProviderMessage,
@@ -537,7 +528,7 @@ async function runStreamSetupAttempt(args: {
           clientSignal: args.clientSignal,
         });
     // Prime before committing so connection failures and prompt rejections
-    // stay inside the one shared retry/fallback state machine.
+    // stay inside the one shared retry state machine.
     const primed = await primeProviderStream(
       started.providerStream.events,
       started.customerAbort,
@@ -611,7 +602,6 @@ export async function executeStreaming(args: {
     protocol: args.protocol,
     providerLatencyMs: () =>
       args.failedSetupLatencyMs + Date.now() - started.providerStartedMs,
-    role: args.choice.role,
     attempt: args.attempt,
     reportBarrier: args.reportBarrier,
     delivered: observed.delivered,
@@ -630,7 +620,7 @@ export async function executeStreaming(args: {
       clientSignal: args.clientSignal,
       modelCost: (message, failed) => args.reporter.modelCost({
         model: args.choice.decision.selectedModel, reasoning_effort: args.choice.decision.reasoningEffort,
-        role: args.choice.role, attempt: args.attempt,
+        attempt: args.attempt,
         outcome: failed ? "terminal_error" : "completed",
         billingOutcome: failed ? "provider_failed" : "completed",
         execution: reportedExecution(execution), message,
@@ -673,7 +663,6 @@ function recordProviderAttempt(
   reporter.recordProviderAttempt({
     model: choice.decision.selectedModel,
     reasoning_effort: choice.decision.reasoningEffort,
-    role: choice.role,
     attempt,
     outcome,
     execution: reportedExecution(choice.execution),
@@ -720,7 +709,8 @@ async function providerFailedAttempt(
   }
   // Retrying an exhausted plan cannot succeed. The platform learns about it
   // before this request returns so the next resolve already serves the
-  // user's next subscription, or the router's subscription fallback model.
+  // user's next subscription, or the model's API credential when the router
+  // allows subscription API fallback for it.
   const switched = execution.subscriptionUserId !== undefined
     && await holdSubscription({
       userId: execution.subscriptionUserId,

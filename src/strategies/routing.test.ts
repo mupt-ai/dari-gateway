@@ -264,7 +264,7 @@ test("keeps custom routing on the LLM selector", async () => {
   expect(selectorRequests).toHaveLength(1);
 });
 
-test("derives the first eligible fallback in the runtime when any provider is allowed", async () => {
+test("the selector request carries no fallback configuration", async () => {
   selectorMessage = {
     stopReason: "stop",
     content: [
@@ -286,15 +286,9 @@ test("derives the first eligible fallback in the runtime when any provider is al
       "openai/gpt-5.5",
       "anthropic/claude-sonnet-4-6",
     ),
-    modelFallbackEnabled: true,
-    fallbackRequiresDifferentProvider: false,
   });
 
-  expect(run.fallbackDecision).toEqual({
-    selectedModel: "openai/gpt-5.5",
-    reasoningEffort: "medium",
-    reason: "Runtime-selected fallback for the routed primary decision.",
-  });
+  expect(run.decision.selectedModel).toBe("openai/gpt-4.1-mini");
   expect(run.selectorInput).not.toHaveProperty("fallback_config");
   const responseFormat = selectorRequests[0].responseFormat;
   expect(responseFormat?.type).toBe("json_schema");
@@ -306,7 +300,7 @@ test("derives the first eligible fallback in the runtime when any provider is al
   expect(systemPrompt).not.toContain("second-best fallback");
 });
 
-test("runtime fallback skips same-provider candidates when a different provider is required", async () => {
+test("ignores a fallback the selector output names", async () => {
   selectorMessage = {
     stopReason: "stop",
     content: [
@@ -316,6 +310,9 @@ test("runtime fallback skips same-provider candidates when a different provider 
           selected_model: "openai/gpt-4.1-mini",
           reasoning_effort: "medium",
           reason: "best",
+          fallback_model: "anthropic/claude-sonnet-4-6",
+          fallback_reasoning_effort: "medium",
+          fallback_reason: "Second best.",
         }),
       },
     ],
@@ -323,131 +320,15 @@ test("runtime fallback skips same-provider candidates when a different provider 
 
   const run = await selectModel({
     messages: [{ role: "user", content: "hello" }],
-    candidates: mediumCandidates(
-      "openai/gpt-4.1-mini",
-      "openai/gpt-5.5",
-      "anthropic/claude-sonnet-4-6",
-    ),
-    modelFallbackEnabled: true,
-    fallbackRequiresDifferentProvider: true,
+    candidates: mediumCandidates("openai/gpt-4.1-mini", "anthropic/claude-sonnet-4-6"),
   });
 
-  expect(run.fallbackDecision).toEqual({
-    selectedModel: "anthropic/claude-sonnet-4-6",
+  expect(run.decision).toEqual({
+    selectedModel: "openai/gpt-4.1-mini",
     reasoningEffort: "medium",
-    reason: "Runtime-selected fallback for the routed primary decision.",
+    reason: "best",
   });
-});
-
-test("runtime fallback uses resolved execution provider, not canonical prefix", async () => {
-  selectorMessage = {
-    stopReason: "stop",
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify({
-          selected_model: "xai/grok-4.5",
-          reasoning_effort: "medium",
-          reason: "best",
-        }),
-      },
-    ],
-  };
-
-  const run = await selectModel({
-    messages: [{ role: "user", content: "hello" }],
-    candidates: mediumCandidates(
-      "xai/grok-4.5",
-      "openai/gpt-4.1-mini",
-      "anthropic/claude-sonnet-4-6",
-    ),
-    modelFallbackEnabled: true,
-    fallbackRequiresDifferentProvider: true,
-    executionProviderForModel: (model) =>
-      ({
-        "xai/grok-4.5": "openrouter",
-        "openai/gpt-4.1-mini": "openrouter",
-        "anthropic/claude-sonnet-4-6": "openai",
-      })[model] ?? model.split("/", 1)[0],
-  });
-
-  // grok-4.5 and gpt-4.1-mini are both served by openrouter, so the fallback
-  // must skip the same-provider candidate and land on the different provider.
-  expect(run.fallbackDecision).toEqual({
-    selectedModel: "anthropic/claude-sonnet-4-6",
-    reasoningEffort: "medium",
-    reason: "Runtime-selected fallback for the routed primary decision.",
-  });
-});
-
-test("production owns fallback derivation for injected selectors such as GRPO", async () => {
-  selectorBackend = {
-    selectorModel: "grpo-policy-v1",
-    contextWindowChars: async () => 65_536 * 4,
-    select: async (args) => ({
-      decision: {
-        selectedModel: "openai/gpt-4.1-mini",
-        reasoningEffort: "medium",
-        reason: "GRPO selected one constrained action.",
-      },
-      fallbackDecision: {
-        selectedModel: "openai/not-a-candidate",
-        reasoningEffort: "medium",
-        reason: "Adapters do not own fallbacks.",
-      },
-      selectorModel: "grpo-policy-v1",
-      candidates: args.candidates,
-      selectorInput: args.selectorInput,
-      selectorRequest: args.selectorRequest,
-      outputText: '{"action":"A"}',
-      usage: null,
-      latencyMs: 1,
-    }),
-  };
-  const run = await selectModel({
-    messages: [{ role: "user", content: "hello" }],
-    candidates: mediumCandidates(
-      "openai/gpt-4.1-mini",
-      "anthropic/claude-sonnet-4-6",
-    ),
-    modelFallbackEnabled: true,
-    fallbackRequiresDifferentProvider: true,
-  });
-
-  expect(run.fallbackDecision).toEqual({
-    selectedModel: "anthropic/claude-sonnet-4-6",
-    reasoningEffort: "medium",
-    reason: "Runtime-selected fallback for the routed primary decision.",
-  });
-});
-
-test("treats a null fallback_model with an explanatory reason as no fallback", async () => {
-  selectorMessage = {
-    stopReason: "stop",
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify({
-          selected_model: "openai/gpt-4.1-mini",
-          reasoning_effort: "medium",
-          reason: "best",
-          fallback_model: null,
-          fallback_reasoning_effort: null,
-          fallback_reason:
-            "No eligible fallback exists because all candidates share the selected provider.",
-        }),
-      },
-    ],
-  };
-
-  const run = await selectModel({
-    messages: [{ role: "user", content: "hello" }],
-    candidates: mediumCandidates("openai/gpt-4.1-mini", "openai/gpt-5.5"),
-    modelFallbackEnabled: true,
-    fallbackRequiresDifferentProvider: true,
-  });
-
-  expect(run.fallbackDecision).toBeUndefined();
+  expect(run).not.toHaveProperty("fallbackDecision");
 });
 
 test("passes imported eval scorecards to the selector", async () => {

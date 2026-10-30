@@ -578,7 +578,6 @@ function countingReporter(counts: ReporterCounts): RoutedRuntimeReporter {
     attachSelectorRun() {},
     attachSpeculativeSelectorRun() {},
     attachDecision() {},
-    attachFallbackDecision() {},
     attachServingDecision() {
       counts.servingDecisions += 1;
     },
@@ -678,7 +677,6 @@ function providerChoice(
         : undefined,
       headers: {},
     },
-    role: "primary",
   };
 }
 

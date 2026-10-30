@@ -62,7 +62,6 @@ import {
   buildCompletedPrefixHit,
   leaseCountdownForPrefix,
   prefixEntryForIngest,
-  reportPendingLease,
   reportPrefixState,
 } from "./prefix_state.js";
 import { subscriptionUsageLimitFromFailure } from "../providers/subscription_limits.js";
@@ -149,7 +148,6 @@ export class RequestReporter {
   private selectorOutputAccepted = false;
   private decision: RoutingDecision | null = null;
   private nextDecision: RoutingDecision | null = null;
-  private fallbackDecision: RoutingDecision | null = null;
   private providerAttempts: ProviderAttemptReport[] = [];
   private billingProviderAttempts: RoutingBillingProviderAttemptFacts[] = [];
   private decisionDetails: Record<string, unknown> = {};
@@ -202,7 +200,6 @@ export class RequestReporter {
     this.selectorOutputAccepted = true;
     this.decision = run.decision;
     this.nextDecision = run.decision;
-    this.fallbackDecision = run.fallbackDecision ?? null;
   }
 
   attachSpeculativeSelectorRun(run: SelectorRun, servingDecision: RoutingDecision): void {
@@ -211,7 +208,6 @@ export class RequestReporter {
     this.selectorOutputAccepted = true;
     this.decision = servingDecision;
     this.nextDecision = run.decision;
-    this.fallbackDecision = run.fallbackDecision ?? null;
   }
 
   // Speculative execution can begin before a selector run; its serving
@@ -219,10 +215,6 @@ export class RequestReporter {
   attachDecision(decision: RoutingDecision): void {
     this.decision = decision;
     this.nextDecision = decision;
-  }
-
-  attachFallbackDecision(decision: RoutingDecision | undefined): void {
-    this.fallbackDecision = decision ?? null;
   }
 
   attachServingDecision(decision: RoutingDecision): void {
@@ -239,10 +231,10 @@ export class RequestReporter {
     return modelCost(attempt ? [...this.billingProviderAttempts, this.billingFacts(attempt)] : this.billingProviderAttempts);
   }
 
-  private billingFacts({ execution, message, role, attempt, billingOutcome }: ProviderAttemptRecord): RoutingBillingProviderAttemptFacts {
+  private billingFacts({ execution, message, attempt, billingOutcome }: ProviderAttemptRecord): RoutingBillingProviderAttemptFacts {
     return routingBillingProviderAttemptFacts({
       provider: execution.provider, model: execution.model,
-      providerKeySource: execution.providerKeySource, role, attempt, outcome: billingOutcome,
+      providerKeySource: execution.providerKeySource, attempt, outcome: billingOutcome,
       providerMessage: message, usage: isRecord(message.usage) ? message.usage : null,
       providerPricingKnown: this.pricingKnown(execution.model),
     });
@@ -388,18 +380,8 @@ export class RequestReporter {
       const decision = this.decision;
       const selectedModel = outcome.providerExecution?.model ?? decision?.selectedModel ?? null;
       const reasoningBucket = decision?.reasoningEffort ?? null;
-      // A completed fallback attempt means the intended pair failed this
-      // turn: the next-turn recommendation and any lease countdown follow the
-      // pair that actually served instead of re-pinning the failed one.
-      const fallbackServed = this.providerAttempts.some(
-        (attempt) => attempt.role === "fallback" && attempt.outcome === "completed",
-      );
-      const nextModel = fallbackServed
-        ? selectedModel
-        : this.nextDecision?.selectedModel ?? selectedModel;
-      const nextReasoningEffort = fallbackServed
-        ? reasoningBucket
-        : this.nextDecision?.reasoningEffort ?? reasoningBucket;
+      const nextModel = this.nextDecision?.selectedModel ?? selectedModel;
+      const nextReasoningEffort = this.nextDecision?.reasoningEffort ?? reasoningBucket;
       const selectedProvider = outcome.providerExecution?.provider ?? (selectedModel
         ? executionProviderForModel(a.credentials, selectedModel)
         : null);
@@ -470,7 +452,6 @@ export class RequestReporter {
               leaseTurnsRemaining: leaseCountdownForPrefix({
                 served: decision ?? null,
                 next: this.nextDecision,
-                fallbackServed,
               }),
               reason: this.nextDecision?.reason ?? decision?.reason ?? null,
               chain: selectedChain,
@@ -506,21 +487,6 @@ export class RequestReporter {
       // resolves this turn's conversation id and next-model prediction.
       // The full report below re-applies the same state idempotently, so a
       // lost or timed-out fast write only degrades to the old ordering.
-      // An ordinary fallback breaks any lease commitment, prefetched ones
-      // included. A lease-aware fallback transfers the active countdown to
-      // the serving pair, so only clear pending state when no countdown was
-      // transferred. The depth fence orders the clear safely against
-      // in-flight prefetch writes.
-      if (!backgroundRequest && fallbackServed && decision?.leaseTurnsRemaining === undefined) {
-        trackBackgroundTelemetry(
-          reportPendingLease({
-            routerId: a.routerId,
-            conversationId: a.conversationId,
-            decidedAtDepth: a.leaseDepth,
-            lease: null,
-          }),
-        );
-      }
       if (prefixEntry !== null || touchedHash !== null) {
         this.prefixStatePromise = reportPrefixState({
           organization_id: a.credentials.organization_id,
@@ -592,13 +558,6 @@ export class RequestReporter {
           strategy: a.strategy,
           selected_reasoning_effort: reasoningBucket,
           next_reasoning_effort: nextReasoningEffort,
-          ...(this.fallbackDecision
-            ? {
-                fallback_model: this.fallbackDecision.selectedModel,
-                fallback_reasoning_effort:
-                  this.fallbackDecision.reasoningEffort,
-              }
-            : {}),
           ...(this.providerAttempts.length > 0
             ? { provider_attempts: this.providerAttempts }
             : {}),
@@ -662,9 +621,6 @@ export class RequestReporter {
           selected_reasoning_effort: reasoningBucket,
           next_model: nextModel,
           next_reasoning_effort: nextReasoningEffort,
-          fallback_model: this.fallbackDecision?.selectedModel ?? null,
-          fallback_reasoning_effort:
-            this.fallbackDecision?.reasoningEffort ?? null,
           provider_key_source: keySource,
           message_count: observability.messageCount,
           tool_count: observability.metadata.declared_tool_counts.total,

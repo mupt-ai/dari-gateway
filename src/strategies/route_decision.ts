@@ -15,7 +15,6 @@ import type { ResolvedRouter } from "../types.js";
 
 export type RoutedDecision = {
   decision: RoutingDecision;
-  fallbackDecision?: RoutingDecision;
   run?: SelectorRun;
   details?: Record<string, unknown>;
 };
@@ -81,9 +80,6 @@ export async function routeDecision(
       ? { customRules: custom.rules, defaultTarget: custom.defaultTarget }
       : {}),
     selectorBackend: args.selectorBackend,
-    modelFallbackEnabled: credentials.model_fallback_enabled !== false,
-    fallbackRequiresDifferentProvider:
-      credentials.fallback_requires_different_provider !== false,
     executionProviderForModel: (model) =>
       executionProviderForModel(credentials, model),
     imputeEvalScores: credentials.eval_score_imputation === true,
@@ -99,7 +95,6 @@ export async function routeDecision(
   };
   return {
     decision: run.decision,
-    fallbackDecision: run.fallbackDecision,
     run,
     ...(Object.keys(details).length > 0 ? { details } : {}),
   };

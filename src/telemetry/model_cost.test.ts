@@ -4,7 +4,7 @@ import { routingBillingProviderAttemptFacts } from "./billing_finalization.js";
 
 function attempt(cost: number, outcome: "completed" | "provider_failed" = "completed") {
   return routingBillingProviderAttemptFacts({ provider: "openai", model: "openai/gpt-6.1-sol",
-    providerKeySource: "user", role: "primary", attempt: 1, outcome,
+    providerKeySource: "user", attempt: 1, outcome,
     providerMessage: null, providerPricingKnown: true,
     usage: { input: 10, output: 5, cacheRead: 0, cacheWrite: 0, cost: { input: cost, output: 0, cacheRead: 0, cacheWrite: 0, total: cost } },
   });

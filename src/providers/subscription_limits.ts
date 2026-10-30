@@ -11,7 +11,7 @@ export type SubscriptionUsageLimit = {
   resetsAt: Date;
   reason: string;
   // The platform made the user's next subscription active, so a retry
-  // succeeds without any fallback.
+  // succeeds on it.
   switched?: boolean;
 };
 

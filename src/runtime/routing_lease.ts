@@ -6,8 +6,6 @@ import {
   type RoutingDecision,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import { deriveFallbackDecision } from "../strategies/fallback_decision.js";
-import { executionProviderForModel } from "../models/execution_provider.js";
 import type { SelectorBackend } from "../strategies/routing.js";
 import {
   routeDecision,
@@ -71,17 +69,7 @@ export function leasedDecision(
   // incumbent cannot hide an available user-owned key behind the lease.
   if (prepared.billable && prepared.credentials.credit_exhausted) return null;
 
-  const fallbackDecision = leaseFallbackDecision({
-    candidates: prepared.routing.candidateResolution.candidates,
-    decision: lease.decision,
-    credentials: prepared.credentials,
-  });
-  // Use attachServingDecision rather than attachDecision so next_model
-  // follows the model that actually serves. When fallback handles a primary
-  // failure, it inherits this countdown and subsequent held turns continue
-  // on the healthy serving pair instead of retrying the failed primary.
   prepared.reporter.attachServingDecision(lease.decision);
-  prepared.reporter.attachFallbackDecision(fallbackDecision);
   prepared.reporter.attachDecisionDetails({
     decision_source: "lease_hold",
     routing_lease: {
@@ -90,49 +78,7 @@ export function leasedDecision(
       turn_in_lease: lease.turnInLease,
     },
   });
-  return { decision: lease.decision, fallbackDecision };
-}
-
-// Wraps a lease-held (or adopted) decision with a runtime-derived fallback so
-// a mid-lease provider failure degrades like any other turn instead of
-// erroring the request. The fallback inherits the remaining commitment so the
-// completed prefix follows the healthy serving pair for the rest of the lease.
-export function committedLeaseDecision(
-  prepared: PreparedRoutedCompletion,
-  decision: RoutingDecision,
-): RoutedDecision {
-  const fallbackDecision = leaseFallbackDecision({
-    candidates: prepared.routing.candidateResolution.candidates,
-    decision,
-    credentials: prepared.credentials,
-  });
-  if (fallbackDecision) prepared.reporter.attachFallbackDecision(fallbackDecision);
-  return fallbackDecision ? { decision, fallbackDecision } : { decision };
-}
-
-export function leaseFallbackDecision(args: {
-  candidates: PreparedRoutedCompletion["routing"]["candidateResolution"]["candidates"];
-  decision: RoutingDecision;
-  credentials: PreparedRoutedCompletion["credentials"];
-}): RoutingDecision | undefined {
-  const fallback = deriveFallbackDecision({
-    candidates: args.candidates,
-    selected: {
-      model: args.decision.selectedModel,
-      reasoningEffort: args.decision.reasoningEffort,
-    },
-    enabled: args.credentials.model_fallback_enabled !== false,
-    requiresDifferentProvider:
-      args.credentials.fallback_requires_different_provider !== false,
-    providerForModel: (model) => executionProviderForModel(args.credentials, model),
-  });
-  if (!fallback || args.decision.leaseTurnsRemaining === undefined) {
-    return fallback;
-  }
-  return {
-    ...fallback,
-    leaseTurnsRemaining: args.decision.leaseTurnsRemaining,
-  };
+  return { decision: lease.decision };
 }
 
 export async function selectorNegotiatesLeases(

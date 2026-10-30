@@ -146,8 +146,6 @@ export type RequestSummary = {
   selected_reasoning_effort: ReasoningEffort | null;
   next_model: string | null;
   next_reasoning_effort: ReasoningEffort | null;
-  fallback_model: string | null;
-  fallback_reasoning_effort: ReasoningEffort | null;
   provider_key_source: ProviderKeySource | null;
   message_count: number;
   tool_count: number;

@@ -63,7 +63,7 @@ describe("resolveSelfHostedRouter", () => {
       provider_keys: { anthropic: "sk-ant", openai: "sk-openai" },
       provider_key_sources: { anthropic: "user", openai: "user" },
       model_thinking_levels: { "openai/gpt-5.5": ["medium", "high"] },
-      model_fallback_enabled: true,
+      primary_retries: 1,
     });
     expect(resolved.model_prices?.["anthropic/claude-sonnet-4-5"]?.input).toBeGreaterThan(0);
   });
@@ -216,8 +216,6 @@ describe("parseGatewayConfig", () => {
       routers: {
         default: {
           models: [{ id: "a/b" }],
-          fallback: true,
-          fallbackRequiresDifferentProvider: false,
           retries: 1,
           subscriptions: true,
           zdr: false,

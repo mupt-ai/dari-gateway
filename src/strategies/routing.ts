@@ -34,7 +34,6 @@ import type {
   ProviderAuth,
   ResolvedRouter,
 } from "../types.js";
-import { deriveFallbackDecision } from "./fallback_decision.js";
 import type { SelectorImage } from "./selector_projection.js";
 
 export function resolveRouter(args: ResolveRouterRequest): Promise<ResolvedRouter> {
@@ -54,7 +53,6 @@ export type SelectorTrace = {
 
 export type SelectorRun = SelectorTrace & {
   decision: RoutingDecision;
-  fallbackDecision?: RoutingDecision;
 };
 
 export type SelectModelArgs = {
@@ -70,8 +68,6 @@ export type SelectModelArgs = {
   customRules?: CustomRouterRule[];
   defaultTarget?: CustomDefaultTarget | null;
   sessionId?: string;
-  modelFallbackEnabled?: boolean;
-  fallbackRequiresDifferentProvider?: boolean;
   executionProviderForModel?: (model: string) => string;
   imputeEvalScores?: boolean;
   imputationReferenceEvals?: RouterEval[];
@@ -171,8 +167,6 @@ export async function selectModel(
     contextWindowChars,
     messages: selectorBackend.prepareMessages?.(safeMessages) ?? safeMessages,
     ...(leaseContextEnabled ? { leaseHistory: args.leaseHistory ?? [] } : {}),
-    modelFallbackEnabled: args.modelFallbackEnabled,
-    fallbackRequiresDifferentProvider: args.fallbackRequiresDifferentProvider,
     imputeEvalScores: args.imputeEvalScores,
     imputationReferenceEvals: args.imputationReferenceEvals,
   });
@@ -285,17 +279,7 @@ function validateSelectorRun(run: SelectorRun, args: SelectModelArgs): SelectorR
       run,
     );
   }
-  const { fallbackDecision: _selectorFallback, ...primaryRun } = run;
-  const fallbackDecision = deriveFallbackDecision({
-    candidates: args.candidates,
-    selected,
-    enabled: args.modelFallbackEnabled,
-    requiresDifferentProvider: args.fallbackRequiresDifferentProvider,
-    providerForModel: args.executionProviderForModel,
-  });
-  return fallbackDecision
-    ? { ...primaryRun, fallbackDecision }
-    : primaryRun;
+  return run;
 }
 
 function requiredSelectorConfig(value: string, label: string): string {

@@ -6,12 +6,11 @@ import type {
   ReasoningEffort,
 } from "@mupt-ai/dari-router/policy-engine";
 
-import type { ResolvedRouter } from "../types.js";
 import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
 import { chatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
 import { openAIResponsesToInteraction } from "../protocol/input/openai_responses.js";
 import { selectorMessagesForInteraction } from "../strategies/selector_projection.js";
-import { leasedRoutingDecision, leaseFallbackDecision } from "./routing_lease.js";
+import { leasedRoutingDecision } from "./routing_lease.js";
 
 function msg(role: string): ChatMessage {
   return { role, content: "test" };
@@ -161,78 +160,4 @@ test.each([
 
   expect(result?.completedTurns).toBe(1);
   expect(result?.turnInLease).toBe(2);
-});
-
-const credentials: ResolvedRouter = {
-  router_id: "rtr_lease",
-  organization_id: "org_1",
-  api_key_id: "key_1",
-  attributed_user_id: null,
-  enabled_models: [
-    "xai/grok-4.6",
-    "openai/gpt-5.6-sol",
-    "anthropic/claude-opus-5",
-  ],
-  provider_keys: { openrouter: "or-key", anthropic: "an-key" },
-  model_fallback_enabled: true,
-  fallback_requires_different_provider: true,
-  model_configs: {
-    "xai/grok-4.6": {
-      provider: "openrouter",
-      native_model_id: "x-ai/grok-4.6",
-      api: "openai-completions",
-      cost: { input: 2, output: 6 },
-    },
-    "openai/gpt-5.6-sol": {
-      provider: "openrouter",
-      native_model_id: "openai/gpt-5.6-sol",
-      api: "openai-responses",
-      cost: { input: 1.75, output: 14 },
-    },
-    "anthropic/claude-opus-5": {
-      provider: "anthropic",
-      native_model_id: "claude-opus-5",
-      api: "anthropic-messages",
-      cost: { input: 5, output: 25 },
-    },
-  },
-};
-
-test("lease fallback compares resolved providers instead of canonical prefixes", () => {
-  const fallback = leaseFallbackDecision({
-    candidates: [
-      { model: "xai/grok-4.6", reasoningEffort: "high" },
-      { model: "openai/gpt-5.6-sol", reasoningEffort: "off" },
-      { model: "anthropic/claude-opus-5", reasoningEffort: "high" },
-    ],
-    decision: {
-      selectedModel: "xai/grok-4.6",
-      reasoningEffort: "high",
-      reason: "leased",
-    },
-    credentials,
-  });
-
-  expect(fallback?.selectedModel).toBe("anthropic/claude-opus-5");
-});
-
-test("lease fallback inherits the primary lease countdown", () => {
-  const fallback = leaseFallbackDecision({
-    candidates: [
-      { model: "xai/grok-4.6", reasoningEffort: "high" },
-      { model: "anthropic/claude-opus-5", reasoningEffort: "high" },
-    ],
-    decision: {
-      selectedModel: "xai/grok-4.6",
-      reasoningEffort: "high",
-      reason: "lease hold",
-      leaseTurnsRemaining: 7,
-    },
-    credentials,
-  });
-
-  expect(fallback).toMatchObject({
-    selectedModel: "anthropic/claude-opus-5",
-    leaseTurnsRemaining: 7,
-  });
 });

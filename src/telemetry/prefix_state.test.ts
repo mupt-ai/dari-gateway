@@ -31,13 +31,4 @@ test("lease countdown starts only when the granting turn served the leased pair"
   ).toBe(3);
   // Per-turn decisions store nothing.
   expect(leaseCountdownForPrefix({ served: previous, next: null })).toBeNull();
-  // An ordinary fallback has no countdown and breaks the grant.
-  expect(
-    leaseCountdownForPrefix({ served: previous, next: lease, fallbackServed: true }),
-  ).toBeNull();
-  // A lease-aware fallback carries the remaining commitment on the serving
-  // pair, without speculative crediting for the failed primary.
-  expect(
-    leaseCountdownForPrefix({ served: lease, next: null, fallbackServed: true }),
-  ).toBe(9);
 });

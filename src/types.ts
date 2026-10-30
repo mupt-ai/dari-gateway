@@ -124,15 +124,13 @@ export type ResolvedRouter = {
   speculative_routing?: boolean;
   primary_retries?: number;
   // Serve only the requested `dari/model/<id>` at the requested thinking
-  // level: no selector, lease, fallback, or personal subscription the
-  // platform did not supply through resolveProviderCredential, and an error
-  // for anything else, whatever the client sends.
+  // level: no selector, lease, or personal subscription the platform did not
+  // supply through resolveProviderCredential, and an error for anything
+  // else, whatever the client sends.
   strict?: boolean;
   // On strict routers only, allow requested catalog models of these providers.
-  // Requires dari/model/<provider>/<id>; never enables fallback.
+  // Requires dari/model/<provider>/<id>.
   strict_providers?: string[];
-  model_fallback_enabled?: boolean;
-  fallback_requires_different_provider?: boolean;
   evals?: RouterEval[];
   // When true, fill missing eval scores using thinking-level ratios or an
   // explicitly mapped predecessor model.

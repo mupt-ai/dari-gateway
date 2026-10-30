@@ -46,7 +46,6 @@ export type ReportableProviderOutcome =
 export type ProviderAttemptReport = {
   model: string;
   reasoning_effort: string;
-  role: "primary" | "fallback";
   attempt: number;
   outcome: "completed" | "error" | "terminal_error" | "canceled";
 };
@@ -65,7 +64,6 @@ export type RoutedRuntimeReporter = {
   attachSelectorRun(run: SelectorRun): void;
   attachSpeculativeSelectorRun(run: SelectorRun, servingDecision: RoutingDecision): void;
   attachDecision(decision: RoutingDecision): void;
-  attachFallbackDecision(decision: RoutingDecision | undefined): void;
   attachServingDecision(decision: RoutingDecision): void;
   recordProviderAttempt(attempt: ProviderAttemptRecord): void;
   modelCost(attempt?: ProviderAttemptRecord): number | null;
@@ -94,7 +92,6 @@ export function createExperimentRoutedRuntimeReporter(): ExperimentRoutedRuntime
     attachSelectorRun() {},
     attachSpeculativeSelectorRun() {},
     attachDecision() {},
-    attachFallbackDecision() {},
     attachServingDecision() {},
     recordProviderAttempt() {},
     modelCost() { return null; },

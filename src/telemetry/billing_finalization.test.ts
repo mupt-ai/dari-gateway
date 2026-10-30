@@ -85,7 +85,6 @@ function attemptFacts(
     provider: "openai",
     model: "openai/model",
     providerKeySource: "managed",
-    role: "primary",
     attempt: 1,
     outcome: "completed",
     providerMessage: null,

@@ -9,7 +9,6 @@ import { isBackgroundRequest } from "../../interaction/types.js";
 import { HttpError } from "../../http/errors.js";
 import { assertCreditAvailableBeforeRouting } from "../../telemetry/usage.js";
 import type { PreparedRoutedCompletion } from "../prepare_routed_completion.js";
-import { leaseFallbackDecision } from "../routing_lease.js";
 
 // Explicit background classes bypass the selector and every lease path.
 // Keep the existing deterministic cheapest-input-cost serving policy.
@@ -30,13 +29,7 @@ export function auxiliaryDecision(
     reasoningEffort: cheapest.reasoning_effort,
     reason: `${requestClass} request served by the cheapest routable model without selection.`,
   };
-  const fallbackDecision = leaseFallbackDecision({
-    candidates: prepared.routing.candidateResolution.candidates,
-    decision,
-    credentials: prepared.credentials,
-  });
-  if (fallbackDecision) prepared.reporter.attachFallbackDecision(fallbackDecision);
-  return fallbackDecision ? { decision, fallbackDecision } : { decision };
+  return { decision };
 }
 
 /* Ranked on estimated input cost: these requests carry a whole transcript in

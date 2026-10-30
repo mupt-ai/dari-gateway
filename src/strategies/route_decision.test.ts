@@ -40,7 +40,6 @@ const credentials = {
   enabled_models: [candidate.model],
   provider_keys: {},
   evals: [],
-  model_fallback_enabled: false,
 } as ResolvedRouter;
 
 test("records when the selector policy is bypassed for one candidate", async () => {

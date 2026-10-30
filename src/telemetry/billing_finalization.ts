@@ -14,7 +14,9 @@ export type RoutingBillingProviderAttemptFacts = {
   provider: string;
   model: string;
   provider_key_source: ProviderKeySource;
-  role: "primary" | "fallback";
+  // The control-plane billing contract numbers attempts within a role; every
+  // attempt retries the routed choice, so the role is always primary.
+  role: "primary";
   attempt: number;
   outcome: "completed" | "provider_failed" | "customer_canceled";
   provider_request_id: string | null;
@@ -94,7 +96,6 @@ export function routingBillingProviderAttemptFacts(args: {
   provider: string;
   model: string;
   providerKeySource: ProviderKeySource;
-  role: "primary" | "fallback";
   attempt: number;
   outcome: "completed" | "provider_failed" | "customer_canceled";
   providerMessage: Record<string, unknown> | null;
@@ -129,7 +130,7 @@ export function routingBillingProviderAttemptFacts(args: {
     provider: args.provider,
     model: args.model,
     provider_key_source: args.providerKeySource,
-    role: args.role,
+    role: "primary",
     attempt: args.attempt,
     outcome: args.outcome,
     provider_request_id: providerRequestId(args.providerMessage),

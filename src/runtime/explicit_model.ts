@@ -6,7 +6,7 @@ import type { RoutedDecision } from "../strategies/route_decision.js";
 import type { PreparedRoutedCompletion } from "./prepare_routed_completion.js";
 
 /* A request for `dari/model/<id>` is served by exactly that enabled model,
-   with no selector, lease, or fallback: the user chose it, like picking a
+   with no selector or lease: the user chose it, like picking a
    model in their agent's /model menu. The client's thinking level is kept
    when the model supports it; otherwise the model's default level is used. */
 export function explicitModelDecision(
