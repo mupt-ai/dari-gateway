@@ -1,3 +1,4 @@
+import { explicitModelId } from "../protocol/input/router_model.js";
 import { bearerToken } from "../http/auth.js";
 import { errorResponse } from "../http/errors.js";
 import { captureRequestError } from "../observability/errors.js";
@@ -40,7 +41,9 @@ export async function handleResponses(
     // providers. That preference describes a direct model, not a heterogeneous
     // router, so let Dari select the reasoning effort for verified Codex turns.
     // Parsing above still validates malformed Responses reasoning controls.
-    if (harnessConversationIdentity !== undefined) payload.reasoning = undefined;
+    if (harnessConversationIdentity !== undefined && explicitModelId(payload.model) === null) {
+      payload.reasoning = undefined;
+    }
     return await handleRoutedCompletion({
       request,
       routerId,

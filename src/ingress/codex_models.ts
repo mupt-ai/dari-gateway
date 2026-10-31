@@ -32,6 +32,8 @@ type CodexCatalogEntry = {
   contextWindow: number;
   hostedWebSearch: boolean;
   imageInput: boolean;
+  reasoningLevels?: string[];
+  defaultReasoningLevel?: string | null;
 };
 
 function codexCatalogEntry(args: CodexCatalogEntry): Record<string, unknown> {
@@ -39,8 +41,11 @@ function codexCatalogEntry(args: CodexCatalogEntry): Record<string, unknown> {
     slug: args.slug,
     display_name: args.displayName,
     description: args.description,
-    default_reasoning_level: null,
-    supported_reasoning_levels: [],
+    default_reasoning_level: args.defaultReasoningLevel ?? null,
+    supported_reasoning_levels: (args.reasoningLevels ?? []).map((effort) => ({
+      effort,
+      description: `${effort} thinking`,
+    })),
     shell_type: "shell_command",
     visibility: "list",
     supported_in_api: true,
@@ -106,6 +111,10 @@ export function codexModelsResponse(
           contextWindow: codexRouterContextWindow({ ...router, enabled_models: [model] }),
           hostedWebSearch: codexRouterSupportsHostedWebSearch({ ...router, enabled_models: [model] }),
           imageInput: imageInputFor(model),
+          reasoningLevels: router.model_configs?.[model]?.supported_thinking_levels
+            ?.map((effort) => effort === "off" ? "none" : effort),
+          defaultReasoningLevel: router.model_configs?.[model]?.default_thinking_level === "off"
+            ? "none" : router.model_configs?.[model]?.default_thinking_level,
         })
       ),
     ],

@@ -8,6 +8,21 @@ const config: ResolvedRouterModelConfig = {
   cost: { input: 1, output: 2 },
 };
 
+test("Codex direct models expose thinking choices without overriding router thinking", () => {
+  const response = codexModelsResponse({
+    enabled_models: ["test"],
+    model_configs: { test: { ...config, supported_thinking_levels: ["off", "low", "high"], default_thinking_level: "high" } },
+  }, () => false);
+  const models = response.models as Array<Record<string, unknown>>;
+  expect(models[0]!.supported_reasoning_levels).toEqual([]);
+  expect(models[1]!.default_reasoning_level).toBe("high");
+  expect(models[1]!.supported_reasoning_levels).toEqual([
+    { effort: "none", description: "none thinking" },
+    { effort: "low", description: "low thinking" },
+    { effort: "high", description: "high thinking" },
+  ]);
+});
+
 test("Codex advertises the largest usable candidate window", () => {
   const response = codexModelsResponse({
     enabled_models: ["bounded", "uncapped"],
