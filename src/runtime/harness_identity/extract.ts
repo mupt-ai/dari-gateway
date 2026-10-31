@@ -14,11 +14,10 @@ export function chatCompletionsConversationIdentity(
   headers: Headers,
   promptCacheKey?: string,
 ): HarnessConversationIdentity | undefined {
-  // x-session-affinity is the authoritative Chat Completions identity.
-  // Fall back to prompt_cache_key from the request body for callers that
-  // send a stable cache key without the affinity header, so append-only
-  // sessions (growing message history) stay grouped under one conversation.
-  const sessionId = boundedIdentity(
+  // Pi summaries use fresh cache/affinity IDs. Its explicit session header
+  // groups them with the main turns without changing provider cache affinity.
+  // Other callers use x-session-affinity, falling back to prompt_cache_key.
+  const sessionId = boundedIdentity(headers.get("x-pi-session-id"), "x-pi-session-id") ?? boundedIdentity(
     headers.get("x-session-affinity"),
     "x-session-affinity",
   ) ?? boundedIdentity(promptCacheKey, "prompt_cache_key");
@@ -31,6 +30,16 @@ export function chatCompletionsConversationIdentity(
     kind: "openai_chat_session",
     value: sessionId,
     ...(subagentId === undefined ? {} : { qualifiers: [subagentId] }),
+  };
+}
+
+export function piRequestContext(headers: Headers): AgentRequestContext | undefined {
+  if (boundedIdentity(headers.get("x-pi-session-id"), "x-pi-session-id") === undefined) {
+    return undefined;
+  }
+  const kind = headers.get("x-pi-request-kind")?.trim();
+  return {
+    requestClass: kind === "turn" ? "main" : kind === "compaction" ? "compaction" : "unknown",
   };
 }
 

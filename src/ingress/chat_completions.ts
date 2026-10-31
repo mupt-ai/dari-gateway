@@ -9,6 +9,7 @@ import type { SelectorBackend } from "../strategies/routing.js";
 import {
   chatCompletionsConversationIdentity,
   openCodeRequestContext,
+  piRequestContext,
 } from "../runtime/harness_identity/index.js";
 import { parseJsonRequest } from "./json.js";
 import { museCodeClientId } from "./muse_code.js";
@@ -22,7 +23,7 @@ export async function handleChatCompletions(
     const apiKey = bearerToken(request.headers);
     const payload = await parseJsonRequest<ChatCompletionRequest>(request);
     const interaction = chatCompletionsToInteraction({ ...payload, source_protocol: "openai_chat" });
-    const agentContext = openCodeRequestContext(request.headers);
+    const agentContext = piRequestContext(request.headers) ?? openCodeRequestContext(request.headers);
     const museClientId = museCodeClientId(request.headers);
     return await handleRoutedCompletion({
       request,
