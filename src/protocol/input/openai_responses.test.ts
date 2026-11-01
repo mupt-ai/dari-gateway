@@ -547,12 +547,16 @@ test("Responses ingress rejects incomplete JSON schema formats", () => {
   })).toThrow("text.format.schema must be a JSON schema object");
 });
 
-test("Responses ingress rejects unadvertised reasoning summary and verbosity controls", () => {
-  expect(() => openAIResponsesToInteraction({
+test("Responses ingress serves turns that ask for reasoning summaries without them", () => {
+  const request = openAIResponsesToInteraction({
     model: "dari/routing",
     input: "hello",
-    reasoning: { summary: "auto" },
-  })).toThrow("reasoning.summary is not supported by this router MVP");
+    reasoning: { effort: "high", summary: "auto" },
+  });
+  expect(request.reasoning).toEqual({ effort: "high" });
+});
+
+test("Responses ingress rejects unadvertised verbosity controls", () => {
   expect(() => openAIResponsesToInteraction({
     model: "dari/routing",
     input: "hello",

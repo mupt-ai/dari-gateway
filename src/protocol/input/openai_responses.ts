@@ -572,15 +572,8 @@ function reasoningControls(value: unknown): InteractionRequest["reasoning"] {
   if (value === undefined || value === null) return undefined;
   if (!isRecord(value)) throw new HttpError(400, "reasoning must be an object.", "invalid_request_error", "reasoning");
   const normalizedEffort = normalizedReasoningEffort(value.effort, "reasoning.effort");
-  const summary = value.summary;
-  if (summary !== undefined) {
-    throw new HttpError(
-      400,
-      "reasoning.summary is not supported by this router MVP.",
-      "invalid_request_error",
-      "reasoning.summary"
-    );
-  }
+  // Summaries are display-only: clients such as Muse Code ask for them by
+  // default, and the router serves the turn without them.
   return normalizedEffort === undefined ? undefined : { effort: normalizedEffort };
 }
 
