@@ -12,6 +12,9 @@ routers:
     # Serve with connected Claude Code / ChatGPT subscriptions before API
     # keys (default true).
     subscriptions: true
+    # Route each session's first turn, then keep that model for the whole
+    # session; each subagent is routed once on its own (default false).
+    sessionPinning: false
 
   local:
     models:

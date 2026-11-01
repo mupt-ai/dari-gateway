@@ -46,6 +46,7 @@ import {
   prefetchNextLease,
   selectorNegotiatesLeases,
 } from "./routing_lease.js";
+import { pinSession, sessionPinHoldDecision, sessionPinnedSelection } from "./session_pin.js";
 import type { RoutedProtocol } from "./routed_protocol.js";
 import {
   createExperimentRoutedRuntimeReporter,
@@ -292,6 +293,15 @@ async function prepareRuntimeExecution(args: {
     return selectedExecutionPlan(prepared, auxiliary);
   }
 
+  // A session-pinning router serves the session's pin, or selects once and
+  // pins the result. Leases and speculation never apply to a pinned session.
+  if (prepared.sessionPin !== undefined && !args.requireSelectorDecision) {
+    return selectedExecutionPlan(
+      prepared,
+      await sessionPinnedDecision(prepared, args.selectorBackend),
+    );
+  }
+
   // Persisted policy leases (negotiated {action, turns}) take precedence.
   // Explicit in-process runs are selector experiments: they must observe the
   // selector and must not consume or prefetch live conversations' leases.
@@ -473,6 +483,28 @@ async function startSpeculativeExecution(
   }
 }
 
+async function sessionPinnedDecision(
+  prepared: PreparedRoutedCompletion,
+  selectorBackend: SelectorBackend,
+): Promise<RoutedDecision> {
+  const held = sessionPinHoldDecision(prepared);
+  if (held) {
+    prepared.reporter.attachDecision(held);
+    prepared.reporter.attachDecisionDetails({
+      decision_source: "session_pin",
+      session_pin: { model: held.selectedModel, reasoning_effort: held.reasoningEffort },
+    });
+    return { decision: held };
+  }
+  const selected = await selectDecision(prepared, null, selectorBackend);
+  prepared.reporter.attachDecisionDetails({
+    decision_source: "selector",
+    session_pin_established: true,
+  });
+  await pinSession(prepared, selected.decision);
+  return selected;
+}
+
 async function selectDecision(
   prepared: PreparedRoutedCompletion,
   servingDecision: RoutingDecision | null,
@@ -481,7 +513,7 @@ async function selectDecision(
 ): Promise<RoutedDecision> {
   const { credentials, reporter, routing } = prepared;
   try {
-    const routed = await routeDecision({
+    const selected = await routeDecision({
       selectorMessages: routing.selectorMessages,
       selectorImages: routing.selectorImages,
       resolution: routing.candidateResolution,
@@ -491,6 +523,7 @@ async function selectDecision(
       selectorBackend,
       leaseHistory: routing.leaseHistory,
     });
+    const routed = prepared.sessionPin === undefined ? selected : sessionPinnedSelection(selected);
     if (routed.details) reporter.attachDecisionDetails(routed.details);
     if (servingDecision) {
       if (!routed.run) {

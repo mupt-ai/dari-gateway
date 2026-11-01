@@ -12,6 +12,10 @@ export function testPlatform(overrides: Partial<GatewayPlatform> = {}): GatewayP
     },
     async writePrefixState() {},
     async writePendingLease() {},
+    async readSessionPin() {
+      return null;
+    },
+    async writeSessionPin() {},
     async markSubscriptionUnavailable() {
       return false;
     },

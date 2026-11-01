@@ -1,4 +1,5 @@
 export {
+  scopedHarnessAgentId,
   scopedHarnessConversationId,
   scopedHarnessSessionId,
   type HarnessConversationIdentity,

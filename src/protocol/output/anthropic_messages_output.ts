@@ -2,7 +2,7 @@ import { parseDataImageUrl } from "../../interaction/image.js";
 import { encodeProviderContinuationState } from "../../interaction/provider_continuation_state.js";
 import { encodePortableReasoningState } from "../../interaction/portable_reasoning_state.js";
 import type { InteractionOutput } from "../../interaction/types.js";
-import type { RoutingDecision } from "@mupt-ai/dari-router/policy-engine";
+import type { ServedDecision } from "../../types.js";
 
 export function anthropicMessageId(requestId: string): string {
   return `msg_${requestId.replace(/[^A-Za-z0-9_-]/g, "_")}`.slice(0, 64);
@@ -99,7 +99,7 @@ export function anthropicUsage(output: Pick<InteractionOutput, "usage">): Record
 }
 
 export function anthropicRouting(
-  decision: RoutingDecision,
+  decision: ServedDecision,
   requestId: string,
   conversationId?: string
 ): Record<string, unknown> {
@@ -113,6 +113,7 @@ export function anthropicRouting(
     ...(decision.leaseTurnsRemaining === undefined
       ? {}
       : { lease_turns_remaining: decision.leaseTurnsRemaining }),
+    ...(decision.sessionPinned === true ? { session_pinned: true } : {}),
   };
 }
 

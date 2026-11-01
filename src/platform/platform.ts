@@ -45,6 +45,10 @@ export type GatewayPlatform = {
   writePrefixState(write: PrefixStateWrite): Promise<void>;
   /** Set or clear a conversation's prefetched routing lease. */
   writePendingLease(write: PendingLeaseWrite): Promise<void>;
+  /** The pair a session pinned on a session-pinning router, or null. */
+  readSessionPin(request: SessionPinKey): Promise<SessionPin | null>;
+  /** Pin a session to a pair, replacing any earlier pin. */
+  writeSessionPin(write: SessionPinKey & SessionPin): Promise<void>;
   /**
    * Hold an exhausted personal subscription until it resets. Resolves whether
    * another connected subscription for the same provider can serve a retry.
@@ -102,6 +106,17 @@ export type PendingLeaseWrite = {
     reason: string;
     output_text: string | null;
   } | null;
+};
+
+// A main agent and each of its subagents have their own pin key.
+export type SessionPinKey = {
+  routerId: string;
+  pinKey: string;
+};
+
+export type SessionPin = {
+  model: string;
+  reasoningEffort: ReasoningEffort;
 };
 
 export type SubscriptionHold = {
@@ -182,6 +197,7 @@ export type OperationalErrorCode =
   | "routing_report_assembly_failed"
   | "routing_report_barrier_failed"
   | "server_force_stop_failed"
+  | "session_pin_write_failed"
   | "stream_report_finalization_failed"
   | "subscription_unavailable_ingest_failed";
 

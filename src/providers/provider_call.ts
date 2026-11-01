@@ -33,6 +33,7 @@ import type {
   ProviderKeySource,
   ResolvedRouter,
   ResolvedRouterModelConfig,
+  ServedDecision,
 } from "../types.js";
 import { awsRoleCredentials } from "./aws_assume_role.js";
 import {
@@ -97,7 +98,7 @@ export type StartedStream = {
 };
 
 export function prepareProviderExecution(args: {
-  decision: RoutingDecision;
+  decision: ServedDecision;
   credentials: ResolvedRouter;
   billable: boolean;
   routerId: string;
@@ -174,6 +175,7 @@ export function prepareProviderExecution(args: {
       ...(args.decision.leaseTurnsRemaining === undefined
         ? {}
         : { "X-Dari-Lease-Turns-Remaining": String(args.decision.leaseTurnsRemaining) }),
+      ...(args.decision.sessionPinned === true ? { "X-Dari-Session-Pinned": "true" } : {}),
     },
   };
 }

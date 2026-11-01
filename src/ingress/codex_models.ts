@@ -85,15 +85,17 @@ function codexCatalogEntry(args: CodexCatalogEntry): Record<string, unknown> {
   };
 }
 
-/* `dari/routing` stays first (the Codex launcher patches it); each enabled
-   model follows as `dari/model/<id>` so Codex's /model menu can switch to it. */
+/* `dari/routing` comes first while the router may autoroute (the Codex
+   launcher patches it); each enabled model follows as `dari/model/<id>` so
+   Codex's /model menu can switch to it. The `dari` launchers build every
+   agent's model menu from this list. */
 export function codexModelsResponse(
-  router: Pick<ResolvedRouter, "enabled_models" | "model_configs" | "allow_long_context">,
+  router: Pick<ResolvedRouter, "enabled_models" | "model_configs" | "allow_long_context" | "autorouting_enabled">,
   imageInputFor: (model: string) => boolean
 ): Record<string, unknown> {
   return {
     models: [
-      codexCatalogEntry({
+      ...(router.autorouting_enabled === false ? [] : [codexCatalogEntry({
         slug: CANONICAL_ROUTER_MODEL,
         displayName: "Dari Routing",
         description: "Routes Codex HTTP Responses requests through the configured Dari model router.",
@@ -101,7 +103,7 @@ export function codexModelsResponse(
         contextWindow: codexRouterContextWindow(router),
         hostedWebSearch: codexRouterSupportsHostedWebSearch(router),
         imageInput: router.enabled_models.some(imageInputFor),
-      }),
+      })]),
       ...router.enabled_models.map((model, index) =>
         codexCatalogEntry({
           slug: explicitModelSlug(model),

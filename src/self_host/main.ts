@@ -14,6 +14,7 @@ import { loadGatewayConfig } from "./config.js";
 import { createSelfHostedPlatform } from "./platform.js";
 import { gatewayKeyIndex } from "./resolve.js";
 import { PrefixStore } from "./prefix_store.js";
+import { SessionPinStore } from "./session_pin_store.js";
 import { handleSubscriptionRequest, SubscriptionStore } from "./subscriptions/index.js";
 
 const SUBSCRIPTION_ROUTES = "/v1/organizations/current/credentials";
@@ -45,6 +46,7 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
   db.exec("PRAGMA journal_mode = WAL");
   const subscriptions = new SubscriptionStore(db);
   const prefixes = new PrefixStore(db);
+  const sessionPins = new SessionPinStore(db);
   // Pi's provider auth reads each provider's standard key variable, such as
   // OPENAI_API_KEY, from this environment only.
   const piModels = builtinModels({
@@ -56,6 +58,7 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
     gatewayKeys,
     subscriptions,
     prefixes,
+    sessionPins,
     providerApiKey: async (provider) => (await piModels.getAuth(provider))?.auth.apiKey,
     env,
     fetch,

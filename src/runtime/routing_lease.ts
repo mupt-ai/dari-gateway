@@ -166,7 +166,7 @@ export async function clearPendingLease(
   );
 }
 
-function canServeCommittedPair(
+export function canServeCommittedPair(
   prepared: PreparedRoutedCompletion,
   pair: { model: string; reasoningEffort: string },
 ): boolean {

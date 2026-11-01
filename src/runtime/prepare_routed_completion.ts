@@ -10,7 +10,8 @@ import {
 import { isBackgroundRequest, type InteractionRequest } from "../interaction/types.js";
 import { executionProviderForModel } from "../models/execution_provider.js";
 import { codexModelConfig, subscriptionServes } from "../models/subscriptions.js";
-import { gatewayPlatform, type RequestTags } from "../platform/platform.js";
+import { explicitModelId } from "../protocol/input/router_model.js";
+import { gatewayPlatform, type RequestTags, type SessionPin } from "../platform/platform.js";
 import { resolveRouter } from "../strategies/routing.js";
 import { RequestReporter, type ReportedCandidatePruning } from "../telemetry/report.js";
 import { RoutingBillingFinalization } from "../telemetry/billing_finalization.js";
@@ -20,6 +21,7 @@ import { strictProviderAccess } from "./strict_provider_access.js";
 import type { RoutedRuntimeReporter } from "./runtime_reporter.js";
 import type { RoutedProtocol } from "./routed_protocol.js";
 import {
+  scopedHarnessAgentId,
   scopedHarnessConversationId,
   scopedHarnessSessionId,
   type HarnessConversationIdentity,
@@ -36,6 +38,9 @@ export type PreparedRoutedCompletion = {
   tags: RequestTags;
   harnessConversationIdentity?: HarnessConversationIdentity;
   routing: RoutingContext;
+  // Present when this request is served by session pinning: the session's
+  // pin key and the pair it pinned, null before its first routed turn.
+  sessionPin?: { key: string; pin: SessionPin | null };
   reporter: RoutedRuntimeReporter;
 };
 
@@ -140,6 +145,30 @@ export async function prepareRoutedCompletion(args: {
     receivedAt: args.receivedAt,
   });
   const candidateResolution = routing.candidateResolution;
+  let sessionPin: PreparedRoutedCompletion["sessionPin"];
+  if (
+    credentials.session_pinning === true &&
+    credentials.strict !== true &&
+    !background &&
+    explicitModelId(args.interaction.model) === null
+  ) {
+    // Harness identity keys the main agent and each subagent separately and
+    // survives compaction. Claude Code names its subagents only with gateway
+    // hint headers; without them, and for callers with no harness identity,
+    // each conversation is pinned on its own.
+    const identity = args.harnessConversationIdentity;
+    const unclassifiedClaudeCode = identity?.kind === "claude_code_session"
+      && args.interaction.agentContext?.requestClass === "unknown";
+    const key = identity === undefined || unclassifiedClaudeCode
+      ? routing.conversationId
+      : scopedHarnessAgentId({
+          identity,
+          sourceProtocol: args.interaction.sourceProtocol,
+          scope: harnessScope,
+        });
+    const pin = await gatewayPlatform().readSessionPin({ routerId: canonicalRouterId, pinKey: key });
+    sessionPin = { key, pin };
+  }
   const reporter = new RequestReporter({
     requestId: args.requestId,
     clientRequestId: args.clientRequestId,
@@ -184,6 +213,7 @@ export async function prepareRoutedCompletion(args: {
     tags,
     harnessConversationIdentity: args.harnessConversationIdentity,
     routing,
+    ...(sessionPin === undefined ? {} : { sessionPin }),
     reporter,
   };
 }

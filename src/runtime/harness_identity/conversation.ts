@@ -46,6 +46,17 @@ export function scopedHarnessSessionId(args: {
   return scopedHarnessId({ ...args, identity });
 }
 
+// One agent of a session: the main agent on the bare session, each subagent
+// on its own qualifier or thread. Unlike the conversation id, it survives
+// compaction.
+export function scopedHarnessAgentId(args: {
+  identity: HarnessConversationIdentity;
+  sourceProtocol: SourceProtocol;
+  scope: HarnessConversationScope;
+}): string {
+  return scopedHarnessId(args);
+}
+
 export function scopedHarnessConversationId(args: {
   identity: HarnessConversationIdentity;
   sourceProtocol: SourceProtocol;

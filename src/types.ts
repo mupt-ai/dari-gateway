@@ -6,6 +6,7 @@ import type {
   RouterEvalScore,
   RouterModelPrice,
   RouterPrefixHit,
+  RoutingDecision,
   RoutingStrategy,
 } from "@mupt-ai/dari-router/policy-engine";
 // The router resolution contract between the gateway runtime and its
@@ -83,6 +84,10 @@ export type PublicEvalCatalogCard = Omit<RouterEval, "scores"> & {
   scores: PublicEvalCatalogScore[];
 };
 
+// A decision as served: session-pinned decisions say so in response headers
+// and Anthropic routing metadata.
+export type ServedDecision = RoutingDecision & { sessionPinned?: boolean };
+
 export type ClientHarness = "claude_code" | "muse_code";
 
 export type ResolvedRouterModelConfig = {
@@ -122,6 +127,9 @@ export type ResolvedRouter = {
   zdr?: boolean;
   allow_long_context?: boolean;
   speculative_routing?: boolean;
+  // Route each session's (and each subagent's) first turn, then serve that
+  // pair for the rest of the session instead of selecting or leasing.
+  session_pinning?: boolean;
   primary_retries?: number;
   // Serve only the requested `dari/model/<id>` at the requested thinking
   // level: no selector, lease, or personal subscription the platform did not

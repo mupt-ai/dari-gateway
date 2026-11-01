@@ -52,3 +52,11 @@ test("Codex lists each enabled model as an explicit dari/model slug after dari/r
   expect(models[2]!.auto_review_model_override).toBe("dari/model/uncapped");
   expect(models[0]!.input_modalities).toEqual(["text", "image"]);
 });
+
+test("routers without autorouting list only their explicit models", () => {
+  const response = codexModelsResponse(
+    { enabled_models: ["bounded"], model_configs: { bounded: config }, autorouting_enabled: false },
+    () => false,
+  );
+  expect((response.models as Array<Record<string, unknown>>).map((model) => model.slug)).toEqual(["dari/model/bounded"]);
+});

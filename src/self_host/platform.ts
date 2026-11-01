@@ -1,16 +1,18 @@
 import { errorCode } from "../http/errors.js";
 import type { GatewayPlatform } from "../platform/platform.js";
 import type { PrefixStore } from "./prefix_store.js";
+import type { SessionPinStore } from "./session_pin_store.js";
 import { resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve.js";
 import type { SubscriptionStore } from "./subscriptions/index.js";
 
 /**
- * The self-hosted platform: routers from the config file, subscriptions and
- * prefix-cache state in the gateway's SQLite database, and one content-free
+ * The self-hosted platform: routers from the config file, subscriptions,
+ * prefix-cache state, and session pins in the gateway's SQLite database, and one content-free
  * log line per request.
  */
 export function createSelfHostedPlatform(deps: Omit<SelfHostedResolverDeps, "prefixHits"> & {
   prefixes: PrefixStore;
+  sessionPins: SessionPinStore;
   subscriptions: SubscriptionStore;
 }): GatewayPlatform {
   const resolver: SelfHostedResolverDeps = {
@@ -24,6 +26,10 @@ export function createSelfHostedPlatform(deps: Omit<SelfHostedResolverDeps, "pre
     },
     writePendingLease: async (write) => {
       deps.prefixes.writePendingLease(write, deps.config.routers[write.router_id]?.zdr ?? false);
+    },
+    readSessionPin: async (key) => deps.sessionPins.read(key),
+    writeSessionPin: async (write) => {
+      deps.sessionPins.write(write);
     },
     markSubscriptionUnavailable: async (hold) =>
       hold.credentialId !== undefined &&

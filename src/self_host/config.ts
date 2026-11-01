@@ -15,6 +15,7 @@ import {
  *       - id: openai/gpt-5.5
  *         thinking: [medium, high]
  *     subscriptions: true   # serve with connected Claude Code / ChatGPT plans
+ *     sessionPinning: false # route each session and subagent once, then keep its model
  * providers:                # optional: OpenAI-compatible or self-run endpoints
  *   local:
  *     baseUrl: http://localhost:8000/v1
@@ -45,6 +46,7 @@ export type RouterConfig = {
   models: RouterModelConfig[];
   retries: number;
   subscriptions: boolean;
+  sessionPinning: boolean;
   zdr: boolean;
 };
 
@@ -128,6 +130,7 @@ function parseRouter(id: string, raw: unknown): RouterConfig {
     models,
     retries: optionalRetries(raw.retries, `routers.${id}.retries`) ?? 1,
     subscriptions: optionalBoolean(raw.subscriptions, `routers.${id}.subscriptions`) ?? true,
+    sessionPinning: optionalBoolean(raw.sessionPinning, `routers.${id}.sessionPinning`) ?? false,
     zdr: optionalBoolean(raw.zdr, `routers.${id}.zdr`) ?? false,
   };
 }

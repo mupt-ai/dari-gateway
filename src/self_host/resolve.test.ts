@@ -218,6 +218,7 @@ describe("parseGatewayConfig", () => {
           models: [{ id: "a/b" }],
           retries: 1,
           subscriptions: true,
+          sessionPinning: false,
           zdr: false,
         },
       },
