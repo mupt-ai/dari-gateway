@@ -16,10 +16,10 @@ type StoppableServer = {
 export function startServer(
   listenPort: number,
   handler: (request: Request) => Promise<Response>,
-  options: { http2?: boolean } = {},
+  options: { http2?: boolean; hostname?: string } = {},
 ) {
   if (options.http2) {
-    return startHttp2Server(listenPort, handler);
+    return startHttp2Server(listenPort, handler, options.hostname);
   }
 
   // The selector runs before the first response byte, and routed models can
@@ -27,6 +27,7 @@ export function startServer(
   // clients and infrastructure still bound total request lifetime.
   return Bun.serve({
     port: listenPort,
+    hostname: options.hostname,
     fetch: handler,
     idleTimeout: 0,
   });
@@ -45,7 +46,7 @@ export function installShutdownHandlers(
     if (shuttingDown) return;
     shuttingDown = true;
     const workDeadlineAtMs = performance.now() + SHUTDOWN_WORK_TIMEOUT_MS;
-    console.info("routing server shutting down", JSON.stringify({ signal }));
+    console.info("gateway server shutting down", JSON.stringify({ signal }));
     try {
       await stopServerForShutdown(server);
     } finally {
@@ -54,7 +55,7 @@ export function installShutdownHandlers(
       );
       if (remaining > 0) {
         console.warn(
-          "routing server background drain timed out",
+          "gateway server background drain timed out",
           JSON.stringify({ remaining_task_count: remaining }),
         );
         captureOperationalError(
@@ -112,7 +113,7 @@ function stopWithin(
 
 function reportServerStopFailure(error: unknown): void {
   console.warn(
-    "routing server shutdown failed",
+    "gateway server shutdown failed",
     error instanceof Error ? error.name : "UnknownError",
   );
   captureOperationalError(error, { code: "server_force_stop_failed" });

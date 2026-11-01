@@ -56,17 +56,19 @@ jobs:
         if: steps.version.outputs.publish == 'true'
         run: npm install --global npm@11
 
-      # The monorepo links the router with file:, which npm cannot install. Publish
-      # the registry version instead; keep ROUTER_VERSION equal to the router version
-      # the gateway was tested against.
-      - name: Pin the published router version
+      # The router mirror publishes its own release in parallel with this job when
+      # both change, so wait for the pinned router version to reach npm.
+      - name: Wait for the published router
         if: steps.version.outputs.publish == 'true'
-        env:
-          ROUTER_VERSION: "0.2.5"
         run: |
           set -euo pipefail
-          npm view "@mupt-ai/dari-router@${ROUTER_VERSION}" version
-          npm pkg set "dependencies.@mupt-ai/dari-router=${ROUTER_VERSION}"
+          router_version="$(node -p "require('./package.json').dependencies['@mupt-ai/dari-router']")"
+          for attempt in $(seq 1 20); do
+            if npm view "@mupt-ai/dari-router@${router_version}" version >/dev/null 2>&1; then exit 0; fi
+            sleep 30
+          done
+          echo "@mupt-ai/dari-router@${router_version} is not on npm after 10 minutes." >&2
+          exit 1
 
       - name: Install dependencies
         if: steps.version.outputs.publish == 'true'

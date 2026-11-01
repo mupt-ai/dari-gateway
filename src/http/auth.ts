@@ -6,7 +6,7 @@ export function bearerToken(headers: Headers): string {
   const value = headers.get("authorization") ?? "";
   const [scheme, token] = value.split(/\s+/, 2);
   if (scheme?.toLowerCase() !== "bearer" || !token) {
-    throw new HttpError(401, "Missing or invalid routing API key.", "authentication_error");
+    throw new HttpError(401, "Missing or invalid API key.", "authentication_error");
   }
   return publicRoutingToken(token);
 }
@@ -16,7 +16,7 @@ export function anthropicToken(headers: Headers): string {
   if (authorization) return bearerToken(headers);
   const apiKey = headers.get("x-api-key");
   if (!apiKey) {
-    throw new HttpError(401, "Missing or invalid routing API key.", "authentication_error");
+    throw new HttpError(401, "Missing or invalid API key.", "authentication_error");
   }
   return publicRoutingToken(apiKey);
 }

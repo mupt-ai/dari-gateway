@@ -12,7 +12,7 @@ import { createPrioritySelectorBackend } from "../strategies/priority_selector.j
 import type { SelectorBackend } from "../strategies/routing.js";
 import { loadGatewayConfig } from "./config.js";
 import { createSelfHostedPlatform } from "./platform.js";
-import { gatewayKeyIndex } from "./resolve.js";
+import { gatewayKeyIndex, providersWithoutCredentials } from "./resolve.js";
 import { PrefixStore } from "./prefix_store.js";
 import { SessionPinStore } from "./session_pin_store.js";
 import { handleSubscriptionRequest, SubscriptionStore } from "./subscriptions/index.js";
@@ -28,7 +28,8 @@ const SUBSCRIPTION_ROUTES = "/v1/organizations/current/credentials";
  *   state (default `dari-gateway.db`). It holds subscription tokens.
  * - `DARI_AUTO_ROUTING_API_KEY`: choose among a router's models with Dari
  *   Auto Routing; without it, `dari/routing` serves the first listed model.
- * - `PORT` (default 8080), and each provider's standard API key variable.
+ * - `PORT` (default 8080), `DARI_GATEWAY_HOST` (default 127.0.0.1; the container
+ *   image sets 0.0.0.0), and each provider's standard API key variable.
  */
 export async function startSelfHostedGateway(env: Record<string, string> = process.env as Record<string, string>) {
   const gatewayKeys = (env.DARI_GATEWAY_KEYS ?? "")
@@ -53,16 +54,28 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
     authContext: { env: async (name) => env[name], fileExists: async () => false },
   });
 
+  const providerApiKey = async (provider: string) => (await piModels.getAuth(provider))?.auth.apiKey;
   const platform = createSelfHostedPlatform({
     config,
     gatewayKeys,
     subscriptions,
     prefixes,
     sessionPins,
-    providerApiKey: async (provider) => (await piModels.getAuth(provider))?.auth.apiKey,
+    providerApiKey,
     env,
     fetch,
   });
+  // A model without a credential is dropped at request time, so a missing key
+  // would otherwise surface only as a 424 on the first request.
+  for (const [routerId, router] of Object.entries(config.routers)) {
+    const missing = await providersWithoutCredentials({ config, subscriptions, providerApiKey, env }, router);
+    if (missing.length > 0) {
+      console.warn(
+        "dari-gateway router has providers without credentials; their models are not served",
+        JSON.stringify({ router: routerId, providers: missing }),
+      );
+    }
+  }
   const autoRoutingKey = env.DARI_AUTO_ROUTING_API_KEY?.trim();
   const selectorBackend: SelectorBackend = autoRoutingKey
     ? createAutoRoutingSelectorBackend({
@@ -89,10 +102,13 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
   };
 
   const port = Number(env.PORT ?? "8080");
-  const server = startServer(port, handler);
+  // Loopback unless DARI_GATEWAY_HOST says otherwise (see the doc comment).
+  const hostname = (env.DARI_GATEWAY_HOST ?? "").trim() || "127.0.0.1";
+  const server = startServer(port, handler, { hostname });
   console.info(
     "dari-gateway listening",
     JSON.stringify({
+      hostname,
       port,
       routers: Object.keys(config.routers),
       auto_routing: autoRoutingKey ? "dari" : "priority",

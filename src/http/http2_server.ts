@@ -23,7 +23,11 @@ const HTTP2_FORBIDDEN_RESPONSE_HEADERS = new Set([
   "upgrade",
 ]);
 
-export function startHttp2Server(port: number, handler: Http2RequestHandler): Http2RoutingServer {
+export function startHttp2Server(
+  port: number,
+  handler: Http2RequestHandler,
+  hostname = "0.0.0.0",
+): Http2RoutingServer {
   const sessions = new Set<ServerHttp2Session>();
   let closePromise: Promise<void> | undefined;
   const server = createServer((request, response) => {
@@ -33,10 +37,10 @@ export function startHttp2Server(port: number, handler: Http2RequestHandler): Ht
     sessions.add(session);
     session.once("close", () => sessions.delete(session));
   });
-  server.listen(port, "0.0.0.0");
+  server.listen(port, hostname);
   const address = server.address();
   if (address === null || typeof address === "string") {
-    throw new Error("HTTP/2 routing server did not bind to a TCP port.");
+    throw new Error("HTTP/2 gateway server did not bind to a TCP port.");
   }
   return {
     port: address.port,

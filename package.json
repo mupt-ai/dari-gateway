@@ -49,7 +49,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-sts": "3.1063.0",
-    "@mupt-ai/dari-router": "file:../dari-router",
+    "@mupt-ai/dari-router": "0.2.5",
     "@mupt-ai/pi-ai": "1.4.0-mupt.1"
   },
   "devDependencies": {

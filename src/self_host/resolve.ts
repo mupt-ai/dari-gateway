@@ -58,7 +58,7 @@ export async function resolveSelfHostedRouter(
 ): Promise<ResolvedRouter> {
   const keyIndex = gatewayKeyIndex(deps.gatewayKeys, request.apiKey);
   if (keyIndex === null) {
-    throw new HttpError(401, "Missing or invalid router/API key.", "routing_key_resolution_failed");
+    throw new HttpError(401, "Missing or invalid gateway key.", "authentication_error");
   }
   const router = deps.config.routers[request.routerId];
   if (router === undefined) {
@@ -91,7 +91,10 @@ export async function resolveSelfHostedRouter(
   }
 
   const models = router.models.filter((model) => credentials.get(providerForModel(model.id)) != null);
-  if (models.length === 0) throw unavailableRouterError(request.routerId, exhausted);
+  if (models.length === 0) {
+    const missing = [...credentials].filter(([, credential]) => credential == null).map(([provider]) => provider);
+    throw unavailableRouterError(request.routerId, exhausted, missing);
+  }
 
   const resolved: ResolvedRouter = {
     router_id: request.routerId,
@@ -151,7 +154,10 @@ export async function resolveSelfHostedRouter(
 
 // Configured endpoints read their own key variable, or send a placeholder
 // when they take none; known providers use their standard variable.
-async function providerApiKey(deps: SelfHostedResolverDeps, provider: string): Promise<string | undefined> {
+async function providerApiKey(
+  deps: Pick<SelfHostedResolverDeps, "config" | "providerApiKey" | "env">,
+  provider: string,
+): Promise<string | undefined> {
   const endpoint = deps.config.providers[provider];
   if (endpoint === undefined) return (await deps.providerApiKey(provider))?.trim() || undefined;
   if (endpoint.apiKeyEnv === undefined) return "no-key";
@@ -203,23 +209,48 @@ const SUBSCRIPTION_PLAN_NAMES: Record<SubscriptionProvider, string> = {
   meta_muse: "Muse Code",
 };
 
+/**
+ * Providers a router lists that no credential can serve: no API key and no
+ * connected subscription the router allows. Startup uses this, so it counts a
+ * held subscription as connected (the request-time 424 reports holds) and
+ * checks both harnesses, since startup does not know the client.
+ */
+export async function providersWithoutCredentials(
+  deps: Pick<SelfHostedResolverDeps, "subscriptions" | "providerApiKey" | "config" | "env">,
+  router: RouterConfig,
+): Promise<string[]> {
+  const missing: string[] = [];
+  for (const provider of new Set(router.models.map((model) => providerForModel(model.id)))) {
+    const plans = router.subscriptions
+      ? [subscriptionProviderFor(provider, "claude_code"), subscriptionProviderFor(provider, "muse_code")]
+      : [];
+    const connected = plans.some((plan) => plan !== null && deps.subscriptions.list(plan).length > 0);
+    if (connected) continue;
+    const apiKey = await providerApiKey(deps, provider);
+    if (apiKey === undefined) missing.push(provider);
+  }
+  return missing;
+}
+
 function unavailableRouterError(
   routerId: string,
   exhausted: ReadonlySet<SubscriptionProvider>,
+  missing: readonly string[],
 ): HttpError {
+  const missingNote = missing.length > 0 ? ` Missing providers: ${missing.join(", ")}.` : "";
   if (exhausted.size > 0) {
     const plans = [...exhausted]
       .map((provider) => SUBSCRIPTION_PLAN_NAMES[provider])
       .join(" and ");
     return new HttpError(
       424,
-      `Every connected ${plans} subscription is at its usage limit, and no API key can serve router ${routerId} instead.`,
+      `Every connected ${plans} subscription is at its usage limit, and no API key can serve router ${routerId} instead.${missingNote}`,
       "personal_subscription_unavailable",
     );
   }
   return new HttpError(
     424,
-    `No credentials can serve router ${routerId}: set a provider API key or connect a subscription.`,
+    `No credentials can serve router ${routerId}.${missingNote} Set each provider's API key or connect a subscription that can serve it.`,
     "provider_credentials_missing",
   );
 }

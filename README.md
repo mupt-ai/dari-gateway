@@ -46,10 +46,10 @@ bun install
 bun run start
 ```
 
-Or with Docker, from the repository root:
+Or with Docker, from this directory (in the monorepo, run `docker build -t dari-gateway dari-gateway` from the repository root):
 
 ```bash
-docker build -f dari-gateway/Dockerfile -t dari-gateway .
+docker build -t dari-gateway .
 docker run -p 8080:8080 \
   -e DARI_GATEWAY_KEYS -e ANTHROPIC_API_KEY \
   -v "$PWD/dari-gateway.yaml:/config/dari-gateway.yaml" \
@@ -64,6 +64,7 @@ docker run -p 8080:8080 \
 | `DARI_GATEWAY_DB` | SQLite database for subscriptions and conversation state. Default `dari-gateway.db`. It stores subscription tokens in plaintext; protect it like a secret. |
 | `DARI_AUTO_ROUTING_API_KEY` | Optional. Select among a router's models with Dari Auto Routing. |
 | `PORT` | Listen port. Default `8080`. |
+| `DARI_GATEWAY_HOST` | Listen address. Default `127.0.0.1`, so only this machine can connect. The container image sets `0.0.0.0`; set it yourself to expose a process on your network. |
 | Provider keys | Each provider's standard variable, such as `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `META_API_KEY`, or `OPENROUTER_API_KEY`. |
 
 ## Configure
@@ -128,10 +129,16 @@ Platforms can also:
 ## Development
 
 ```bash
-(cd ../dari-router && bun install --frozen-lockfile && bun run build)
 bun install --frozen-lockfile
 bun run typecheck
 bun test
+```
+
+This package depends on the published `@mupt-ai/dari-router`. To test against a local router checkout inside the monorepo, build it and link it after installing:
+
+```bash
+(cd ../dari-router && bun install --frozen-lockfile && bun run build)
+../scripts/link-gateway-router.sh
 ```
 
 Tests make no provider or network calls.

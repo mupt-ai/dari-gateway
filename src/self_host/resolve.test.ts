@@ -4,7 +4,7 @@ import { describe, expect, test } from "bun:test";
 import { HttpError } from "../http/errors.js";
 import type { ResolveRouterRequest } from "../platform/platform.js";
 import { parseGatewayConfig } from "./config.js";
-import { resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve.js";
+import { providersWithoutCredentials, resolveSelfHostedRouter, type SelfHostedResolverDeps } from "./resolve.js";
 import { SubscriptionStore } from "./subscriptions/index.js";
 import { codexAccessToken, tokens } from "./subscriptions/test_support.js";
 
@@ -194,6 +194,15 @@ describe("resolveSelfHostedRouter", () => {
       api: "openai-completions",
       base_url: "http://127.0.0.1:8000/v1",
     });
+  });
+});
+
+describe("providersWithoutCredentials", () => {
+  test("lists providers that neither an API key nor a connected subscription can serve", async () => {
+    const resolverDeps = deps({ apiKeys: { openai: "sk-openai" } });
+    expect(await providersWithoutCredentials(resolverDeps, resolverDeps.config.routers.default!)).toEqual([
+      "anthropic",
+    ]);
   });
 });
 
