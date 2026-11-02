@@ -19,6 +19,11 @@ export type HarnessConversationIdentity =
       kind: "openai_chat_session";
       value: string;
       qualifiers?: string[];
+    }
+  | {
+      kind: "muse_code_thread";
+      value: string;
+      qualifiers?: string[];
     };
 
 export type HarnessConversationScope = {

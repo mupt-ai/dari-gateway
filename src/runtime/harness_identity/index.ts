@@ -11,6 +11,7 @@ export {
   codexConversationIdentity,
   codexRequestPurpose,
   codexRequestContext,
+  museCodeConversationIdentity,
   openCodeRequestContext,
   piRequestContext,
 } from "./extract.js";

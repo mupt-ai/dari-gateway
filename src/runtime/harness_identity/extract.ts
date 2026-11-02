@@ -183,6 +183,16 @@ export function codexRequestContext(
   };
 }
 
+// Muse Code sends its thread on every Responses request. The main agent's
+// thread is its session, and each subagent has its own thread, so each keeps
+// its own conversation and lease.
+export function museCodeConversationIdentity(
+  headers: Headers,
+): HarnessConversationIdentity | undefined {
+  const threadId = boundedIdentity(headers.get("x-tbh-thread-id"), "x-tbh-thread-id");
+  return threadId === undefined ? undefined : { kind: "muse_code_thread", value: threadId };
+}
+
 export function claudeCodeConversationIdentity(
   headers: Headers,
   metadataSessionId?: string,

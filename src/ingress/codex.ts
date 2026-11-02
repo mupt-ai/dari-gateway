@@ -13,6 +13,7 @@ import {
   codexConversationIdentity,
   codexRequestPurpose,
   codexRequestContext,
+  museCodeConversationIdentity,
 } from "../runtime/harness_identity/index.js";
 
 export async function handleResponses(
@@ -33,17 +34,16 @@ export async function handleResponses(
       ...(agentContext === undefined ? {} : { agentContext }),
       ...(museClientId === undefined ? {} : { museCodeClientId: museClientId }),
     };
-    const harnessConversationIdentity = codexConversationIdentity(
-      request.headers,
-      rawPayload,
-    );
+    const codexIdentity = codexConversationIdentity(request.headers, rawPayload);
     // Codex applies its global model_reasoning_effort setting to custom model
     // providers. That preference describes a direct model, not a heterogeneous
     // router, so let Dari select the reasoning effort for verified Codex turns.
     // Parsing above still validates malformed Responses reasoning controls.
-    if (harnessConversationIdentity !== undefined && explicitModelId(payload.model) === null) {
+    if (codexIdentity !== undefined && explicitModelId(payload.model) === null) {
       payload.reasoning = undefined;
     }
+    const harnessConversationIdentity = codexIdentity
+      ?? (museClientId === undefined ? undefined : museCodeConversationIdentity(request.headers));
     return await handleRoutedCompletion({
       request,
       routerId,
