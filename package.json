@@ -50,7 +50,7 @@
   "dependencies": {
     "@aws-sdk/client-sts": "3.1063.0",
     "@mupt-ai/dari-router": "0.2.5",
-    "@mupt-ai/pi-ai": "1.4.0-mupt.1"
+    "@mupt-ai/pi-ai": "1.4.0-mupt.2"
   },
   "devDependencies": {
     "@types/bun": "^1.3.4",
