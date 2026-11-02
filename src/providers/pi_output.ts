@@ -411,7 +411,7 @@ function reasoningText(value: unknown, type: "summary_text" | "reasoning_text"):
   );
 }
 
-function textSignature(value: unknown): { id?: string; phase?: "commentary" | "final_answer" } | null {
+export function textSignature(value: unknown): { id?: string; phase?: "commentary" | "final_answer" } | null {
   if (typeof value !== "string" || !value) return null;
   try {
     const parsed: unknown = JSON.parse(value);

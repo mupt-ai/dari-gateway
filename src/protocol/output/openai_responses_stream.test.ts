@@ -175,6 +175,24 @@ test("emits the complete output-text content lifecycle", async () => {
   });
 });
 
+test("announces a message with the phase it ends with", async () => {
+  const signature = JSON.stringify({ v: 1, id: "msg_provider", phase: "commentary" });
+  const block = { type: "text", text: "Looking.", textSignature: signature };
+  const events = await streamEvents([
+    { type: "text_start", contentIndex: 0, partial: { content: [{ type: "text", text: "", textSignature: signature }] } },
+    { type: "text_delta", contentIndex: 0, delta: "Looking." },
+    { type: "text_end", contentIndex: 0, partial: piMessage([block]) },
+    { type: "done", message: piMessage([block]) },
+  ]);
+
+  expect(eventData(events, "response.output_item.added")).toMatchObject({
+    item: { type: "message", id: "msg_provider", phase: "commentary" },
+  });
+  expect(outputDone(events)).toMatchObject([
+    { item: { type: "message", id: "msg_provider", phase: "commentary" } },
+  ]);
+});
+
 test("streams hosted search lifecycle and citations at native output indexes", async () => {
   const reasoning = {
     type: "reasoning",

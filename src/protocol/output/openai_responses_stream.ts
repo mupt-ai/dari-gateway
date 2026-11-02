@@ -6,7 +6,7 @@ import {
   openAIResponsesTerminal,
   openAIResponsesUsage,
 } from "./openai_responses_output.js";
-import { piMessageToInteractionOutput } from "../../providers/pi_output.js";
+import { piMessageToInteractionOutput, textSignature } from "../../providers/pi_output.js";
 import type {
   InteractionOutput,
   InteractionOutputItem,
@@ -119,6 +119,7 @@ class ResponsesAccumulator {
   private readonly addedIndexes = new Set<number>();
   private readonly completedIndexes = new Set<number>();
   private readonly messageIds = new Map<number, string>();
+  private readonly messagePhases = new Map<number, "commentary" | "final_answer">();
   private readonly reasoningIds = new Map<number, string>();
   private readonly messagePartStarted = new Set<number>();
   private readonly reasoningPartStarted = new Set<number>();
@@ -144,6 +145,7 @@ class ResponsesAccumulator {
       const index = this.indexFor(event);
       this.activate(index, send);
       if (type === "thinking_start") this.ensureReasoning(index, send);
+      if (type === "text_start") this.rememberMessageSignature(event, index);
       return;
     }
     if (type === "text_delta" && typeof event.delta === "string" && event.delta) {
@@ -330,17 +332,29 @@ class ResponsesAccumulator {
     return openAIResponsesUsage(this.finalOutput ?? this.baseOutput());
   }
 
+  // Pi signs a Responses text block with its message id and phase at
+  // text_start, so the item is announced with the phase it ends with.
+  private rememberMessageSignature(event: Record<string, unknown>, index: number): void {
+    const content = isRecord(event.partial) ? event.partial.content : undefined;
+    const block = Array.isArray(content) ? content[event.contentIndex as number] : undefined;
+    const signature = isRecord(block) ? textSignature(block.textSignature) : null;
+    if (signature?.id && !this.messageIds.has(index)) this.messageIds.set(index, signature.id);
+    if (signature?.phase) this.messagePhases.set(index, signature.phase);
+  }
+
   private ensureMessage(index: number, send: Send): Extract<InteractionOutputItem, { type: "message" }> {
     const existing = this.items.get(index);
     if (existing?.type === "message") return existing;
     const id = this.messageIds.get(index) ?? streamedItemId("msg", this.responseId, index);
     this.messageIds.set(index, id);
+    const phase = this.messagePhases.get(index);
     const message: Extract<InteractionOutputItem, { type: "message" }> = {
       type: "message",
       id,
       role: "assistant",
       content: [{ type: "text", text: "" }],
       contentShape: "parts",
+      ...(phase ? { phase } : {}),
       source: this.args.source,
     };
     this.items.set(index, message);
@@ -353,6 +367,7 @@ class ResponsesAccumulator {
         id,
         status: "in_progress",
         content: [],
+        ...(phase ? { phase } : {}),
       },
     });
     this.sendMessagePartAdded(index, id, send);
@@ -420,6 +435,7 @@ class ResponsesAccumulator {
             id: serialized.id,
             status: "in_progress",
             content: [],
+            ...(item.phase ? { phase: item.phase } : {}),
           },
         });
       } else {
