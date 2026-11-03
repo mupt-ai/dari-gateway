@@ -36,26 +36,25 @@ The gateway is the same runtime that serves Dari's hosted routing service. Choos
 
 ## Run
 
-Requires [Bun](https://bun.sh) 1.3 or later.
+Requires [Bun](https://bun.sh) 1.3 or later. Write a `dari-gateway.yaml` (start from [`dari-gateway.example.yaml`](dari-gateway.example.yaml)), then:
 
 ```bash
-cp dari-gateway.example.yaml dari-gateway.yaml   # edit routers and models
 export DARI_GATEWAY_KEYS="$(openssl rand -hex 24)" # keys your clients send
 export ANTHROPIC_API_KEY=... OPENAI_API_KEY=...    # optional with subscriptions
-bun install
-bun run start
+bunx @mupt-ai/dari-gateway
 ```
 
-Or with Docker, from this directory (in the monorepo, run `docker build -t dari-gateway dari-gateway` from the repository root):
+Or with Docker:
 
 ```bash
-docker build -t dari-gateway .
 docker run -p 8080:8080 \
   -e DARI_GATEWAY_KEYS -e ANTHROPIC_API_KEY \
   -v "$PWD/dari-gateway.yaml:/config/dari-gateway.yaml" \
   -v dari-gateway-data:/data \
-  dari-gateway
+  ghcr.io/mupt-ai/dari-gateway
 ```
+
+From a clone, `bun install && bun run start` or `docker build -t dari-gateway .` run the same thing.
 
 | Variable | Meaning |
 | --- | --- |
