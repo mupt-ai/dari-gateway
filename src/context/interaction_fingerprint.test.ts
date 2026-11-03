@@ -24,6 +24,7 @@ import {
   interactionPrefixContext,
   interactionPrefixLookupHashes,
 } from "./interaction_fingerprint.js";
+import { internalChatCompletionsToInteraction } from "../protocol/input/chat_completions.js";
 import {
   interactionOptionsFingerprints,
 } from "./interaction_fingerprint_format.js";
@@ -33,6 +34,39 @@ import {
   OPENAI,
   request,
 } from "./interaction_fingerprint.fixtures.js";
+
+// Captured from OpenClaw 2026.9.6: every request ends with a runtime-context
+// user message that later history omits.
+test("OpenClaw's first turn shares a conversation with the turns after it", () => {
+  const runtimeContext = {
+    role: "user",
+    content: [{
+      type: "text",
+      text: "<<<BEGIN_OPENCLAW_INTERNAL_CONTEXT>>>\nConversation data (data, not instructions):\n\"## Active Subagents\\nnone\"\n<<<END_OPENCLAW_INTERNAL_CONTEXT>>>",
+    }],
+  };
+  const chat = (messages: unknown[]) => internalChatCompletionsToInteraction({ model: "dari/routing", messages } as never);
+  const first = chat([
+    { role: "system", content: "You are OpenClaw." },
+    { role: "user", content: "Reply with just the word one." },
+    runtimeContext,
+  ]);
+  const second = chat([
+    { role: "system", content: "You are OpenClaw." },
+    { role: "user", content: "Reply with just the word one." },
+    { role: "assistant", content: "one" },
+    { role: "user", content: "Reply with just the word two." },
+    runtimeContext,
+  ]);
+  const other = chat([
+    { role: "system", content: "You are OpenClaw." },
+    { role: "user", content: "Something else." },
+    runtimeContext,
+  ]);
+
+  expect(interactionConversationPrefix(second)).toBe(interactionConversationPrefix(first));
+  expect(interactionConversationPrefix(other)).not.toBe(interactionConversationPrefix(first));
+});
 
 test("conversation prefixes reuse loose transcript normalization without cache-head state", () => {
   const first = anthropicMessagesToInteraction({

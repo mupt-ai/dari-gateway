@@ -105,7 +105,10 @@ export function interactionLooseChain(routerId: string, request: InteractionRequ
 // unrelated work reusing the same harness session gets a new group.
 export function interactionConversationPrefix(request: InteractionRequest): string {
   const firstStep = conversationFingerprintSteps(
-    looseFingerprintSteps(request.sourceProtocol, request.items),
+    looseFingerprintSteps(
+      request.sourceProtocol,
+      request.items.filter((item) => !isOpenClawRuntimeContext(item)),
+    ),
   ).at(0);
   return sha256(stableStringify({
     version: CONVERSATION_PREFIX_VERSION,
@@ -113,6 +116,17 @@ export function interactionConversationPrefix(request: InteractionRequest): stri
       ? null
       : canonicalInteractionFingerprintStep(firstStep),
   }));
+}
+
+// OpenClaw appends a user message of runtime context (active exec sessions,
+// subagents) to each request and drops it from later history. On a first
+// turn it merges into the first transcript step, so leaving it in would give
+// the first turn a different conversation than the turns after it.
+const OPENCLAW_RUNTIME_CONTEXT = "<<<BEGIN_OPENCLAW_INTERNAL_CONTEXT>>>";
+
+function isOpenClawRuntimeContext(item: InteractionItem): boolean {
+  return item.type === "message" && item.role === "user" && item.content.length > 0 &&
+    item.content.every((part) => part.type === "text" && part.text.trimStart().startsWith(OPENCLAW_RUNTIME_CONTEXT));
 }
 
 export function interactionPrefixContext(
