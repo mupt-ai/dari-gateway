@@ -118,6 +118,10 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
 }
 
 if (import.meta.main) {
-  const { server, close } = await startSelfHostedGateway();
-  installShutdownHandlers(server, async () => close());
+  // Startup errors are configuration mistakes: print the message, not a stack.
+  const started = await startSelfHostedGateway().catch((error: unknown) => {
+    console.error(`dari-gateway: ${error instanceof Error ? error.message : String(error)}`);
+    process.exit(1);
+  });
+  installShutdownHandlers(started.server, async () => started.close());
 }

@@ -65,7 +65,10 @@ const MODEL_ID_PATTERN = /^[a-z0-9][a-z0-9.-]*\/\S+$/;
 export async function loadGatewayConfig(path: string): Promise<GatewayConfig> {
   const file = Bun.file(path);
   if (!(await file.exists())) {
-    throw new Error(`Gateway config not found at ${path}.`);
+    throw new Error(
+      `Gateway config not found at ${path}. Write one from dari-gateway.example.yaml, `
+        + "or set DARI_GATEWAY_CONFIG (in the container image, mount it at /config/dari-gateway.yaml).",
+    );
   }
   const text = await file.text();
   const raw: unknown = path.endsWith(".json") ? JSON.parse(text) : Bun.YAML.parse(text);
