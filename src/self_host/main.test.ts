@@ -14,11 +14,19 @@ const failingModels = new Set<string>();
 let upstream: ReturnType<typeof Bun.serve>;
 let gateway: ReturnType<typeof Bun.spawn>;
 let baseUrl: string;
+let dir: string;
+let configPath: string;
 
 beforeAll(async () => {
   upstream = Bun.serve({
     port: 0,
     async fetch(request) {
+      // The startup key check lists models with the endpoint's key.
+      if (request.method === "GET" && new URL(request.url).pathname === "/v1/models") {
+        return request.headers.get("authorization") === "Bearer local-secret"
+          ? Response.json({ data: [] })
+          : Response.json({ error: { message: "invalid key" } }, { status: 401 });
+      }
       const body = await request.json() as { model: string; stream?: boolean };
       upstreamCalls.push({
         model: body.model,
@@ -31,8 +39,8 @@ beforeAll(async () => {
       return completionResponse(body.model, body.stream === true);
     },
   });
-  const dir = mkdtempSync(join(tmpdir(), "dari-gateway-"));
-  const configPath = join(dir, "dari-gateway.yaml");
+  dir = mkdtempSync(join(tmpdir(), "dari-gateway-"));
+  configPath = join(dir, "dari-gateway.yaml");
   writeFileSync(configPath, `
 routers:
   default:
@@ -169,6 +177,25 @@ test("subscription routes list connected subscriptions for the gateway key", asy
   });
   expect(response.status).toBe(200);
   expect(await response.json()).toEqual({ credentials: [], autorouting_allowed: true });
+});
+
+test("a provider key the provider rejects stops the gateway from starting", async () => {
+  const rejected = Bun.spawn(["bun", join(import.meta.dir, "main.ts")], {
+    env: {
+      PATH: process.env.PATH ?? "",
+      DARI_GATEWAY_KEYS: "gw-key-1",
+      DARI_GATEWAY_CONFIG: configPath,
+      DARI_GATEWAY_DB: join(dir, "rejected.db"),
+      LOCAL_API_KEY: "revoked",
+      PORT: String(await freePort()),
+    },
+    stdout: "ignore",
+    stderr: "pipe",
+  });
+  expect(await rejected.exited).toBe(1);
+  const stderr = await new Response(rejected.stderr as ReadableStream).text();
+  expect(stderr).toContain("Provider API keys were rejected: local (401)");
+  expect(stderr).not.toContain("revoked");
 });
 
 async function freePort(): Promise<number> {

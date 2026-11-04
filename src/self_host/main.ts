@@ -10,9 +10,11 @@ import { installShutdownHandlers, startServer } from "../http/serve.js";
 import { createAutoRoutingSelectorBackend } from "../strategies/auto_routing_selector.js";
 import { createPrioritySelectorBackend } from "../strategies/priority_selector.js";
 import type { SelectorBackend } from "../strategies/routing.js";
-import { loadGatewayConfig } from "./config.js";
 import { createSelfHostedPlatform } from "./platform.js";
-import { gatewayKeyIndex, providersWithoutCredentials } from "./resolve.js";
+import { providerForModel } from "@mupt-ai/dari-router/policy-engine";
+import { checkProviderKey } from "../providers/key_check.js";
+import { loadGatewayConfig, type GatewayConfig } from "./config.js";
+import { configuredProviderApiKey, gatewayKeyIndex, providersWithoutCredentials } from "./resolve.js";
 import { PrefixStore } from "./prefix_store.js";
 import { SessionPinStore } from "./session_pin_store.js";
 import { handleSubscriptionRequest, SubscriptionStore } from "./subscriptions/index.js";
@@ -76,6 +78,8 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
       );
     }
   }
+  await checkConfiguredProviderKeys(config, (provider) =>
+    configuredProviderApiKey({ config, providerApiKey, env }, provider));
   const autoRoutingKey = env.DARI_AUTO_ROUTING_API_KEY?.trim();
   const selectorBackend: SelectorBackend = autoRoutingKey
     ? createAutoRoutingSelectorBackend({
@@ -115,6 +119,37 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
     }),
   );
   return { server, close: () => db.close() };
+}
+
+/**
+ * Check each provider API key the routers use before serving: a key its
+ * provider rejects fails startup, and one no check could answer is reported.
+ */
+async function checkConfiguredProviderKeys(
+  config: GatewayConfig,
+  providerApiKey: (provider: string) => Promise<string | undefined>,
+): Promise<void> {
+  const providers = new Set(
+    Object.values(config.routers).flatMap((router) => router.models.map((model) => providerForModel(model.id))),
+  );
+  const checks = await Promise.all([...providers].map(async (provider) => {
+    const endpoint = config.providers[provider];
+    // Endpoints configured without a key variable take no key.
+    if (endpoint !== undefined && endpoint.apiKeyEnv === undefined) return null;
+    const key = await providerApiKey(provider);
+    if (key === undefined) return null;
+    return { provider, ...(await checkProviderKey({ provider, key, ...(endpoint ? { endpoint } : {}), fetch })) };
+  }));
+  const rejected = checks.flatMap((check) => check?.result === "rejected" ? [`${check.provider} (${check.status})`] : []);
+  if (rejected.length > 0) {
+    throw new Error(
+      `Provider API keys were rejected: ${rejected.join(", ")}. Fix or unset each key before starting the gateway.`,
+    );
+  }
+  const unchecked = checks.flatMap((check) => check?.result === "unchecked" ? [check.provider] : []);
+  if (unchecked.length > 0) {
+    console.warn("dari-gateway could not check these provider API keys", JSON.stringify({ providers: unchecked }));
+  }
 }
 
 if (import.meta.main) {

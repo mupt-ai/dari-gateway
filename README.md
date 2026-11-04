@@ -64,7 +64,7 @@ From a clone, `bun install && bun run start` or `docker build -t dari-gateway .`
 | `DARI_AUTO_ROUTING_API_KEY` | Optional. Select among a router's models with Dari Auto Routing. |
 | `PORT` | Listen port. Default `8080`. |
 | `DARI_GATEWAY_HOST` | Listen address. Default `127.0.0.1`, so only this machine can connect. The container image sets `0.0.0.0`; set it yourself to expose a process on your network. |
-| Provider keys | Each provider's standard variable, such as `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `META_API_KEY`, or `OPENROUTER_API_KEY`. |
+| Provider keys | Each provider's standard variable, such as `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `META_API_KEY`, or `OPENROUTER_API_KEY`. The gateway checks each key at startup and will not start if a provider rejects one. |
 
 ## Configure
 

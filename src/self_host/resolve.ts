@@ -86,7 +86,7 @@ export async function resolveSelfHostedRouter(
     if (subscription !== null && deps.subscriptions.list(subscription).length > 0) {
       exhausted.add(subscription);
     }
-    const apiKey = await providerApiKey(deps, provider);
+    const apiKey = await configuredProviderApiKey(deps, provider);
     credentials.set(provider, apiKey ? { key: apiKey, source: "user" } : null);
   }
 
@@ -154,7 +154,7 @@ export async function resolveSelfHostedRouter(
 
 // Configured endpoints read their own key variable, or send a placeholder
 // when they take none; known providers use their standard variable.
-async function providerApiKey(
+export async function configuredProviderApiKey(
   deps: Pick<SelfHostedResolverDeps, "config" | "providerApiKey" | "env">,
   provider: string,
 ): Promise<string | undefined> {
@@ -226,7 +226,7 @@ export async function providersWithoutCredentials(
       : [];
     const connected = plans.some((plan) => plan !== null && deps.subscriptions.list(plan).length > 0);
     if (connected) continue;
-    const apiKey = await providerApiKey(deps, provider);
+    const apiKey = await configuredProviderApiKey(deps, provider);
     if (apiKey === undefined) missing.push(provider);
   }
   return missing;
