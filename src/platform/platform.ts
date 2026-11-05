@@ -138,6 +138,28 @@ export type RequestRecord = {
   harnessConversationIdentity?: HarnessConversationIdentity;
   // Parsed from the request's X-Dari-Tags header; empty when absent.
   tags: RequestTags;
+  // The router's non-secret routing settings, for embedders that compare or
+  // replay routing decisions.
+  router: RequestRecordRouter;
+  // The model and reasoning pairs this request could be routed to, after
+  // capability, custom-rule, and cost pruning.
+  candidates: Array<{ model: string; reasoningEffort: ReasoningEffort }>;
+  // The session pin key this request routed under, when the router pins
+  // sessions and the request was pinnable (not strict, explicit, or
+  // background). Each harness subagent has its own key.
+  sessionPinKey?: string;
+};
+
+export type RequestRecordRouter = {
+  enabledModels: string[];
+  // Each enabled model's selectable reasoning levels: the router's
+  // configured levels, else the model's supported levels.
+  thinkingLevels: Record<string, ReasoningEffort[]>;
+  // The level a requested dari/model/<id> uses when the request sets none.
+  defaultThinkingLevels: Record<string, ReasoningEffort>;
+  strict: boolean;
+  speculativeRouting: boolean;
+  sessionPinning: boolean;
 };
 
 // Caller-supplied attribution labels (run, trial, setting), opaque to the

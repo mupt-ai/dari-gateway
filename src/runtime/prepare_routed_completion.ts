@@ -199,6 +199,8 @@ export async function prepareRoutedCompletion(args: {
     identityHit: routing.identityHit,
     hits: routing.hits,
     costEstimates: routing.reportingCostEstimates,
+    candidates: candidateResolution.candidates,
+    sessionPinKey: sessionPin?.key,
     pruning: reportedPruning(
       candidateResolution.pruning,
       routing.imageCapabilityPrunedModels,

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, beforeEach, expect, test } from "bun:test";
 
-import type { SessionPin } from "../platform/platform.js";
+import type { RequestRecord, SessionPin } from "../platform/platform.js";
 import type { SelectorBackend } from "../strategies/routing.js";
 import { testPlatform } from "../test_support/platform.js";
 import type { ResolvedRouter } from "../types.js";
@@ -16,6 +16,7 @@ const MAIN_SESSION = "4b1f0c3e-2a6d-4e8f-9b7a-1c2d3e4f5a6b";
 const SUBAGENT_THREAD = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
 
 const pins = new Map<string, SessionPin>();
+const records: RequestRecord[] = [];
 let selections = 0;
 let selectedEfforts: string[] = [];
 let upstream: ReturnType<typeof Bun.serve>;
@@ -76,6 +77,9 @@ beforeAll(() => {
       writeSessionPin: async ({ routerId, pinKey, ...pin }) => {
         pins.set(`${routerId}:${pinKey}`, pin);
       },
+      recordRequest: (record) => {
+        records.push(record);
+      },
     }),
     selectorBackend: rotatingSelector,
   });
@@ -87,6 +91,7 @@ afterAll(async () => {
 
 beforeEach(() => {
   pins.clear();
+  records.length = 0;
   selections = 0;
   selectedEfforts = [];
   router = resolvedRouter({});
@@ -146,6 +151,13 @@ test("Claude Code subagents are pinned by agent id and say so in dari_routing", 
   expect(subagentBody.dari_routing).toMatchObject({ selected_model: MODEL_B, session_pinned: true });
   expect(mainAgainBody.dari_routing).toMatchObject({ selected_model: MODEL_A, session_pinned: true });
   expect(selections).toBe(2);
+
+  // Records carry each request's own pin key, matching the stored pins.
+  await waitForRecords(3);
+  const keys = records.map((record) => record.sessionPinKey);
+  expect(keys[0]).toBe(keys[2]);
+  expect(keys[1]).not.toBe(keys[0]);
+  expect(new Set(keys.map((key) => `${router.router_id}:${key}`))).toEqual(new Set(pins.keys()));
 });
 
 test("Claude Code without hint headers pins each conversation", async () => {
@@ -165,7 +177,14 @@ test("Claude Code background requests never read or write pins", async () => {
   const body = await response.json() as { dari_routing: Record<string, unknown> };
   expect(body.dari_routing.session_pinned).toBeUndefined();
   expect(pins.size).toBe(0);
+  await waitForRecords(1);
+  expect(records[0]!.sessionPinKey).toBeUndefined();
 });
+
+async function waitForRecords(count: number): Promise<void> {
+  for (let attempt = 0; attempt < 200 && records.length < count; attempt += 1) await Bun.sleep(5);
+  expect(records).toHaveLength(count);
+}
 
 for (const harness of ["Claude Code", "Codex", "Muse Code"] as const) {
   test(`${harness} session effort applies to requested models, not routing`, async () => {

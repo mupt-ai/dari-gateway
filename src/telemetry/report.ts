@@ -11,6 +11,7 @@ import {
   type ChainHits,
   type PrefixHit,
   type PricingLookup,
+  type RoutingCandidate,
   type RoutingDecision,
   type RoutingStrategy,
 } from "@mupt-ai/dari-router/policy-engine";
@@ -25,7 +26,7 @@ import {
   type ProviderIdentity,
 } from "../interaction/types.js";
 import { captureOperationalError } from "../observability/errors.js";
-import { gatewayPlatform, type RequestTags } from "../platform/platform.js";
+import { gatewayPlatform, type RequestRecordRouter, type RequestTags } from "../platform/platform.js";
 import type {
   ProviderAttemptRecord,
   ProviderAttemptReport,
@@ -179,6 +180,10 @@ export class RequestReporter {
       identityHit?: PrefixHit;
       hits: ChainHits;
       costEstimates: CandidateCostEstimate[];
+      // The model and reasoning pairs this request could be routed to.
+      candidates: readonly RoutingCandidate[];
+      // The session pin this request routed under, when the router pins.
+      sessionPinKey?: string;
       // Cache-aware selector-candidate pruning outcome, plus any pre-strategy
       // capability exclusions. Null when custom routing configuration cannot
       // produce candidates.
@@ -603,6 +608,9 @@ export class RequestReporter {
       };
 
       gatewayPlatform().recordRequest({
+        router: requestRecordRouter(a.credentials),
+        candidates: a.candidates.map(({ model, reasoningEffort }) => ({ model, reasoningEffort })),
+        ...(a.sessionPinKey === undefined ? {} : { sessionPinKey: a.sessionPinKey }),
         row: ingestPayload,
         summary: {
           request_id: a.requestId,
@@ -784,5 +792,30 @@ function usageIngest(
     output_cost_usd: pricingKnown ? costString(cost.output) : null,
     total_cost_usd: pricingKnown ? costString(cost.total) : null,
     pricing_known: pricingKnown,
+  };
+}
+
+function requestRecordRouter(router: ResolvedRouter): RequestRecordRouter {
+  return {
+    enabledModels: [...router.enabled_models],
+    thinkingLevels: Object.fromEntries(
+      router.enabled_models.map((model) => [
+        model,
+        [
+          ...(router.model_thinking_levels?.[model]
+            ?? router.model_configs?.[model]?.supported_thinking_levels
+            ?? []),
+        ],
+      ]),
+    ),
+    defaultThinkingLevels: Object.fromEntries(
+      router.enabled_models.flatMap((model) => {
+        const level = router.model_configs?.[model]?.default_thinking_level;
+        return level ? [[model, level]] : [];
+      }),
+    ),
+    strict: router.strict === true,
+    speculativeRouting: router.speculative_routing === true,
+    sessionPinning: router.session_pinning === true,
   };
 }

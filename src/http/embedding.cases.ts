@@ -108,6 +108,28 @@ test("records carry exact usage, provider-reported cost, and tags", async () => 
   });
 });
 
+test("records carry the router's non-secret routing settings", async () => {
+  router = resolvedRouter({ speculative_routing: true, session_pinning: true });
+  const response = await chat({ model: `dari/model/${MODEL_B}` });
+  expect(response.status).toBe(200);
+  await response.text();
+  await waitFor(() => records.length === 1);
+  expect(records[0]!.router).toEqual({
+    enabledModels: [MODEL_A, MODEL_B],
+    thinkingLevels: { [MODEL_A]: ["off"], [MODEL_B]: ["off", "high"] },
+    defaultThinkingLevels: { [MODEL_A]: "off", [MODEL_B]: "off" },
+    strict: false,
+    speculativeRouting: true,
+    sessionPinning: true,
+  });
+  expect(records[0]!.candidates).toHaveLength(3);
+  expect(records[0]!.candidates).toEqual(expect.arrayContaining([
+    { model: MODEL_A, reasoningEffort: "off" },
+    { model: MODEL_B, reasoningEffort: "off" },
+    { model: MODEL_B, reasoningEffort: "high" },
+  ]));
+});
+
 test("malformed tags are refused before any provider call", async () => {
   const response = await chat({ model: `dari/model/${MODEL_A}`, headers: { "x-dari-tags": "no-equals" } });
   expect(response.status).toBe(400);

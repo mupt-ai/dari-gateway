@@ -113,7 +113,8 @@ export async function startSelfHostedGateway(env: Record<string, string> = proce
     "dari-gateway listening",
     JSON.stringify({
       hostname,
-      port,
+      // The bound port, so PORT=0 reports the port the OS assigned.
+      port: server.port,
       routers: Object.keys(config.routers),
       auto_routing: autoRoutingKey ? "dari" : "priority",
     }),
