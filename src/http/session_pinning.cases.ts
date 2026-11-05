@@ -17,6 +17,7 @@ const SUBAGENT_THREAD = "9a8b7c6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
 
 const pins = new Map<string, SessionPin>();
 let selections = 0;
+let selectedEfforts: string[] = [];
 let upstream: ReturnType<typeof Bun.serve>;
 let handler: (request: Request) => Promise<Response>;
 let router: ResolvedRouter;
@@ -31,6 +32,7 @@ const rotatingSelector: SelectorBackend = {
   select: async (args) => {
     const candidate = args.candidates[selections % args.candidates.length]!;
     selections += 1;
+    selectedEfforts = args.candidates.map((candidate) => candidate.reasoningEffort);
     return {
       decision: {
         selectedModel: candidate.model,
@@ -86,6 +88,7 @@ afterAll(async () => {
 beforeEach(() => {
   pins.clear();
   selections = 0;
+  selectedEfforts = [];
   router = resolvedRouter({});
 });
 
@@ -162,6 +165,48 @@ test("Claude Code background requests never read or write pins", async () => {
   const body = await response.json() as { dari_routing: Record<string, unknown> };
   expect(body.dari_routing.session_pinned).toBeUndefined();
   expect(pins.size).toBe(0);
+});
+
+for (const harness of ["Claude Code", "Codex", "Muse Code"] as const) {
+  test(`${harness} session effort applies to requested models, not routing`, async () => {
+    const levels = ["low" as const, "high" as const];
+    const base = router;
+    router = {
+      ...base,
+      model_thinking_levels: { [MODEL_A]: levels, [MODEL_B]: levels, [MODEL_C]: levels },
+      model_configs: Object.fromEntries(Object.entries(base.model_configs!).map(([model, config]) =>
+        [model, { ...config, supported_thinking_levels: levels, default_thinking_level: "low" as const }])),
+    };
+    const send = (model: string) => harness === "Claude Code"
+      ? claudeCode({ requestClass: "main", model, effort: "high" })
+      : harness === "Codex"
+        ? codex({ threadId: MAIN_SESSION, model, effort: "high" })
+        : muse({ model, effort: "high" });
+
+    expect((await send("dari/routing")).status).toBe(200);
+    expect(new Set(selectedEfforts)).toEqual(new Set(levels));
+
+    const requested = await send(`dari/model/${MODEL_B}`);
+    expect(requested.headers.get("x-dari-thinking-level")).toBe("high");
+  });
+}
+
+test("an explicit model serves its default when it lacks the requested level", async () => {
+  const levels = ["low" as const, "high" as const];
+  const base = router;
+  router = {
+    ...base,
+    model_thinking_levels: { [MODEL_B]: levels },
+    model_configs: { ...base.model_configs, [MODEL_B]: { ...base.model_configs![MODEL_B]!, supported_thinking_levels: levels, default_thinking_level: "low" as const } },
+  };
+  const response = await chat({
+    model: `dari/model/${MODEL_B}`,
+    headers: {},
+    messages: [user("hi")],
+    effort: "max",
+  });
+  expect(response.status).toBe(200);
+  expect(response.headers.get("x-dari-thinking-level")).toBe("low");
 });
 
 test("Codex subagent threads are routed on their own", async () => {
@@ -247,15 +292,26 @@ async function chat(args: {
   model?: string;
   headers: Record<string, string>;
   messages: Array<{ role: string; content: string }>;
+  effort?: string;
 }): Promise<Response> {
   return await handler(new Request("http://gateway.test/v1/chat/completions", {
     method: "POST",
     headers: { authorization: "Bearer gw-key", "content-type": "application/json", ...args.headers },
-    body: JSON.stringify({ model: args.model ?? "dari/routing", messages: args.messages }),
+    body: JSON.stringify({
+      model: args.model ?? "dari/routing",
+      messages: args.messages,
+      ...(args.effort === undefined ? {} : { reasoning_effort: args.effort }),
+    }),
   }));
 }
 
-async function claudeCode(args: { requestClass?: string; agentId?: string; task?: string }): Promise<Response> {
+async function claudeCode(args: {
+  requestClass?: string;
+  agentId?: string;
+  task?: string;
+  model?: string;
+  effort?: string;
+}): Promise<Response> {
   return await handler(new Request("http://gateway.test/v1/messages", {
     method: "POST",
     headers: {
@@ -268,19 +324,41 @@ async function claudeCode(args: { requestClass?: string; agentId?: string; task?
       ...(args.agentId === undefined ? {} : { "x-claude-code-agent-id": args.agentId }),
     },
     body: JSON.stringify({
-      model: "dari/routing",
+      model: args.model ?? "dari/routing",
       max_tokens: 64,
+      ...(args.effort === undefined
+        ? {}
+        : { thinking: { type: "adaptive" }, output_config: { effort: args.effort } }),
       messages: [{ role: "user", content: args.task ?? `task for ${args.agentId ?? "main"}` }],
     }),
   }));
 }
 
-async function codex(args: { threadId: string; parentThreadId?: string; subagentKind?: string }): Promise<Response> {
+async function responses(args: {
+  headers: Record<string, string>;
+  model: string;
+  effort?: string;
+}): Promise<Response> {
   return await handler(new Request("http://gateway.test/v1/responses", {
     method: "POST",
+    headers: { authorization: "Bearer gw-key", "content-type": "application/json", ...args.headers },
+    body: JSON.stringify({
+      model: args.model,
+      input: [{ role: "user", content: [{ type: "input_text", text: "review the diff" }] }],
+      ...(args.effort === undefined ? {} : { reasoning: { effort: args.effort } }),
+    }),
+  }));
+}
+
+async function codex(args: {
+  threadId: string;
+  parentThreadId?: string;
+  subagentKind?: string;
+  model?: string;
+  effort?: string;
+}): Promise<Response> {
+  return await responses({
     headers: {
-      authorization: "Bearer gw-key",
-      "content-type": "application/json",
       "x-codex-turn-metadata": JSON.stringify({
         thread_id: args.threadId,
         request_kind: "turn",
@@ -288,11 +366,13 @@ async function codex(args: { threadId: string; parentThreadId?: string; subagent
         ...(args.subagentKind === undefined ? {} : { subagent_kind: args.subagentKind }),
       }),
     },
-    body: JSON.stringify({
-      model: "dari/routing",
-      input: [{ role: "user", content: [{ type: "input_text", text: "review the diff" }] }],
-    }),
-  }));
+    model: args.model ?? "dari/routing",
+    ...(args.effort === undefined ? {} : { effort: args.effort }),
+  });
+}
+
+async function muse(args: { model: string; effort: string }): Promise<Response> {
+  return await responses({ headers: { "x-client-id": "tbh:tui" }, model: args.model, effort: args.effort });
 }
 
 async function served(response: Response): Promise<{ model: string | null; pinned: string | null; lease: string | null }> {

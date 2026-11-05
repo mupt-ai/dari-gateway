@@ -5,6 +5,7 @@ import { anthropicToken } from "../http/auth.js";
 import { errorResponseHeaders, normalizeError } from "../http/errors.js";
 import { captureRequestError } from "../observability/errors.js";
 import { anthropicMessagesToInteraction } from "../protocol/input/anthropic_messages.js";
+import { explicitModelId } from "../protocol/input/router_model.js";
 import { handleRoutedCompletion } from "../runtime/routed_completion.js";
 import type { SelectorBackend } from "../strategies/routing.js";
 import { claudeCodeRequestContext } from "./claude_code/request_context.js";
@@ -12,7 +13,7 @@ import {
   claudeCodeConversationIdentity,
 } from "../runtime/harness_identity/index.js";
 import { parseJsonRequest } from "./json.js";
-import type { AnthropicSafeguards } from "../interaction/types.js";
+import type { AnthropicSafeguards, ReasoningControls } from "../interaction/types.js";
 
 type AnthropicErrorType =
   | "authentication_error"
@@ -42,6 +43,7 @@ export async function handleAnthropicMessages(
     const payload = isClaudeCode
       ? {
           ...forwarded,
+          reasoning: routedReasoning(forwarded),
           agentContext: claudeCodeRequestContext(request.headers),
           // Native tool results may be followed by harness-injected text.
           // Preserve their structural continuation semantics, not prompt inference.
@@ -77,6 +79,18 @@ export async function handleAnthropicMessages(
     });
     return response;
   }
+}
+
+// Claude Code sends its session effort on every turn. That preference
+// describes a direct model, not a heterogeneous router, so let Dari select the
+// effort when the router routes; a `dari/model/<id>` keeps the chosen effort.
+function routedReasoning(
+  interaction: ReturnType<typeof anthropicMessagesToInteraction>,
+): ReasoningControls | undefined {
+  const reasoning = interaction.reasoning;
+  if (reasoning === undefined || explicitModelId(interaction.model) !== null) return reasoning;
+  // Keep only an explicit "thinking off"; effort alone must not force thinking on.
+  return reasoning.enabled === false ? { enabled: false } : undefined;
 }
 
 function latestMessageHasToolResult(messages: unknown): boolean {

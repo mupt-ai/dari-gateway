@@ -35,12 +35,15 @@ export async function handleResponses(
       ...(museClientId === undefined ? {} : { museCodeClientId: museClientId }),
     };
     const codexIdentity = codexConversationIdentity(request.headers, rawPayload);
-    // Codex applies its global model_reasoning_effort setting to custom model
+    // Codex and Muse Code apply their session effort to custom model
     // providers. That preference describes a direct model, not a heterogeneous
-    // router, so let Dari select the reasoning effort for verified Codex turns.
-    // Parsing above still validates malformed Responses reasoning controls.
-    if (codexIdentity !== undefined && explicitModelId(payload.model) === null) {
-      payload.reasoning = undefined;
+    // router, so let Dari select the reasoning effort for their routed turns;
+    // a `dari/model/<id>` keeps the chosen effort. Parsing above still
+    // validates malformed Responses reasoning controls.
+    const harness = codexIdentity !== undefined || museClientId !== undefined;
+    if (harness && explicitModelId(payload.model) === null) {
+      // Keep only an explicit thinking-off; a session effort must not force thinking on.
+      payload.reasoning = payload.reasoning?.enabled === false ? { enabled: false } : undefined;
     }
     const harnessConversationIdentity = codexIdentity
       ?? (museClientId === undefined ? undefined : museCodeConversationIdentity(request.headers));

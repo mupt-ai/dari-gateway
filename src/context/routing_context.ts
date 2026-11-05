@@ -10,6 +10,8 @@ import {
   type HardCapability,
   type PreviousDecision,
   type PricingLookup,
+  isReasoningEffort,
+  type ReasoningEffort,
   type SelectorLeaseHistoryEntry,
   type StrategyCandidateResolution,
 } from "@mupt-ai/dari-router/policy-engine";
@@ -22,6 +24,7 @@ import { requiredCapabilitiesFor } from "../interaction/capabilities.js";
 import { providerIdentityFromModel } from "../interaction/provider_continuation_state.js";
 import { isBackgroundRequest, type InteractionRequest, type ProviderIdentity } from "../interaction/types.js";
 import { requireCandidateModels } from "../models/ids.js";
+import { explicitModelId } from "../protocol/input/router_model.js";
 import { modelMetadataLookup } from "../providers/pi.js";
 import {
   modelSupportsImageInput,
@@ -334,4 +337,30 @@ function derivePrefixContext(args: {
       fingerprints: { tool_choice_fp: "", response_format_fp: "" },
     };
   }
+}
+
+// An explicit `dari/model/<id>` serves the requested thinking level when the
+// model offers it and otherwise its default level, so the request itself drops
+// an unsupported level before routing and provider validation see it. A strict
+// router never substitutes, so it keeps the level and fails on it.
+export function clampRequestedEffort(
+  interaction: InteractionRequest,
+  credentials: { strict?: boolean; model_thinking_levels?: Record<string, ReasoningEffort[]> },
+  metadataLookup: ReturnType<typeof modelMetadataLookup>,
+): InteractionRequest {
+  const requested = interaction.reasoning?.effort;
+  const modelId = explicitModelId(interaction.model);
+  if (requested === undefined || modelId === null || credentials.strict === true) return interaction;
+  const supported = metadataLookup(modelId).supportedThinkingLevels.filter(isReasoningEffort);
+  const configured = credentials.model_thinking_levels?.[modelId] ?? supported;
+  if (configured.includes(requested) && supported.includes(requested)) return interaction;
+  // The effort implied thinking on and its effort-derived fields (baseEffort,
+  // configuration updates) must not leak into the default. Keep only an explicit
+  // thinking-off and any thinking budget.
+  const { enabled, budgetTokens } = interaction.reasoning!;
+  const reasoning = {
+    ...(enabled === false ? { enabled } : {}),
+    ...(budgetTokens === undefined ? {} : { budgetTokens }),
+  };
+  return { ...interaction, reasoning: Object.keys(reasoning).length === 0 ? undefined : reasoning };
 }

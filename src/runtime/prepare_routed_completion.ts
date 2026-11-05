@@ -1,6 +1,8 @@
 import type { CandidatePruningAudit } from "@mupt-ai/dari-router/policy-engine";
 
 import { interactionConversationPrefix } from "../context/interaction_fingerprint.js";
+import { clampRequestedEffort } from "../context/routing_context.js";
+import { modelMetadataLookup } from "../providers/pi.js";
 import {
   buildRoutingContext,
   derivePrefixLookupHashes,
@@ -134,7 +136,14 @@ export async function prepareRoutedCompletion(args: {
   }
   const access = strictProviderAccess(credentials, args.interaction);
   credentials = access.credentials;
-  args = { ...args, interaction: access.interaction };
+  args = {
+    ...args,
+    interaction: clampRequestedEffort(
+      access.interaction,
+      credentials,
+      modelMetadataLookup(credentials.model_configs),
+    ),
+  };
   credentials = await withProviderCredentials(credentials, args.apiKey, args.clientHarness);
   const billable = true;
   const routing = await buildRoutingContext({
